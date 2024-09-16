@@ -55,7 +55,7 @@ $urlList = @(
     "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
     "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockdns.txt",
     "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockfilters.txt",
-    "https://raw.githubusercontent.com/8680/GOODBYEADS/master/data/rules/adblock.txt"
+    "https://raw.githubusercontent.com/8680/GOODBYEADS/master/data/rules/adblock.txt",
     "https://raw.githubusercontent.com/8680/GOODBYEADS/master/data/rules/dns.txt",
     "https://raw.githubusercontent.com/8680/GOODBYEADS/master/data/rules/allow.txt",
     "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt",
@@ -105,7 +105,7 @@ $urlList = @(
     "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_general.txt",
     "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_allowlist.txt",
     "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_general.txt",
-    "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Widgets/sections/widgets.txt"
+    "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Widgets/sections/widgets.txt",
     "https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_original_trackers.txt",
     "https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads.txt",
     "https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs.txt",
@@ -155,7 +155,7 @@ $urlList = @(
     "https://raw.githubusercontent.com/superbigsteam/adguardhomeguiz/main/rule/all.txt",
     "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
     "https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-AdBlock-Filter.txt",
-    "https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-Ultra-AdBlock-Filter.txt"
+    "https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-Ultra-AdBlock-Filter.txt",
     "https://malware-filter.gitlab.io/malware-filter/phishing-filter-ag.txt",
     "https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt",
     "https://malware-filter.gitlab.io/malware-filter/phishing-filter.txt",
