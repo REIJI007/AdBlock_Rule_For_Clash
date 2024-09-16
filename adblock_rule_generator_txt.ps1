@@ -152,7 +152,6 @@ $urlList = @(
     "https://raw.githubusercontent.com/guandasheng/adguardhome/main/rule/all.txt",
     "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/rule.txt",
     "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt",
-    "https://raw.githubusercontent.com/superbigsteam/adguardhomeguiz/main/rule/all.txt",
     "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
     "https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-AdBlock-Filter.txt",
     "https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-Ultra-AdBlock-Filter.txt",
