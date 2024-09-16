@@ -266,23 +266,26 @@ foreach ($url in $urlList) {
                 }
             }
             else {
-                # 正常规则处理 (封禁域名)
+                # 匹配 Adblock/Easylist 格式的规则
                 if ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
-                    $temporaryRules.Add($domain) | Out-Null
+                    $uniqueRules.Add($domain) | Out-Null
                 }
+                # 匹配 Hosts 文件格式的规则
                 elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
                     $domain = $Matches[2]
-                    $temporaryRules.Add($domain) | Out-Null
-                }         
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配 Dnsmasq 格式的规则
                 elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
-                    $temporaryRules.Add($domain) | Out-Null
+                    $uniqueRules.Add($domain) | Out-Null
                 }
-                elseif ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+                # 匹配通配符匹配格式的规则
+                elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
-                    $temporaryRules.Add($domain) | Out-Null
-                }  
+                    $uniqueRules.Add($domain) | Out-Null
+                }
             }
         }
     }
