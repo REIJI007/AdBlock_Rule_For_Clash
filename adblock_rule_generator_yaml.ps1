@@ -235,9 +235,14 @@ foreach ($url in $urlList) {
         $lines = $content -split "`n"
 
         foreach ($line in $lines) {
-            # 匹配以 @@||、@@| 或 @@ 开头的规则，并提取域名
-            if ($line -match '^\s*@@\|\|?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*') {
-                $domains = $line -replace '^\s*@@\|\|?', '' -split '\|'
+            # 处理以 @@ 开头的行
+            if ($line -match '^\s*@@\s*([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*') {
+                # 去除前缀
+                $line = $line -replace '^\s*@@\s*', ''
+                # 去除附加标记
+                $line = $line -replace '\^.*$', ''
+                # 分割域名
+                $domains = $line -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
                         $domain = $domain.Substring(1)
@@ -287,8 +292,6 @@ foreach ($url in $urlList) {
 
 # 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
-
-
 
 
 # 对规则进行排序并格式化
