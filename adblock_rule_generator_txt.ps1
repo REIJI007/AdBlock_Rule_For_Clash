@@ -234,15 +234,30 @@ foreach ($url in $urlList) {
         $content = $webClient.DownloadString($url)
         $lines = $content -split "`n"
 
-   foreach ($line in $lines) {
-            # 处理以 @@ 开头的规则
-            if ($line -match '^\s*@@\s*([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*') {
-                # 去除前缀
-                $line = $line -replace '^\s*@@\s*', ''
-                # 去除附加标记
-                $line = $line -replace '\^.*$', ''
-                # 分割域名
-                $domains = $line -split '\|'
+        foreach ($line in $lines) {
+            # 匹配以 @@|| 开头的规则，并提取域名
+            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+                $domains = $line -replace '^@@\|\|', '' -split '\|'
+                foreach ($domain in $domains) {
+                    if ($domain.StartsWith('*')) {
+                        $domain = $domain.Substring(1)
+                    }
+                    $excludedDomains.Add($domain) | Out-Null
+                }
+            }
+            # 匹配以 @@| 开头的规则
+            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+                $domains = $line -replace '^@@\|', '' -split '\|'
+                foreach ($domain in $domains) {
+                    if ($domain.StartsWith('*')) {
+                        $domain = $domain.Substring(1)
+                    }
+                    $excludedDomains.Add($domain) | Out-Null
+                }
+            }
+            # 匹配以 @@ 开头的规则
+            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+                $domains = $line -replace '^@@', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
                         $domain = $domain.Substring(1)
