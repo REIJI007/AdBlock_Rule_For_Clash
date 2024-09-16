@@ -235,7 +235,7 @@ foreach ($url in $urlList) {
         $lines = $content -split "`n"
 
         foreach ($line in $lines) {
-            # 处理以 @@ 开头的行
+            # 处理以 @@ 开头的规则
             if ($line -match '^\s*@@\s*([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*') {
                 # 去除前缀
                 $line = $line -replace '^\s*@@\s*', ''
@@ -292,7 +292,6 @@ foreach ($url in $urlList) {
 
 # 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
-
 
 # 对规则进行排序并格式化
 $formattedRules = $finalRules | Sort-Object | ForEach-Object {"- '+.$_'"}
