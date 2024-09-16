@@ -285,7 +285,7 @@ foreach ($url in $urlList) {
 
         # 第一次排除白名单域名
         $filteredTemporaryRules = $temporaryRules | Where-Object { -not $excludedDomains.Contains($_) }
-        $uniqueRules.UnionWith($filteredTemporaryRules.ToArray())  # 将有效的封禁域名加入最终规则
+        $uniqueRules.UnionWith(@($filteredTemporaryRules))  # 将有效的封禁域名加入最终规则
     }
     catch {
         Write-Host "处理 $url 时出错: $_"
@@ -295,7 +295,6 @@ foreach ($url in $urlList) {
 
 # 第二次排除白名单域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
-$finalRules = $finalRules.ToArray()  # 将最终结果转换为数组
 
 
 # 对规则进行排序并格式化
