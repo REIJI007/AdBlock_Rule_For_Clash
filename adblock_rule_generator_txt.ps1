@@ -6,7 +6,7 @@
 
 # 定义广告过滤器URL列表
 $urlList = @(
-        "https://anti-ad.net/adguard.txt",
+    "https://anti-ad.net/adguard.txt",
     "https://anti-ad.net/easylist.txt",
     "https://big.oisd.nl",
     "https://easylist.to/easylist/easylist.txt",
@@ -234,7 +234,7 @@ foreach ($url in $urlList) {
         $content = $webClient.DownloadString($url)
         $lines = $content -split "`n"
 
-        foreach ($line in $lines) {
+   foreach ($line in $lines) {
             # 处理以 @@ 开头的规则
             if ($line -match '^\s*@@\s*([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*') {
                 # 去除前缀
@@ -250,34 +250,29 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 匹配 Adblock/Easylist 格式的规则
-            elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
-                $domain = $Matches[1]
-                $excludedDomains.Add($domain) | Out-Null
-            }
-            # 匹配 Hosts 文件格式的规则
-            elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
-                $domain = $Matches[2]
-                $excludedDomains.Add($domain) | Out-Null
-            }
-            # 匹配 Dnsmasq address=/域名/格式的规则
-            elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
-                $domain = $Matches[1]
-                $excludedDomains.Add($domain) | Out-Null
-            }
-            # 匹配 Dnsmasq server=/域名/的规则
-            elseif ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
-                $domain = $Matches[1]
-                $excludedDomains.Add($domain) | Out-Null
-            }
-            # 匹配通配符规则
-            elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
-                $domain = $Matches[1]
-                $excludedDomains.Add($domain) | Out-Null
-            }
             else {
-                # 将不符合以上模式的规则添加到 uniqueRules
+                # 匹配 Adblock/Easylist 格式的规则
                 if ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
+                    $domain = $Matches[1]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配 Hosts 文件格式的规则
+                elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+                    $domain = $Matches[2]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配 Dnsmasq address=/域名/格式的规则
+                elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+                    $domain = $Matches[1]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配 Dnsmasq server=/域名/的规则
+                elseif ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+                    $domain = $Matches[1]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配通配符规则
+                elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
                     $uniqueRules.Add($domain) | Out-Null
                 }
@@ -292,6 +287,7 @@ foreach ($url in $urlList) {
 
 # 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
+
 
 # 对规则进行排序并格式化
 $formattedRules = $finalRules | Sort-Object | ForEach-Object {"- '+.$_'"}
@@ -318,7 +314,7 @@ $($formattedRules -join "`n")
 "@
 
 # 定义输出文件路径
-$outputPath = "$PSScriptRoot/adblock_reject.txt"
+$outputPath = "$PSScriptRoot/adblock_reject.yaml"
 $textContent | Out-File -FilePath $outputPath -Encoding utf8
 
 # 输出生成的有效规则总数
