@@ -235,34 +235,14 @@ foreach ($url in $urlList) {
         $lines = $content -split "`n"
 
         foreach ($line in $lines) {
-            # 匹配以 @@|| 开头的规则，并提取域名（支持带$高级修饰符）
-            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
-                $domains = $line -replace '^@@\|\|', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
+            # 直接处理以 @@ 开头的规则，提取域名并加入白名单
+            if ($line.StartsWith('@@')) {
+                # 从规则中移除 @@ 开头部分，提取域名部分
+                $domains = $line -replace '^@@[^\|]*\|*', '' -split '[\^,$]'
                 foreach ($domain in $domains) {
-                    if ($domain.StartsWith('*')) {
-                        $domain = $domain.Substring(1)
+                    if (-not [string]::IsNullOrWhiteSpace($domain)) {
+                        $excludedDomains.Add($domain.Trim()) | Out-Null
                     }
-                    $excludedDomains.Add($domain) | Out-Null
-                }
-            }
-            # 匹配以 @@| 开头的规则（支持带$高级修饰符）
-            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
-                $domains = $line -replace '^@@\|', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
-                foreach ($domain in $domains) {
-                    if ($domain.StartsWith('*')) {
-                        $domain = $domain.Substring(1)
-                    }
-                    $excludedDomains.Add($domain) | Out-Null
-                }
-            }
-            # 匹配以 @@ 开头的规则（支持带$高级修饰符）
-            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
-                $domains = $line -replace '^@@', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
-                foreach ($domain in $domains) {
-                    if ($domain.StartsWith('*')) {
-                        $domain = $domain.Substring(1)
-                    }
-                    $excludedDomains.Add($domain) | Out-Null
                 }
             }
             else {
@@ -300,7 +280,7 @@ foreach ($url in $urlList) {
     }
 }
 
-# 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
+# 排除所有白名单规则中的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
 
 # 对规则进行排序并格式化
