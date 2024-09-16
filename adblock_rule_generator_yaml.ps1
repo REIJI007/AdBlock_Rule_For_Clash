@@ -230,13 +230,13 @@ foreach ($url in $urlList) {
     Write-Host "正在处理: $url"
     Add-Content -Path $logFilePath -Value "正在处理: $url"
     try {
+        # 读取并拆分内容为行
         $content = $webClient.DownloadString($url)
         $lines = $content -split "`n"
 
         foreach ($line in $lines) {
-            # 首先匹配所有以 @@|| 开头的规则，并提取域名
+            # 匹配以 @@|| 开头的规则，并提取域名
             if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
-                # 提取所有匹配的域名部分
                 $domains = $line -replace '^@@\|\|', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -245,7 +245,7 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 接着匹配所有以 @@| 开头的规则，并提取域名
+            # 匹配以 @@| 开头的规则
             elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
                 $domains = $line -replace '^@@\|', '' -split '\|'
                 foreach ($domain in $domains) {
@@ -255,7 +255,7 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 最后匹配所有以 @@ 开头的规则，并提取域名
+            # 匹配以 @@ 开头的规则
             elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
                 $domains = $line -replace '^@@', '' -split '\|'
                 foreach ($domain in $domains) {
@@ -276,12 +276,17 @@ foreach ($url in $urlList) {
                     $domain = $Matches[2]
                     $uniqueRules.Add($domain) | Out-Null
                 }
-                # 匹配 Dnsmasq 格式的规则
+                # 匹配 Dnsmasq address=/域名/格式的规则
                 elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
                     $uniqueRules.Add($domain) | Out-Null
                 }
-                # 匹配通配符匹配格式的规则
+                # 匹配 Dnsmasq server=/域名/的规则
+                elseif ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+                    $domain = $Matches[1]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配通配符规则
                 elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
                     $uniqueRules.Add($domain) | Out-Null
@@ -297,6 +302,7 @@ foreach ($url in $urlList) {
 
 # 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
+
 
 # 对规则进行排序并格式化
 $formattedRules = $finalRules | Sort-Object | ForEach-Object {"- '+.$_'"}
