@@ -212,7 +212,7 @@ $urlList = @(
     "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
     "https://raw.githubusercontent.com/damengzhu/banad/main/dnslist.txt",
     "https://hblock.molinero.dev/hosts_adblock.txt",
-    "https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt"    
+    "https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt"
 )
 
 # 日志文件路径
