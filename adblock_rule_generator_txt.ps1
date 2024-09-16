@@ -218,25 +218,26 @@ $urlList = @(
 # 日志文件路径
 $logFilePath = "$PSScriptRoot/adblock_log.txt"
 
-# 创建三个HashSet来存储唯一的规则、临时的规则和白名单域名
-$uniqueRules = [System.Collections.Generic.HashSet[string]]::new()  # 最终的封禁域名
-$excludedDomains = [System.Collections.Generic.HashSet[string]]::new()  # 白名单域名
-$temporaryRules = [System.Collections.Generic.HashSet[string]]::new()  # 临时封禁域名
+# 创建两个HashSet来存储唯一的规则和排除的域名
+$uniqueRules = [System.Collections.Generic.HashSet[string]]::new()
+$excludedDomains = [System.Collections.Generic.HashSet[string]]::new()
 
 # 创建WebClient对象用于下载规则
 $webClient = New-Object System.Net.WebClient
 $webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-function ProcessList($url) {
+# 遍历每个列表URL进行下载和第一次处理
+foreach ($url in $urlList) {
     Write-Host "正在处理: $url"
     Add-Content -Path $logFilePath -Value "正在处理: $url"
     try {
         $content = $webClient.DownloadString($url)
         $lines = $content -split "`n"
+        $temporaryRules = [System.Collections.Generic.HashSet[string]]::new()
 
         foreach ($line in $lines) {
-            # 首先匹配所有以 @@|| 开头的规则，并提取域名
-            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+            # 处理白名单规则 (以 @@|| 或 @@| 或 @@ 开头)
+            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
                 $domains = $line -replace '^@@\|\|', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -244,9 +245,7 @@ function ProcessList($url) {
                     }
                     $excludedDomains.Add($domain) | Out-Null
                 }
-            }
-            # 接着匹配所有以 @@| 开头的规则，并提取域名
-            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+            } elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
                 $domains = $line -replace '^@@\|', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -254,9 +253,7 @@ function ProcessList($url) {
                     }
                     $excludedDomains.Add($domain) | Out-Null
                 }
-            }
-            # 最后匹配所有以 @@ 开头的规则，并提取域名
-            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+            } elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
                 $domains = $line -replace '^@@', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -265,24 +262,21 @@ function ProcessList($url) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
+            # 处理封禁规则 (Adblock/Easylist格式, Hosts格式, Dnsmasq格式)
             else {
-                # 匹配 Adblock/Easylist 格式的规则
                 if ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
-                }
-                # 匹配 Hosts 文件格式的规则
+                } 
                 elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
                     $domain = $Matches[2]
                     $temporaryRules.Add($domain) | Out-Null
-                }
-                # 匹配 Dnsmasq 格式的规则
+                } 
                 elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
-                }
-                # 匹配通配符匹配格式的规则
-                elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
+                } 
+                elseif ($line -match '^sever=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
                 }
@@ -291,9 +285,7 @@ function ProcessList($url) {
 
         # 第一次排除白名单域名
         $filteredTemporaryRules = $temporaryRules | Where-Object { -not $excludedDomains.Contains($_) }
-        $uniqueRules.UnionWith($filteredTemporaryRules)  # 将有效的封禁域名加入最终规则
-        $temporaryRules.Clear()  # 清空临时规则，为下一次下载做准备
-
+        $uniqueRules.UnionWith($filteredTemporaryRules.ToArray())  # 将有效的封禁域名加入最终规则
     }
     catch {
         Write-Host "处理 $url 时出错: $_"
@@ -301,13 +293,9 @@ function ProcessList($url) {
     }
 }
 
-# 下载并处理每个列表
-foreach ($url in $urlList) {
-    ProcessList $url
-}
-
 # 第二次排除白名单域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
+$finalRules = $finalRules.ToArray()  # 将最终结果转换为数组
 
 
 # 对规则进行排序并格式化
