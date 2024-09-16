@@ -212,7 +212,7 @@ $urlList = @(
     "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
     "https://raw.githubusercontent.com/damengzhu/banad/main/dnslist.txt",
     "https://hblock.molinero.dev/hosts_adblock.txt",
-    "https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt"
+    "https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt"    
 )
 
 # 日志文件路径
@@ -235,9 +235,9 @@ foreach ($url in $urlList) {
         $lines = $content -split "`n"
 
         foreach ($line in $lines) {
-            # 匹配以 @@|| 开头的规则，并提取域名
-            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
-                $domains = $line -replace '^@@\|\|', '' -split '\|'
+            # 匹配以 @@|| 开头的规则，并提取域名（支持带$高级修饰符）
+            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
+                $domains = $line -replace '^@@\|\|', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
                         $domain = $domain.Substring(1)
@@ -245,9 +245,9 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 匹配以 @@| 开头的规则
-            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
-                $domains = $line -replace '^@@\|', '' -split '\|'
+            # 匹配以 @@| 开头的规则（支持带$高级修饰符）
+            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
+                $domains = $line -replace '^@@\|', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
                         $domain = $domain.Substring(1)
@@ -255,9 +255,9 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 匹配以 @@ 开头的规则
-            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
-                $domains = $line -replace '^@@', '' -split '\|'
+            # 匹配以 @@ 开头的规则（支持带$高级修饰符）
+            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\$[a-zA-Z0-9,-]+)?$') {
+                $domains = $line -replace '^@@', '' -replace '\$[a-zA-Z0-9,-]+$', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
                         $domain = $domain.Substring(1)
@@ -302,7 +302,6 @@ foreach ($url in $urlList) {
 
 # 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
-
 
 # 对规则进行排序并格式化
 $formattedRules = $finalRules | Sort-Object | ForEach-Object {"- '+.$_'"}
