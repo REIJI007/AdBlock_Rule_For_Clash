@@ -165,7 +165,7 @@ rules:
 
 
 
-**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前132个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
+**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前208个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
 
 
 **七、特别鸣谢**
@@ -189,61 +189,59 @@ rules:
 (https://github.com/8680/GOODBYEADS)<br>
 9、AWAvenue-Ads-Rule
 (https://github.com/TG-Twilight/AWAvenue-Ads-Rule)<br>
-10、Bibaiji
-(https://github.com/Bibaiji/ad-rules/)<br>
-11、uBlockOrigin
+10、uBlockOrigin
 (https://github.com/uBlockOrigin/uAssets)<br>
-12、ADguardTeam
+11、ADguardTeam
 (https://github.com/AdguardTeam/AdGuardFilters)<br>
-13、HyperADRules
+12、HyperADRules
 (https://github.com/Lynricsy/HyperADRules)<br>
-14、guandasheng
+13、guandasheng
 (https://github.com/guandasheng/adguardhome)<br>
-15、xinggsf
+14、xinggsf
 (https://github.com/xinggsf/Adblock-Plus-Rule)<br>
-16、superbigsteam
+15、superbigsteam
 (https://github.com/superbigsteam/adguardhomeguiz)<br>
-17、hoshsadiq
+16、hoshsadiq
 (https://github.com/hoshsadiq/adblock-nocoin-list)<br>
-18、jerryn70
+17、jerryn70
 (https://github.com/jerryn70/GoodbyeAds)<br>
-19、malware-filter
+18、malware-filter
 (https://gitlab.com/malware-filter)<br>
-20、abp-filters
+19、abp-filters
 (https://gitlab.com/eyeo/anti-cv/abp-filters-anti-cv)<br>
-21、banbendalao
+20、banbendalao
 (https://github.com/banbendalao/ADgk)<br>
-22、yokoffing
+21、yokoffing
 (https://github.com/yokoffing/filterlists)<br>
-23、Spam404
+22、Spam404
 (https://github.com/Spam404/lists)<br>
-24、brave
+23、brave
 (https://github.com/brave/adblock-lists)<br>
-25、Peter Lowe
+24、Peter Lowe
 (https://pgl.yoyo.org/adservers/)<br>
-26、DandelionSprout
+25、DandelionSprout
 (https://github.com/DandelionSprout/adfilt)<br>
-27、blocklistproject
+26、blocklistproject
 (https://github.com/blocklistproject/Lists)<br>
-28、reek
+27、reek
 (https://github.com/reek/anti-adblock-killer)<br>
-29、durablenapkin
+28、durablenapkin
 (https://github.com/durablenapkin/scamblocklist)<br>
-30、oisd
+29、oisd
 (https://github.com/sjhgvr/oisd)<br>
-31、Perflyst
+30、Perflyst
 (https://github.com/Perflyst/PiHoleBlocklist)<br>
-32、hagezi
+31、hagezi
 (https://github.com/hagezi/dns-blocklists)<br>
-33、neodevpro
+32、neodevpro
 (https://github.com/neodevpro/neodevhost)<br>
-34、notracking
+33、notracking
 (https://github.com/notracking/hosts-blocklists)<br>
-35、damengzhu
+34、damengzhu
 (https://github.com/damengzhu/banad)<br>
-36、hectorm
+35、hectorm
 (https://github.com/hectorm/hblock)<br>
-37、badmojr
+36、badmojr
 (https://github.com/badmojr/1Hosts)
 
 
