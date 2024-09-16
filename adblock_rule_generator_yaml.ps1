@@ -226,18 +226,17 @@ $excludedDomains = [System.Collections.Generic.HashSet[string]]::new()
 $webClient = New-Object System.Net.WebClient
 $webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
-# 遍历每个列表URL进行下载和第一次处理
 foreach ($url in $urlList) {
     Write-Host "正在处理: $url"
     Add-Content -Path $logFilePath -Value "正在处理: $url"
     try {
         $content = $webClient.DownloadString($url)
         $lines = $content -split "`n"
-        $temporaryRules = [System.Collections.Generic.HashSet[string]]::new()
 
         foreach ($line in $lines) {
-            # 处理白名单规则 (以 @@|| 或 @@| 或 @@ 开头)
-            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
+            # 首先匹配所有以 @@|| 开头的规则，并提取域名
+            if ($line -match '^@@\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
+                # 提取所有匹配的域名部分
                 $domains = $line -replace '^@@\|\|', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -245,7 +244,9 @@ foreach ($url in $urlList) {
                     }
                     $excludedDomains.Add($domain) | Out-Null
                 }
-            } elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
+            }
+            # 接着匹配所有以 @@| 开头的规则，并提取域名
+            elseif ($line -match '^@@\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
                 $domains = $line -replace '^@@\|', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -253,7 +254,9 @@ foreach ($url in $urlList) {
                     }
                     $excludedDomains.Add($domain) | Out-Null
                 }
-            } elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})') {
+            }
+            # 最后匹配所有以 @@ 开头的规则，并提取域名
+            elseif ($line -match '^@@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$') {
                 $domains = $line -replace '^@@', '' -split '\|'
                 foreach ($domain in $domains) {
                     if ($domain.StartsWith('*')) {
@@ -262,30 +265,26 @@ foreach ($url in $urlList) {
                     $excludedDomains.Add($domain) | Out-Null
                 }
             }
-            # 处理封禁规则 (Adblock/Easylist格式, Hosts格式, Dnsmasq格式)
             else {
+                # 正常规则处理 (封禁域名)
                 if ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
-                } 
+                }
                 elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
                     $domain = $Matches[2]
                     $temporaryRules.Add($domain) | Out-Null
-                } 
+                }         
                 elseif ($line -match '^address=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
-                } 
-                elseif ($line -match '^sever=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+                }
+                elseif ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
                     $domain = $Matches[1]
                     $temporaryRules.Add($domain) | Out-Null
-                }
+                }  
             }
         }
-
-        # 第一次排除白名单域名
-        $filteredTemporaryRules = $temporaryRules | Where-Object { -not $excludedDomains.Contains($_) }
-        $uniqueRules.UnionWith(@($filteredTemporaryRules))  # 将有效的封禁域名加入最终规则
     }
     catch {
         Write-Host "处理 $url 时出错: $_"
@@ -293,7 +292,7 @@ foreach ($url in $urlList) {
     }
 }
 
-# 第二次排除白名单域名
+# 排除以 @@||、@@| 和 @@ 开头规则中提取的域名
 $finalRules = $uniqueRules | Where-Object { -not $excludedDomains.Contains($_) }
 
 # 对规则进行排序并格式化
