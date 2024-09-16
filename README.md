@@ -165,7 +165,7 @@ rules:
 
 
 
-**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前208个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
+**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前207个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
 
 
 **七、特别鸣谢**
@@ -199,49 +199,47 @@ rules:
 (https://github.com/guandasheng/adguardhome)<br>
 14、xinggsf
 (https://github.com/xinggsf/Adblock-Plus-Rule)<br>
-15、superbigsteam
-(https://github.com/superbigsteam/adguardhomeguiz)<br>
-16、hoshsadiq
+15、hoshsadiq
 (https://github.com/hoshsadiq/adblock-nocoin-list)<br>
-17、jerryn70
+16、jerryn70
 (https://github.com/jerryn70/GoodbyeAds)<br>
-18、malware-filter
+17、malware-filter
 (https://gitlab.com/malware-filter)<br>
-19、abp-filters
+18、abp-filters
 (https://gitlab.com/eyeo/anti-cv/abp-filters-anti-cv)<br>
-20、banbendalao
+19、banbendalao
 (https://github.com/banbendalao/ADgk)<br>
-21、yokoffing
+20、yokoffing
 (https://github.com/yokoffing/filterlists)<br>
-22、Spam404
+21、Spam404
 (https://github.com/Spam404/lists)<br>
-23、brave
+22、brave
 (https://github.com/brave/adblock-lists)<br>
-24、Peter Lowe
+23、Peter Lowe
 (https://pgl.yoyo.org/adservers/)<br>
-25、DandelionSprout
+24、DandelionSprout
 (https://github.com/DandelionSprout/adfilt)<br>
-26、blocklistproject
+25、blocklistproject
 (https://github.com/blocklistproject/Lists)<br>
-27、reek
+26、reek
 (https://github.com/reek/anti-adblock-killer)<br>
-28、durablenapkin
+27、durablenapkin
 (https://github.com/durablenapkin/scamblocklist)<br>
-29、oisd
+28、oisd
 (https://github.com/sjhgvr/oisd)<br>
-30、Perflyst
+29、Perflyst
 (https://github.com/Perflyst/PiHoleBlocklist)<br>
-31、hagezi
+30、hagezi
 (https://github.com/hagezi/dns-blocklists)<br>
-32、neodevpro
+31、neodevpro
 (https://github.com/neodevpro/neodevhost)<br>
-33、notracking
+32、notracking
 (https://github.com/notracking/hosts-blocklists)<br>
-34、damengzhu
+33、damengzhu
 (https://github.com/damengzhu/banad)<br>
-35、hectorm
+34、hectorm
 (https://github.com/hectorm/hblock)<br>
-36、badmojr
+35、badmojr
 (https://github.com/badmojr/1Hosts)
 
 
