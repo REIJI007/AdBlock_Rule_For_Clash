@@ -1,4 +1,4 @@
-name: Delete Failed Workflows
+name: Delete All Workflows
 
 on:
   schedule:
@@ -6,10 +6,10 @@ on:
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  delete-failed-workflows:
+  delete-all-workflows:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete failed workflows
+      - name: Delete all workflows
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -34,11 +34,11 @@ jobs:
           page=1
           
           while true; do
-            echo "Fetching page $page of failed workflow runs..."
+            echo "Fetching page $page of all workflow runs..."
             
-            # 获取工作流运行，包括分页
+            # 获取工作流运行（不再过滤状态）
             response=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/$OWNER/$REPO/actions/runs?status=failure&per_page=$per_page&page=$page")
+              "https://api.github.com/repos/$OWNER/$REPO/actions/runs?per_page=$per_page&page=$page")
             
             http_status=$(echo "$response" | tail -n1)
             body=$(echo "$response" | sed '$d')
@@ -65,17 +65,17 @@ jobs:
               exit 1
             fi
             
-            # 提取失败的工作流运行 ID
-            failed_run_ids=$(echo "$body" | jq -r '.workflow_runs[].id')
+            # 提取工作流运行 ID
+            run_ids=$(echo "$body" | jq -r '.workflow_runs[].id')
             
-            # 如果没有更多的失败运行，退出循环
-            if [ -z "$failed_run_ids" ]; then
-              echo "No more failed runs found. Exiting loop."
+            # 如果没有更多的工作流运行，退出循环
+            if [ -z "$run_ids" ]; then
+              echo "No more runs found. Exiting loop."
               break
             fi
             
-            # 删除每个失败的工作流运行
-            for run_id in $failed_run_ids; do
+            # 删除每个工作流运行
+            for run_id in $run_ids; do
               echo "Deleting workflow run $run_id"
               delete_response=$(curl -s -w "\n%{http_code}" -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
                 "https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id")
@@ -95,4 +95,4 @@ jobs:
             page=$((page + 1))
           done
           
-          echo "All failed workflow runs have been processed."
+          echo "All workflow runs have been processed."
