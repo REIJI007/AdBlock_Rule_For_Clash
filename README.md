@@ -18,35 +18,32 @@
 **一、从多个广告过滤器中提取拦截域名条目，删除重复项，并将它们转换为兼容Clash的payload列表格式，一行仅一条规则。该列表可以用作Clash的rule-providers.以阻止广告域名， powershell脚本每20分钟自动执行并将生成的文件发布在release中.三个文件的下载地址分别如下，其中adblock_reject.yaml和adblock_reject.txt是Matcher Ruleset格式数组构成的payload列表，adblock_reject.mrs则是由mihomo核心将adblock_reject.yaml编译转化得来的规则集**
 <br>
 <br>
-**适用于Clash的外部远程规则集**
 <table border="1" style="border-collapse: collapse; width: 100%;">
   <tr>
-    <th>订阅格式</th>
-    <th>链接</th>
+    <td>订阅地址:</td>
   </tr>
   <tr>
     <td>YAML</td>
     <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">原始链接</a></strong><br>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">原始链接</a></strong> | 
       <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.yaml">Cloudflare加速链接</a></strong>
     </td>
   </tr>
   <tr>
     <td>MRS</td>
     <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs">原始链接</a></strong><br>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs">原始链接</a></strong> | 
       <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.mrs">Cloudflare加速链接</a></strong>
     </td>
   </tr>
   <tr>
     <td>TXT</td>
     <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt">原始链接</a></strong><br>
-      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.yaml">Cloudflare加速链接</a></strong>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">原始链接</a></strong> | 
+      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.mrs">Cloudflare加速链接</a></strong>
     </td>
   </tr>
 </table>
-
 
 <hr>
 
