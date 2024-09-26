@@ -39,8 +39,8 @@
   <tr>
     <td>TXT</td>
     <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">原始链接</a></strong> | 
-      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.mrs">Cloudflare加速链接</a></strong>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt">原始链接</a></strong> | 
+      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.txt">Cloudflare加速链接</a></strong>
     </td>
   </tr>
 </table>
