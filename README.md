@@ -19,24 +19,34 @@
 <br>
 <br>
 **适用于Clash的外部远程规则集**
-<br>
-*1、YAML格式的外部远程拦截域名规则集 adblock_reject.yaml* 
-<br>
-*https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml*
-<br>
-<br>
+<table border="1" style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <th>订阅格式</th>
+    <th>链接</th>
+  </tr>
+  <tr>
+    <td>YAML</td>
+    <td>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">原始链接</a></strong><br>
+      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.yaml">Cloudflare加速链接</a></strong>
+    </td>
+  </tr>
+  <tr>
+    <td>MRS</td>
+    <td>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs">原始链接</a></strong><br>
+      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.mrs">Cloudflare加速链接</a></strong>
+    </td>
+  </tr>
+  <tr>
+    <td>TXT</td>
+    <td>
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt">原始链接</a></strong><br>
+      <strong><a href="https://adblockproxy.miyajimareji007.workers.dev/clash_adblock.yaml">Cloudflare加速链接</a></strong>
+    </td>
+  </tr>
+</table>
 
-*2、MRS格式的外部远程拦截域名规则集 adblock_reject.mrs* 
-<br>
-*https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs*
-<br>
-<br>
-
-*3、文本格式的外部远程拦截域名规则集 adblock_reject.txt* 
-<br>
-*https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt*
-<br>
-<br>
 
 <hr>
 
