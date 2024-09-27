@@ -1,5 +1,6 @@
 引用列表如下：
 
+
 1. Anti-ad for ADguard  
 https://anti-ad.net/adguard.txt  
 
@@ -516,845 +517,821 @@ https://raw.githubusercontent.com/Lynricsy/HyperADRules/master/dns.txt
 172. HyperADRules-allow  
 https://raw.githubusercontent.com/Lynricsy/HyperADRules/master/allow.txt
 
-173. TheBestAdrules  
-https://raw.githubusercontent.com/guandasheng/ADguardhome/main/rule/all.txt
-
-174. xinggsf's rules  
+173. xinggsf's rules  
 https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/rule.txt
 
-175. xinggsf's mv rules  
+174. xinggsf's mv rules  
 https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt
 
-176. adblock-nocoin-list  
+175. adblock-nocoin-list  
 https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt
 
-177. GoodbyeAds-AdBlock-Filter  
+176. GoodbyeAds-AdBlock-Filter  
 https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-AdBlock-Filter.txt
 
-178. GoodbyeAds-Ultra-AdBlock-Filter  
+177. GoodbyeAds-Ultra-AdBlock-Filter  
 https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-Ultra-AdBlock-Filter.txt
 
-179. Phishing URL Blocklist——ADguard  
+178. Phishing URL Blocklist——ADguard  
 https://malware-filter.gitlab.io/malware-filter/phishing-filter-ag.txt
 
-180. Phishing URL Blocklist——ADguard Home  
+179. Phishing URL Blocklist——ADguard Home  
 https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt
 
-181. Phishing URL Blocklist——uBlock Origin  
+180. Phishing URL Blocklist——uBlock Origin  
 https://malware-filter.gitlab.io/malware-filter/phishing-filter.txt
 
-182. Malicious URL Blocklist——ADguard  
+181. Malicious URL Blocklist——ADguard  
 https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-ag.txt
 
-183. Malicious URL Blocklist——ADguard Home  
+182. Malicious URL Blocklist——ADguard Home  
 https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh.txt
 
-184. Malicious URL Blocklist——uBlock Origin  
+183. Malicious URL Blocklist——uBlock Origin  
 https://malware-filter.gitlab.io/malware-filter/urlhaus-filter.txt
 
-185. Tracking JS Blocklist  
+184. Tracking JS Blocklist  
 https://malware-filter.gitlab.io/malware-filter/tracking-filter.txt
 
-186. Botnet IP Blocklist——ADguard  
+185. Botnet IP Blocklist——ADguard  
 https://malware-filter.gitlab.io/malware-filter/botnet-filter-ag.txt
 
-187. Botnet IP Blocklist——ADguard Home  
+186. Botnet IP Blocklist——ADguard Home  
 https://malware-filter.gitlab.io/malware-filter/botnet-filter-agh.txt
 
-188. Botnet IP Blocklist——uBlock Origin  
+187. Botnet IP Blocklist——uBlock Origin  
 https://malware-filter.gitlab.io/malware-filter/botnet-filter.txt
 
-189. ABP filters  
+188. ABP filters  
 https://easylist-msie.adblockplus.org/abp-filters-anti-cv.txt
 
-190. adgk  
+189. adgk  
 https://raw.githubusercontent.com/banbendalao/ADgk/master/ADgk.txt
 
-191. yokoffing's Annoyance List  
+190. yokoffing's Annoyance List  
 https://raw.githubusercontent.com/yokoffing/filterlists/main/annoyance_list.txt
 
-192. yokoffing's Privacy Essentials  
+191. yokoffing's Privacy Essentials  
 https://raw.githubusercontent.com/yokoffing/filterlists/main/privacy_essentials.txt
 
-193. Spam404's Adblock-list  
+192. Spam404's Adblock-list  
 https://raw.githubusercontent.com/Spam404/lists/master/adblock-list.txt
 
-194. Brave-specific filter  
+193. Brave-specific filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-specific.txt
 
-195. Brave-ios-specific filter  
+194. Brave-ios-specific filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-ios-specific.txt
 
-196. Brave-Android-specific filter  
+195. Brave-Android-specific filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt
 
-197. Brave-Firstparty filter  
+196. Brave-Firstparty filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt
 
-198. Brave-Firstparty-cname filter  
+197. Brave-Firstparty-cname filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty-cname.txt
 
-199. Brave-Unbreak filter  
+198. Brave-Unbreak filter  
 https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt
 
-200. Filter unblocking search ads and self-promotions  
+199. Filter unblocking search ads and self-promotions  
 https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_10_Useful/filter.txt
 
-201. Peter Lowe’s Ad and Tracking Server List  
+200. Peter Lowe’s Ad and Tracking Server List  
 https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=0
 
-202. Dandelion Sprout's Anti-Malware List (for ADguard)  
+201. Dandelion Sprout's Anti-Malware List (for ADguard)  
 https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuard.txt
 
-203. Dandelion Sprout's Anti-Malware List (for Adblock Plus and AdBlock)  
+202. Dandelion Sprout's Anti-Malware List (for Adblock Plus and AdBlock)  
 https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareABP.txt
 
-204. Dandelion Sprout's Anti-Malware List (for AdGuardHome)  
+203. Dandelion Sprout's Anti-Malware List (for AdGuardHome)  
 https://raw.githubusercontent.com/DandelionSprout/adfilt/master/Alternate%20versions%20Anti-Malware%20List/AntiMalwareAdGuardHome.txt
 
-205. Dandelion Sprout's Compilation List
+204. Dandelion Sprout's Compilation List
 https://raw.githubusercontent.com/DandelionSprout/adfilt/master/AdGuard%20Home%20Compilation%20List/AdGuardHomeCompilationList.txt
 
-206. Dandelion Sprout's Legitimate URL Shortener
+205. Dandelion Sprout's Legitimate URL Shortener
 https://raw.githubusercontent.com/DandelionSprout/adfilt/master/LegitimateURLShortener.txt
 
-207. The Block List Project - Smart TV List  
+206. The Block List Project - Smart TV List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/smart-tv-ags.txt
 
-208. The Block List Project - Ads List  
+207. The Block List Project - Ads List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/ads-ags.txt
 
-209. The Block List Project - Basic Starter List  
+208. The Block List Project - Basic Starter List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/basic-ags.txt
 
-210. The Block List Project - Tracking List  
+209. The Block List Project - Tracking List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/tracking-ags.txt
 
-211. The Block List Project - Malware List  
+210. The Block List Project - Malware List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/malware-ags.txt
 
-212. The Block List Project - Scam List  
+211. The Block List Project - Scam List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/scam-ags.txt
 
-213. The Block List Project - Phishing List  
+212. The Block List Project - Phishing List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/phishing-ags.txt
 
-214. The Block List Project - Ransomware List  
+213. The Block List Project - Ransomware List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/ransomware-ags.txt
 
-215. The Block List Project - Fraud List  
+214. The Block List Project - Fraud List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/fraud-ags.txt
 
-216. The Block List Project - Abuse List  
+215. The Block List Project - Abuse List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/abuse-ags.txt
 
-217. The Block List Project - Redirect List  
+216. The Block List Project - Redirect List  
 https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/redirect-ags.txt
 
-218. Anti-Adblock Killer  
+217. Anti-Adblock Killer  
 https://raw.githubusercontent.com/reek/anti-adblock-killer/master/anti-adblock-killer-filters.txt
 
-219. Scam Blocklist (Adblock Plus)  
+218. Scam Blocklist (Adblock Plus)  
 https://raw.githubusercontent.com/durablenapkin/scamblocklist/master/adguard.txt
 
-220. Smart-TV Blocklist for ADguard Home  
+219. Smart-TV Blocklist for ADguard Home  
 https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt
 
-221. HaGeZi's Pro DNS Blocklist
+220. HaGeZi's Pro DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt             
 
-222. HaGeZi's Fake DNS Blocklist
+221. HaGeZi's Fake DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/fake.txt            
 
-223. HaGeZi's Light DNS Blocklist
+222. HaGeZi's Light DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt           
 
-224. HaGeZi's DynDNS Blocklist
+223. HaGeZi's DynDNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/dyndns.txt          
 
-225. HaGeZi's Normal DNS Blocklist
+224. HaGeZi's Normal DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/multi.txt           
 
-226. HaGeZi's Personal DNS Blocklist
+225. HaGeZi's Personal DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt        
 
-227. HaGeZi's Pop-Up Ads DNS Blocklist
+226. HaGeZi's Pop-Up Ads DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/popupads.txt        
 
-228. HaGeZi's Ultimate DNS Blocklist
+227. HaGeZi's Ultimate DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/ultimate.txt
 
-229. HaGeZi's The World's Most Abused TLDs - Aggressive
+228. HaGeZi's The World's Most Abused TLDs - Aggressive
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/spam-tlds-adblock-aggressive.txt      
 
-230. HaGeZi's The World's Most Abused TLDs - Allow
+229. HaGeZi's The World's Most Abused TLDs - Allow
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/spam-tlds-adblock-allow.txt
 
-231. HaGeZi's Threat Intelligence Feeds DNS Blocklist
+230. HaGeZi's Threat Intelligence Feeds DNS Blocklist
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.txt
 
-232. HaGeZi's Allowlist Referral
+231. HaGeZi's Allowlist Referral
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/whitelist-referral.txt
 
-233. HaGeZi's Allowlist URL Shortener
+232. HaGeZi's Allowlist URL Shortener
 https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/whitelist-urlshortener.txt
 
-234. neodevpro's adblock list
+233. neodevpro's adblock list
 https://raw.githubusercontent.com/neodevpro/neodevhost/master/adblocker
 
-235. notracking's adblock List
+234. notracking's adblock List
 https://raw.githubusercontent.com/notracking/hosts-blocklists/master/adblock/adblock.txt
 
-236. damengzhu's adblock List
+235. damengzhu's adblock List
 https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt
 
-237. damengzhu's DNS List
+236. damengzhu's DNS List
 https://raw.githubusercontent.com/damengzhu/banad/main/dnslist.txt
 
-238. hectorm's adblock List
+237. hectorm's adblock List
 https://hblock.molinero.dev/hosts_adblock.txt
 
-239. 1Hosts's adblock list
+238. 1Hosts's adblock list
 https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt
 
-240. DD-AD
-https://raw.githubusercontent.com/afwfv/DD-AD/main/rule/all.txt
-
-241. ADblocker Ultimate Ad Filter
+239. ADblocker Ultimate Ad Filter
 https://filters.adavoid.org/ultimate-ad-filter.txt
 
-242. ADblocker Ultimate Privacy Filter
+240. ADblocker Ultimate Privacy Filter
 https://filters.adavoid.org/ultimate-privacy-filter.txt
 
-243. ADblocker Ultimate Security Filter
+241. ADblocker Ultimate Security Filter
 https://filters.adavoid.org/ultimate-security-filter.txt
 
-244. ADguard Base filter (ublock)
+242. ADguard Base filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/2.txt
 
-245. ADguard Tracking Protection filter (ublock)
+243. ADguard Tracking Protection filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/3.txt
 
-246. ADguard Social Media filter (ublock)
+244. ADguard Social Media filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/4.txt
 
-247. ADguard filter unblocking search ads and self-promotion (ublock)
-https://filters.adtidy.org/extension/ublock/filters/10.txt
-
-248. ADguard Mobile Ads filter (ublock)
+245. ADguard Mobile Ads filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/11.txt
 
-249. ADguard Annoyances filter (ublock)
+246. ADguard Annoyances filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/14.txt
 
-250. ADguard DNS filter (ublock)
+247. ADguard DNS filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/15.txt
 
-251. ADguard URL Tracking filter (ublock)
+248. ADguard URL Tracking filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/17.txt
 
-252. ADguard Cookie Notices filter (ublock)
+249. ADguard Cookie Notices filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/18.txt
 
-253. ADguard Popups filter (ublock)
+250. ADguard Popups filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/19.txt
 
-254. ADguard Mobile App Banners filter (ublock)
+251. ADguard Mobile App Banners filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/20.txt
 
-255. ADguard Other Annoyances filter (ublock)
+252. ADguard Other Annoyances filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/21.txt
 
-256. ADguard Widgets filter (ublock)
+253. ADguard Widgets filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/22.txt
 
-257. Easylist (ublock)
+254. Easylist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/101.txt
 
-258. Easylist China (ublock)
+255. Easylist China (ublock)
 https://filters.adtidy.org/extension/ublock/filters/104.txt
 
-259. EasyPrivacy (ublock)
+256. EasyPrivacy (ublock)
 https://filters.adtidy.org/extension/ublock/filters/118.txt
 
-260. Fanboy's Annoyances (ublock)
+257. Fanboy's Annoyances (ublock)
 https://filters.adtidy.org/extension/ublock/filters/122.txt
 
-261. Fanboy's Social Blocking List (ublock)
+258. Fanboy's Social Blocking List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/123.txt
 
-262. Web Annoyances Ultralist (ublock)
+259. Web Annoyances Ultralist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/201.txt
 
-263. Peter Lowe's Blocklist (ublock)
+260. Peter Lowe's Blocklist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/204.txt
 
-264. Adblock Warning Removal List (ublock)
+261. Adblock Warning Removal List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/207.txt
 
-265. Online Malicious URL Blocklist (ublock)
+262. Online Malicious URL Blocklist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/208.txt
 
-266. ADgk Mobile China list (ublock)
+263. ADgk Mobile China list (ublock)
 https://filters.adtidy.org/extension/ublock/filters/209.txt
 
-267. CJX's Annoyances List (ublock)
+264. CJX's Annoyances List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/220.txt
 
-268. ADguard Chinese filter (ublock)
+265. ADguard Chinese filter (ublock)
 https://filters.adtidy.org/extension/ublock/filters/224.txt
 
-269. xinggsf (ublock)
+266. xinggsf (ublock)
 https://filters.adtidy.org/extension/ublock/filters/228.txt
 
-270. Fanboy's Anti-thirdparty Fonts (ublock)
+267. Fanboy's Anti-thirdparty Fonts (ublock)
 https://filters.adtidy.org/extension/ublock/filters/239.txt
 
-271. BarbBlock (ublock)
+268. BarbBlock (ublock)
 https://filters.adtidy.org/extension/ublock/filters/240.txt
 
-272. EasyList Cookie List (ublock)
+269. EasyList Cookie List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/241.txt
 
-273. NoCoin Filter List (ublock)
+270. NoCoin Filter List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/242.txt
 
-274. Dandelion Sprout's Annoyances List (ublock)
+271. Dandelion Sprout's Annoyances List (ublock)
 https://filters.adtidy.org/extension/ublock/filters/250.txt
 
-275. Legitimate URL Shortener (ublock)
+272. Legitimate URL Shortener (ublock)
 https://filters.adtidy.org/extension/ublock/filters/251.txt
 
-276. Phishing URL Blocklist (ublock)
+273. Phishing URL Blocklist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/255.txt
 
-277. Scam Blocklist (ublock)
+274. Scam Blocklist (ublock)
 https://filters.adtidy.org/extension/ublock/filters/256.txt
 
-278. uBlock Origin – Badware risks (ublock)
+275. uBlock Origin – Badware risks (ublock)
 https://filters.adtidy.org/extension/ublock/filters/257.txt
 
-279. ADguard Base filter (chromium)
+276. ADguard Base filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/2.txt
 
-280. ADguard Tracking Protection filter (chromium)
+277. ADguard Tracking Protection filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/3.txt
 
-281. ADguard Social Media filter (chromium)
+278. ADguard Social Media filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/4.txt
 
-282. ADguard filter unblocking search ads and self-promotion (chromium)
-https://filters.adtidy.org/extension/chromium/filters/10.txt
-
-283. ADguard Mobile Ads filter (chromium)
+279. ADguard Mobile Ads filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/11.txt
 
-284. ADguard Annoyances filter (chromium)
+280. ADguard Annoyances filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/14.txt
 
-285. ADguard DNS filter (chromium)
+281. ADguard DNS filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/15.txt
 
-286. ADguard URL Tracking filter (chromium)
+282. ADguard URL Tracking filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/17.txt
 
-287. ADguard Cookie Notices filter (chromium)
+283. ADguard Cookie Notices filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/18.txt
 
-288. ADguard Popups filter (chromium)
+284. ADguard Popups filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/19.txt
 
-289. ADguard Mobile App Banners filter (chromium)
+285. ADguard Mobile App Banners filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/20.txt
 
-290. ADguard Other Annoyances filter (chromium)
+286. ADguard Other Annoyances filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/21.txt
 
-291. ADguard Widgets filter (chromium)
+287. ADguard Widgets filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/22.txt
 
-292. Easylist (chromium)
+288. Easylist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/101.txt
 
-293. Easylist China (chromium)
+289. Easylist China (chromium)
 https://filters.adtidy.org/extension/chromium/filters/104.txt
 
-294. EasyPrivacy (chromium)
+290. EasyPrivacy (chromium)
 https://filters.adtidy.org/extension/chromium/filters/118.txt
 
-295. Fanboy's Annoyances (chromium)
+291. Fanboy's Annoyances (chromium)
 https://filters.adtidy.org/extension/chromium/filters/122.txt
 
-296. Fanboy's Social Blocking List (chromium)
+292. Fanboy's Social Blocking List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/123.txt
 
-297. Web Annoyances Ultralist (chromium)
+293. Web Annoyances Ultralist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/201.txt
 
-298. Peter Lowe's Blocklist (chromium)
+294. Peter Lowe's Blocklist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/204.txt
 
-299. Adblock Warning Removal List (chromium)
+295. Adblock Warning Removal List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/207.txt
 
-300. Online Malicious URL Blocklist (chromium)
+296. Online Malicious URL Blocklist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/208.txt
 
-301. ADgk Mobile China list (chromium)
+297. ADgk Mobile China list (chromium)
 https://filters.adtidy.org/extension/chromium/filters/209.txt
 
-302. CJX's Annoyances List (chromium)
+298. CJX's Annoyances List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/220.txt
 
-303. ADguard Chinese filter (chromium)
+299. ADguard Chinese filter (chromium)
 https://filters.adtidy.org/extension/chromium/filters/224.txt
 
-304. xinggsf (chromium)
+300. xinggsf (chromium)
 https://filters.adtidy.org/extension/chromium/filters/228.txt
 
-305. Fanboy's Anti-thirdparty Fonts (chromium)
+301. Fanboy's Anti-thirdparty Fonts (chromium)
 https://filters.adtidy.org/extension/chromium/filters/239.txt
 
-306. BarbBlock (chromium)
+302. BarbBlock (chromium)
 https://filters.adtidy.org/extension/chromium/filters/240.txt
 
-307. EasyList Cookie List (chromium)
+303. EasyList Cookie List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/241.txt
 
-308. NoCoin Filter List (chromium)
+304. NoCoin Filter List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/242.txt
 
-309. Dandelion Sprout's Annoyances List (chromium)
+305. Dandelion Sprout's Annoyances List (chromium)
 https://filters.adtidy.org/extension/chromium/filters/250.txt
 
-310. Legitimate URL Shortener (chromium)
+306. Legitimate URL Shortener (chromium)
 https://filters.adtidy.org/extension/chromium/filters/251.txt
 
-311. Phishing URL Blocklist (chromium)
+307. Phishing URL Blocklist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/255.txt
 
-312. Scam Blocklist (chromium)
+308. Scam Blocklist (chromium)
 https://filters.adtidy.org/extension/chromium/filters/256.txt
 
-313. uBlock Origin – Badware risks (chromium)
+309. uBlock Origin – Badware risks (chromium)
 https://filters.adtidy.org/extension/chromium/filters/257.txt
 
-314. ADguard Base filter (firefox)
+310. ADguard Base filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/2.txt
 
-315. ADguard Tracking Protection filter (firefox)
+311. ADguard Tracking Protection filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/3.txt
 
-316. ADguard Social Media filter (firefox)
+312. ADguard Social Media filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/4.txt
 
-317. ADguard filter unblocking search ads and self-promotion (firefox)
-https://filters.adtidy.org/extension/firefox/filters/10.txt
-
-318. ADguard Mobile Ads filter (firefox)
+313. ADguard Mobile Ads filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/11.txt
 
-319. ADguard Annoyances filter (firefox)
+314. ADguard Annoyances filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/14.txt
 
-320. ADguard DNS filter (firefox)
+315. ADguard DNS filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/15.txt
 
-321. ADguard URL Tracking filter (firefox)
+316. ADguard URL Tracking filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/17.txt
 
-322. ADguard Cookie Notices filter (firefox)
+317. ADguard Cookie Notices filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/18.txt
 
-323. ADguard Popups filter (firefox)
+318. ADguard Popups filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/19.txt
 
-324. ADguard Mobile App Banners filter (firefox)
+319. ADguard Mobile App Banners filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/20.txt
 
-325. ADguard Other Annoyances filter (firefox)
+320. ADguard Other Annoyances filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/21.txt
 
-326. ADguard Widgets filter (firefox)
+321. ADguard Widgets filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/22.txt
 
-327. Easylist (firefox)
+322. Easylist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/101.txt
 
-328. Easylist China (firefox)
+323. Easylist China (firefox)
 https://filters.adtidy.org/extension/firefox/filters/104.txt
 
-329. EasyPrivacy (firefox)
+324. EasyPrivacy (firefox)
 https://filters.adtidy.org/extension/firefox/filters/118.txt
 
-330. Fanboy's Annoyances (firefox)
+325. Fanboy's Annoyances (firefox)
 https://filters.adtidy.org/extension/firefox/filters/122.txt
 
-331. Fanboy's Social Blocking List (firefox)
+326. Fanboy's Social Blocking List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/123.txt
 
-332. Web Annoyances Ultralist (firefox)
+327. Web Annoyances Ultralist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/201.txt
 
-333. Peter Lowe's Blocklist (firefox)
+328. Peter Lowe's Blocklist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/204.txt
 
-334. Adblock Warning Removal List (firefox)
+329. Adblock Warning Removal List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/207.txt
 
-335. Online Malicious URL Blocklist (firefox)
+330. Online Malicious URL Blocklist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/208.txt
 
-336. ADgk Mobile China list (firefox)
+331. ADgk Mobile China list (firefox)
 https://filters.adtidy.org/extension/firefox/filters/209.txt
 
-337. CJX's Annoyances List (firefox)
+332. CJX's Annoyances List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/220.txt
 
-338. ADguard Chinese filter (firefox)
+333. ADguard Chinese filter (firefox)
 https://filters.adtidy.org/extension/firefox/filters/224.txt
 
-339. xinggsf (firefox)
+334. xinggsf (firefox)
 https://filters.adtidy.org/extension/firefox/filters/228.txt
 
-340. Fanboy's Anti-thirdparty Fonts (firefox)
+335. Fanboy's Anti-thirdparty Fonts (firefox)
 https://filters.adtidy.org/extension/firefox/filters/239.txt
 
-341. BarbBlock (firefox)
+336. BarbBlock (firefox)
 https://filters.adtidy.org/extension/firefox/filters/240.txt
 
-342. EasyList Cookie List (firefox)
+337. EasyList Cookie List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/241.txt
 
-343. NoCoin Filter List (firefox)
+338. NoCoin Filter List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/242.txt
 
-344. Dandelion Sprout's Annoyances List (firefox)
+339. Dandelion Sprout's Annoyances List (firefox)
 https://filters.adtidy.org/extension/firefox/filters/250.txt
 
-345. Legitimate URL Shortener (firefox)
+340. Legitimate URL Shortener (firefox)
 https://filters.adtidy.org/extension/firefox/filters/251.txt
 
-346. Phishing URL Blocklist (firefox)
+341. Phishing URL Blocklist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/255.txt
 
-347. Scam Blocklist (firefox)
+342. Scam Blocklist (firefox)
 https://filters.adtidy.org/extension/firefox/filters/256.txt
 
-348. uBlock Origin – Badware risks (firefox)
+343. uBlock Origin – Badware risks (firefox)
 https://filters.adtidy.org/extension/firefox/filters/257.txt
 
-349. ADguard Base filter (windows)
+344. ADguard Base filter (windows)
 https://filters.adtidy.org/windows/filters/2.txt
 
-350. ADguard Tracking Protection filter (windows)
+345. ADguard Tracking Protection filter (windows)
 https://filters.adtidy.org/windows/filters/3.txt
 
-351. ADguard Social Media filter (windows)
+346. ADguard Social Media filter (windows)
 https://filters.adtidy.org/windows/filters/4.txt
 
-352. ADguard filter unblocking search ads and self-promotion (windows)
-https://filters.adtidy.org/windows/filters/10.txt
-
-353. ADguard Mobile Ads filter (windows)
+347. ADguard Mobile Ads filter (windows)
 https://filters.adtidy.org/windows/filters/11.txt
 
-354. ADguard Annoyances filter (windows)
+348. ADguard Annoyances filter (windows)
 https://filters.adtidy.org/windows/filters/14.txt
 
-355. ADguard DNS filter (windows)
+349. ADguard DNS filter (windows)
 https://filters.adtidy.org/windows/filters/15.txt
 
-356. ADguard URL Tracking filter (windows)
+350. ADguard URL Tracking filter (windows)
 https://filters.adtidy.org/windows/filters/17.txt
 
-357. ADguard Cookie Notices filter (windows)
+351. ADguard Cookie Notices filter (windows)
 https://filters.adtidy.org/windows/filters/18.txt
 
-358. ADguard Popups filter (windows)
+352. ADguard Popups filter (windows)
 https://filters.adtidy.org/windows/filters/19.txt
 
-359. ADguard Mobile App Banners filter (windows)
+353. ADguard Mobile App Banners filter (windows)
 https://filters.adtidy.org/windows/filters/20.txt
 
-360. ADguard Other Annoyances filter (windows)
+354. ADguard Other Annoyances filter (windows)
 https://filters.adtidy.org/windows/filters/21.txt
 
-361. ADguard Widgets filter (windows)
+355. ADguard Widgets filter (windows)
 https://filters.adtidy.org/windows/filters/22.txt
 
-362. Easylist (windows)
+356. Easylist (windows)
 https://filters.adtidy.org/windows/filters/101.txt
 
-363. Easylist China (windows)
+357. Easylist China (windows)
 https://filters.adtidy.org/windows/filters/104.txt
 
-364. EasyPrivacy (windows)
+358. EasyPrivacy (windows)
 https://filters.adtidy.org/windows/filters/118.txt
 
-365. Fanboy's Annoyances (windows)
+359. Fanboy's Annoyances (windows)
 https://filters.adtidy.org/windows/filters/122.txt
 
-366. Fanboy's Social Blocking List (windows)
+360. Fanboy's Social Blocking List (windows)
 https://filters.adtidy.org/windows/filters/123.txt
 
-367. Web Annoyances Ultralist (windows)
+361. Web Annoyances Ultralist (windows)
 https://filters.adtidy.org/windows/filters/201.txt
 
-368. Peter Lowe's Blocklist (windows)
+362. Peter Lowe's Blocklist (windows)
 https://filters.adtidy.org/windows/filters/204.txt
 
-369. Adblock Warning Removal List (windows)
+363. Adblock Warning Removal List (windows)
 https://filters.adtidy.org/windows/filters/207.txt
 
-370. Online Malicious URL Blocklist (windows)
+364. Online Malicious URL Blocklist (windows)
 https://filters.adtidy.org/windows/filters/208.txt
 
-371. ADgk Mobile China list (windows)
+365. ADgk Mobile China list (windows)
 https://filters.adtidy.org/windows/filters/209.txt
 
-372. CJX's Annoyances List (windows)
+366. CJX's Annoyances List (windows)
 https://filters.adtidy.org/windows/filters/220.txt
 
-373. ADguard Chinese filter (windows)
+367. ADguard Chinese filter (windows)
 https://filters.adtidy.org/windows/filters/224.txt
 
-374. xinggsf (windows)
+368. xinggsf (windows)
 https://filters.adtidy.org/windows/filters/228.txt
 
-375. Fanboy's Anti-thirdparty Fonts (windows)
+369. Fanboy's Anti-thirdparty Fonts (windows)
 https://filters.adtidy.org/windows/filters/239.txt
 
-376. BarbBlock (windows)
+370. BarbBlock (windows)
 https://filters.adtidy.org/windows/filters/240.txt
 
-377. EasyList Cookie List (windows)
+371. EasyList Cookie List (windows)
 https://filters.adtidy.org/windows/filters/241.txt
 
-378. NoCoin Filter List (windows)
+372. NoCoin Filter List (windows)
 https://filters.adtidy.org/windows/filters/242.txt
 
-379. Dandelion Sprout's Annoyances List (windows)
+373. Dandelion Sprout's Annoyances List (windows)
 https://filters.adtidy.org/windows/filters/250.txt
 
-380. Legitimate URL Shortener (windows)
+374. Legitimate URL Shortener (windows)
 https://filters.adtidy.org/windows/filters/251.txt
 
-381. Phishing URL Blocklist (windows)
+375. Phishing URL Blocklist (windows)
 https://filters.adtidy.org/windows/filters/255.txt
 
-382. Scam Blocklist (windows)
+376. Scam Blocklist (windows)
 https://filters.adtidy.org/windows/filters/256.txt
 
-383. uBlock Origin – Badware risks (windows)
+377. uBlock Origin – Badware risks (windows)
 https://filters.adtidy.org/windows/filters/257.txt
 
-384. ADguard Base filter (android)
+378. ADguard Base filter (android)
 https://filters.adtidy.org/android/filters/2_optimized.txt
 
-385. ADguard Tracking Protection filter (android)
+379. ADguard Tracking Protection filter (android)
 https://filters.adtidy.org/android/filters/3_optimized.txt
 
-386. ADguard Social Media filter (android)
+380. ADguard Social Media filter (android)
 https://filters.adtidy.org/android/filters/4_optimized.txt
 
-387. ADguard filter unblocking search ads and self-promotion (android)
-https://filters.adtidy.org/android/filters/10_optimized.txt
-
-388. ADguard Mobile Ads filter (android)
+381. ADguard Mobile Ads filter (android)
 https://filters.adtidy.org/android/filters/11_optimized.txt
 
-389. ADguard Annoyances filter (android)
+382. ADguard Annoyances filter (android)
 https://filters.adtidy.org/android/filters/14_optimized.txt
 
-390. ADguard DNS filter (android)
+383. ADguard DNS filter (android)
 https://filters.adtidy.org/android/filters/15_optimized.txt
 
-391. ADguard URL Tracking filter (android)
+384. ADguard URL Tracking filter (android)
 https://filters.adtidy.org/android/filters/17_optimized.txt
 
-392. ADguard Cookie Notices filter (android)
+385. ADguard Cookie Notices filter (android)
 https://filters.adtidy.org/android/filters/18_optimized.txt
 
-393. ADguard Popups filter (android)
+386. ADguard Popups filter (android)
 https://filters.adtidy.org/android/filters/19_optimized.txt
 
-394. ADguard Mobile App Banners filter (android)
+387. ADguard Mobile App Banners filter (android)
 https://filters.adtidy.org/android/filters/20_optimized.txt
 
-395. ADguard Other Annoyances filter (android)
+388. ADguard Other Annoyances filter (android)
 https://filters.adtidy.org/android/filters/21_optimized.txt
 
-396. ADguard Widgets filter (android)
+389. ADguard Widgets filter (android)
 https://filters.adtidy.org/android/filters/22_optimized.txt
 
-397. Easylist (android)
+390. Easylist (android)
 https://filters.adtidy.org/android/filters/101_optimized.txt
 
-398. Easylist China (android)
+391. Easylist China (android)
 https://filters.adtidy.org/android/filters/104_optimized.txt
 
-399. EasyPrivacy (android)
+392. EasyPrivacy (android)
 https://filters.adtidy.org/android/filters/118_optimized.txt
 
-400. Fanboy's Annoyances (android)
+393. Fanboy's Annoyances (android)
 https://filters.adtidy.org/android/filters/122_optimized.txt
 
-401. Fanboy's Social Blocking List (android)
+394. Fanboy's Social Blocking List (android)
 https://filters.adtidy.org/android/filters/123_optimized.txt
 
-402. Web Annoyances Ultralist (android)
+395. Web Annoyances Ultralist (android)
 https://filters.adtidy.org/android/filters/201_optimized.txt
 
-403. Peter Lowe's Blocklist (android)
+396. Peter Lowe's Blocklist (android)
 https://filters.adtidy.org/android/filters/204_optimized.txt
 
-404. Adblock Warning Removal List (android)
+397. Adblock Warning Removal List (android)
 https://filters.adtidy.org/android/filters/207_optimized.txt
 
-405. Online Malicious URL Blocklist (android)
+398. Online Malicious URL Blocklist (android)
 https://filters.adtidy.org/android/filters/208_optimized.txt
 
-406. ADgk Mobile China list (android)
+399. ADgk Mobile China list (android)
 https://filters.adtidy.org/android/filters/209_optimized.txt
 
-407. CJX's Annoyances List (android)
+400. CJX's Annoyances List (android)
 https://filters.adtidy.org/android/filters/220_optimized.txt
 
-408. ADguard Chinese filter (android)
+401. ADguard Chinese filter (android)
 https://filters.adtidy.org/android/filters/224_optimized.txt
 
-409. xinggsf (android)
+402. xinggsf (android)
 https://filters.adtidy.org/android/filters/228_optimized.txt
 
-410. Fanboy's Anti-thirdparty Fonts (android)
+403. Fanboy's Anti-thirdparty Fonts (android)
 https://filters.adtidy.org/android/filters/239_optimized.txt
 
-411. BarbBlock (android)
+404. BarbBlock (android)
 https://filters.adtidy.org/android/filters/240_optimized.txt
 
-412. EasyList Cookie List (android)
+405. EasyList Cookie List (android)
 https://filters.adtidy.org/android/filters/241_optimized.txt
 
-413. NoCoin Filter List (android)
+406. NoCoin Filter List (android)
 https://filters.adtidy.org/android/filters/242_optimized.txt
 
-414. Dandelion Sprout's Annoyances List (android)
+407. Dandelion Sprout's Annoyances List (android)
 https://filters.adtidy.org/android/filters/250_optimized.txt
 
-415. Legitimate URL Shortener (android)
+408. Legitimate URL Shortener (android)
 https://filters.adtidy.org/android/filters/251_optimized.txt
 
-416. Phishing URL Blocklist (android)
+409. Phishing URL Blocklist (android)
 https://filters.adtidy.org/android/filters/255_optimized.txt
 
-417. Scam Blocklist (android)
+410. Scam Blocklist (android)
 https://filters.adtidy.org/android/filters/256_optimized.txt
 
-418. uBlock Origin – Badware risks (android)
+411. uBlock Origin – Badware risks (android)
 https://filters.adtidy.org/android/filters/257_optimized.txt
 
-419. ADguard Base filter (ios)
+412. ADguard Base filter (ios)
 https://filters.adtidy.org/ios/filters/2_optimized.txt
 
-420. ADguard Tracking Protection filter (ios)
+413. ADguard Tracking Protection filter (ios)
 https://filters.adtidy.org/ios/filters/3_optimized.txt
 
-421. ADguard Social Media filter (ios)
+414. ADguard Social Media filter (ios)
 https://filters.adtidy.org/ios/filters/4_optimized.txt
 
-422. ADguard filter unblocking search ads and self-promotion (ios)
-https://filters.adtidy.org/ios/filters/10_optimized.txt
-
-423. ADguard Mobile Ads filter (ios)
+415. ADguard Mobile Ads filter (ios)
 https://filters.adtidy.org/ios/filters/11_optimized.txt
 
-424. ADguard Annoyances filter (ios)
+416. ADguard Annoyances filter (ios)
 https://filters.adtidy.org/ios/filters/14_optimized.txt
 
-425. ADguard DNS filter (ios)
+417. ADguard DNS filter (ios)
 https://filters.adtidy.org/ios/filters/15_optimized.txt
 
-426. ADguard URL Tracking filter (ios)
+418. ADguard URL Tracking filter (ios)
 https://filters.adtidy.org/ios/filters/17_optimized.txt
 
-427. ADguard Cookie Notices filter (ios)
+419. ADguard Cookie Notices filter (ios)
 https://filters.adtidy.org/ios/filters/18_optimized.txt
 
-428. ADguard Popups filter (ios)
+420. ADguard Popups filter (ios)
 https://filters.adtidy.org/ios/filters/19_optimized.txt
 
-429. ADguard Mobile App Banners filter (ios)
+421. ADguard Mobile App Banners filter (ios)
 https://filters.adtidy.org/ios/filters/20_optimized.txt
 
-430. ADguard Other Annoyances filter (ios)
+422. ADguard Other Annoyances filter (ios)
 https://filters.adtidy.org/ios/filters/21_optimized.txt
 
-431. ADguard Widgets filter (ios)
+423. ADguard Widgets filter (ios)
 https://filters.adtidy.org/ios/filters/22_optimized.txt
 
-432. Easylist (ios)
+424. Easylist (ios)
 https://filters.adtidy.org/ios/filters/101_optimized.txt
 
-433. Easylist China (ios)
+425. Easylist China (ios)
 https://filters.adtidy.org/ios/filters/104_optimized.txt
 
-434. EasyPrivacy (ios)
+426. EasyPrivacy (ios)
 https://filters.adtidy.org/ios/filters/118_optimized.txt
 
-435. Fanboy's Annoyances (ios)
+427. Fanboy's Annoyances (ios)
 https://filters.adtidy.org/ios/filters/122_optimized.txt
 
-436. Fanboy's Social Blocking List (ios)
+428. Fanboy's Social Blocking List (ios)
 https://filters.adtidy.org/ios/filters/123_optimized.txt
 
-437. Web Annoyances Ultralist (ios)
+429. Web Annoyances Ultralist (ios)
 https://filters.adtidy.org/ios/filters/201_optimized.txt
 
-438. Peter Lowe's Blocklist (ios)
+430. Peter Lowe's Blocklist (ios)
 https://filters.adtidy.org/ios/filters/204_optimized.txt
 
-439. Adblock Warning Removal List (ios)
+431. Adblock Warning Removal List (ios)
 https://filters.adtidy.org/ios/filters/207_optimized.txt
 
-440. Online Malicious URL Blocklist (ios)
+432. Online Malicious URL Blocklist (ios)
 https://filters.adtidy.org/ios/filters/208_optimized.txt
 
-441. ADgk Mobile China list (ios)
+433. ADgk Mobile China list (ios)
 https://filters.adtidy.org/ios/filters/209_optimized.txt
 
-442. CJX's Annoyances List (ios)
+434. CJX's Annoyances List (ios)
 https://filters.adtidy.org/ios/filters/220_optimized.txt
 
-443. ADguard Chinese filter (ios)
+435. ADguard Chinese filter (ios)
 https://filters.adtidy.org/ios/filters/224_optimized.txt
 
-444. xinggsf (ios)
+436. xinggsf (ios)
 https://filters.adtidy.org/ios/filters/228_optimized.txt
 
-445. Fanboy's Anti-thirdparty Fonts (ios)
+437. Fanboy's Anti-thirdparty Fonts (ios)
 https://filters.adtidy.org/ios/filters/239_optimized.txt
 
-446. BarbBlock (ios)
+438. BarbBlock (ios)
 https://filters.adtidy.org/ios/filters/240_optimized.txt
 
-447. EasyList Cookie List (ios)
+439. EasyList Cookie List (ios)
 https://filters.adtidy.org/ios/filters/241_optimized.txt
 
-448. NoCoin Filter List (ios)
+440. NoCoin Filter List (ios)
 https://filters.adtidy.org/ios/filters/242_optimized.txt
 
-449. Dandelion Sprout's Annoyances List (ios)
+441. Dandelion Sprout's Annoyances List (ios)
 https://filters.adtidy.org/ios/filters/250_optimized.txt
 
-450. Legitimate URL Shortener (ios)
+442. Legitimate URL Shortener (ios)
 https://filters.adtidy.org/ios/filters/251_optimized.txt
 
-451. Phishing URL Blocklist (ios)
+443. Phishing URL Blocklist (ios)
 https://filters.adtidy.org/ios/filters/255_optimized.txt
 
-452. Scam Blocklist (ios)
+444. Scam Blocklist (ios)
 https://filters.adtidy.org/ios/filters/256_optimized.txt
 
-453. uBlock Origin – Badware risks (ios)
+445. uBlock Origin – Badware risks (ios)
 https://filters.adtidy.org/ios/filters/257_optimized.txt
