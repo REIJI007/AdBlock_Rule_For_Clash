@@ -181,8 +181,6 @@ $urlList = @(
 "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/rule.txt",
 "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt",
 "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt",
-"https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-AdBlock-Filter.txt",
-"https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Formats/GoodbyeAds-Ultra-AdBlock-Filter.txt",
 "https://malware-filter.gitlab.io/malware-filter/phishing-filter-ag.txt",
 "https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt",
 "https://malware-filter.gitlab.io/malware-filter/phishing-filter.txt",
@@ -239,7 +237,6 @@ $urlList = @(
 "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/whitelist-referral.txt",
 "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/whitelist-urlshortener.txt",
 "https://raw.githubusercontent.com/neodevpro/neodevhost/master/adblocker",
-"https://raw.githubusercontent.com/notracking/hosts-blocklists/master/adblock/adblock.txt",
 "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
 "https://raw.githubusercontent.com/damengzhu/banad/main/dnslist.txt",
 "https://hblock.molinero.dev/hosts_adblock.txt",
@@ -450,7 +447,10 @@ $urlList = @(
 "https://filters.adtidy.org/ios/filters/251_optimized.txt",
 "https://filters.adtidy.org/ios/filters/255_optimized.txt",
 "https://filters.adtidy.org/ios/filters/256_optimized.txt",
-"https://filters.adtidy.org/ios/filters/257_optimized.txt"
+"https://filters.adtidy.org/ios/filters/257_optimized.txt",
+"https://raw.githubusercontent.com/RPiList/specials/master/Blocklisten/Phishing-Angriffe",
+"https://raw.githubusercontent.com/RPiList/specials/master/Blocklisten/malware",
+"https://raw.githubusercontent.com/RPiList/specials/master/Blocklisten/spam.mails"
 )
 
 # 日志文件路径
