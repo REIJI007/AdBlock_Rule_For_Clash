@@ -172,7 +172,7 @@ rules:
 
 
 
-**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前453个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
+**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前445个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用adblock_rule_generator_yaml.ps1脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
 
 
 **七、特别鸣谢**
@@ -184,26 +184,26 @@ rules:
 (https://github.com/privacy-protection-tools/anti-AD)<br>
 3、easylist
 (https://github.com/easylist/easylist)<br>
-4、cjxlist
+4、oisd
+(https://github.com/sjhgvr/oisd)<br>
+5、cjxlist
 (https://github.com/cjx82630/cjxlist)<br>
-5、uniartisan
+6、uniartisan
 (https://github.com/uniartisan/adblock_list)<br>
-6、Cats-Team
+7、Cats-Team
 (https://github.com/Cats-Team/AdRules)<br>
-7、217heidai
+8、217heidai
 (https://github.com/217heidai/adblockfilters)<br>
-8、GOODBYEADS
+9、GOODBYEADS
 (https://github.com/8680/GOODBYEADS)<br>
-9、AWAvenue-Ads-Rule
+10、AWAvenue-Ads-Rule
 (https://github.com/TG-Twilight/AWAvenue-Ads-Rule)<br>
-10、uBlockOrigin
+11、uBlockOrigin
 (https://github.com/uBlockOrigin/uAssets)<br>
-11、ADguardTeam
+12、ADguardTeam
 (https://github.com/AdguardTeam/AdGuardFilters)<br>
-12、HyperADRules
+13、HyperADRules
 (https://github.com/Lynricsy/HyperADRules)<br>
-13、guandasheng
-(https://github.com/guandasheng/adguardhome)<br>
 14、xinggsf
 (https://github.com/xinggsf/Adblock-Plus-Rule)<br>
 15、hoshsadiq
@@ -232,28 +232,25 @@ rules:
 (https://github.com/reek/anti-adblock-killer)<br>
 27、durablenapkin
 (https://github.com/durablenapkin/scamblocklist)<br>
-28、oisd
-(https://github.com/sjhgvr/oisd)<br>
-29、Perflyst
+28、Perflyst
 (https://github.com/Perflyst/PiHoleBlocklist)<br>
-30、hagezi
+29、hagezi
 (https://github.com/hagezi/dns-blocklists)<br>
-31、neodevpro
+30、neodevpro
 (https://github.com/neodevpro/neodevhost)<br>
-32、notracking
+31、notracking
 (https://github.com/notracking/hosts-blocklists)<br>
-33、damengzhu
+32、damengzhu
 (https://github.com/damengzhu/banad)<br>
-34、hectorm
+33、hectorm
 (https://github.com/hectorm/hblock)<br>
-35、badmojr
+34、badmojr
 (https://github.com/badmojr/1Hosts)<br>
-36、afwfv
-(https://github.com/afwfv/DD-AD)<br>
-37、paulgb
+35、paulgb
 (https://github.com/paulgb/BarbBlock)<br>
-38、Adblocker
+36、Adblocker
 (https://adblockultimate.net/filters)<br>
+
 
 
 
