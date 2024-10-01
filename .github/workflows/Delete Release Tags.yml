@@ -1,7 +1,9 @@
 name: Delete All Tags
 
 on:
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时执行一次
 
 jobs:
   delete-all-tags:
