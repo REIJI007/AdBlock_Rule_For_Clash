@@ -2,7 +2,7 @@
 # Description: 适用于Clash的域名拦截规则集，每20分钟更新一次，确保即时同步上游减少误杀
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL3.0
-# LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC%20BY-NC-SA%204.0
+# LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
 
 # 定义广告过滤器URL列表
 $urlList = @(
@@ -538,7 +538,7 @@ $textContent = @"
 # Description: 适用于Clash的域名拦截规则集，每20分钟更新一次，确保即时同步上游减少误杀
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL3.0
-# LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC%20BY-NC-SA%204.0
+# LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
 # Generated on: $generationTime
 # Generated AdBlock rules
 # Total entries: $ruleCount
