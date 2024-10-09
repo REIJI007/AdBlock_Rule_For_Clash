@@ -241,7 +241,6 @@ $urlList = @(
 "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
 "https://raw.githubusercontent.com/damengzhu/banad/main/dnslist.txt",
 "https://hblock.molinero.dev/hosts_adblock.txt",
-"https://raw.githubusercontent.com/badmojr/1Hosts/master/Pro/adblock.txt",
 "https://filters.adavoid.org/ultimate-ad-filter.txt",
 "https://filters.adavoid.org/ultimate-privacy-filter.txt",
 "https://filters.adavoid.org/ultimate-security-filter.txt",
