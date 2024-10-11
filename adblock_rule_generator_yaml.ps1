@@ -452,7 +452,13 @@ $urlList = @(
 "https://raw.githubusercontent.com/RPiList/specials/master/Blocklisten/malware",
 "https://raw.githubusercontent.com/RPiList/specials/master/Blocklisten/spam.mails",
 "https://adaway.org/hosts.txt",
-"https://raw.githubusercontent.com/StevenBlack/hosts/master/data/StevenBlack/hosts"
+"https://raw.githubusercontent.com/StevenBlack/hosts/master/data/StevenBlack/hosts",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy_v6.txt",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra.txt",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra_v6.txt",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update.txt",
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update_v6.txt"
 )
 
 # 日志文件路径
