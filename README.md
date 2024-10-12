@@ -18,32 +18,33 @@
 **一、从多个广告过滤器中提取拦截域名条目，删除重复项，并将它们转换为兼容Clash的payload列表格式，一行仅一条规则。该列表可以用作Clash的rule-providers.以阻止广告域名， powershell脚本每20分钟自动执行并将生成的文件发布在release中.三个文件的下载地址分别如下，其中adblock_reject.yaml和adblock_reject.txt是Matcher Ruleset格式数组构成的payload列表，adblock_reject.mrs则是由mihomo核心将adblock_reject.yaml编译转化得来的规则集**
 <br>
 <br>
-<table border="1" style="border-collapse: collapse; width: 100%;">
+<table border="1" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
   <tr>
-    <td>订阅地址:</td>
+    <td colspan="2" style="background-color: #f2f2f2; font-weight: bold; text-align: center; padding: 10px;">订阅地址</td>
   </tr>
   <tr>
-    <td>YAML</td>
-    <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml">Github原始链接</a></strong> | 
-      <strong><a href="https://adblock-clash-yaml.reiji007.org">Cloudflare加速链接</a></strong>
+    <td style="padding: 8px;">YAML</td>
+    <td style="padding: 8px;">
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml" style="color: #0066cc;">Github原始链接</a></strong> | 
+      <strong><a href="https://adblock-clash-yaml.reiji007.org" style="color: #0066cc;">Cloudflare加速链接</a></strong>
     </td>
   </tr>
   <tr>
-    <td>MRS</td>
-    <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs">Github原始链接</a></strong> | 
-      <strong><a href="https://adblock-clash-mrs.reiji007.org">Cloudflare加速链接</a></strong>
+    <td style="padding: 8px;">MRS</td>
+    <td style="padding: 8px;">
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.mrs" style="color: #0066cc;">Github原始链接</a></strong> | 
+      <strong><a href="https://adblock-clash-mrs.reiji007.org" style="color: #0066cc;">Cloudflare加速链接</a></strong>
     </td>
   </tr>
   <tr>
-    <td>TXT</td>
-    <td>
-      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt">Github原始链接</a></strong> | 
-      <strong><a href="https://adblock-clash-txt.reiji007.org">Cloudflare加速链接</a></strong>
+    <td style="padding: 8px;">TXT</td>
+    <td style="padding: 8px;">
+      <strong><a href="https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.txt" style="color: #0066cc;">Github原始链接</a></strong> | 
+      <strong><a href="https://adblock-clash-txt.reiji007.org" style="color: #0066cc;">Cloudflare加速链接</a></strong>
     </td>
   </tr>
 </table>
+
 
 <hr>
 
