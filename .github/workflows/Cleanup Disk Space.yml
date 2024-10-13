@@ -29,17 +29,6 @@ jobs:
           echo "Cleaning workspace..."
           rm -rf /home/runner/work/*
 
-      # 3. 清理 Docker 容器和镜像
-      - name: Remove Docker containers
-        run: |
-          echo "Removing Docker containers..."
-          docker container prune -f
-
-      - name: Remove Docker images
-        run: |
-          echo "Removing Docker images..."
-          docker image prune -af
-
       # 4. 删除 GitHub Actions 生成的缓存
       - name: Clear GitHub Actions cache
         run: |
