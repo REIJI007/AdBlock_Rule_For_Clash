@@ -1,45 +1,26 @@
-name: Cleanup Runner Logs and Temp Files
+name: Cleanup All Runner Logs
 
-on: 
+# 手动触发或定期触发此清理任务
+on:
   workflow_dispatch: # 手动触发workflow
-  schedule:           # 定时任务（每天一次）
+  schedule:          # 定时触发任务（每天执行一次）
     - cron: '0 0 * * *'
 
 jobs:
-  cleanup:
+  cleanup_logs:
     runs-on: ubuntu-latest
 
     steps:
-      # 检出仓库的代码（如果需要在清理中涉及到项目文件）
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      # 删除 GitHub Actions Runner 中的日志文件
-      - name: Cleanup Runner Logs
+      # 删除 GitHub Actions Runner 中的所有日志文件
+      - name: Cleanup all runner logs
         run: |
-          echo "Deleting all runner logs..."
+          echo "Cleaning up all runner logs in /home/runner/runners/_diag..."
           sudo rm -rf /home/runner/runners/**/_diag/*.log
+          echo "Runner logs cleanup completed."
 
-      # 清理 /tmp 目录中的所有文件
-      - name: Cleanup Temp Files
+      # 可选：删除更多的临时或不必要的文件
+      - name: Cleanup temporary files and cache (optional)
         run: |
-          echo "Cleaning up /tmp directory..."
+          echo "Cleaning up /tmp directory and apt cache..."
           sudo rm -rf /tmp/*
-
-      # 清理工作目录下未使用的文件（如缓存或临时文件）
-      - name: Cleanup Workspace
-        run: |
-          echo "Cleaning up workspace directory..."
-          sudo rm -rf /home/runner/work/*
-
-      # 清理 Docker 残余镜像（如果你使用了 Docker 构建）
-      - name: Remove Docker Containers and Images
-        run: |
-          echo "Cleaning up Docker containers and images..."
-          docker system prune --all --force
-
-      # 清理 apt 缓存
-      - name: Cleanup apt cache
-        run: |
-          echo "Cleaning up apt cache..."
           sudo apt-get clean
