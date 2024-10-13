@@ -1,0 +1,4 @@
+steps:
+  - name: Clean workspace
+    run: |
+      rm -rf /home/runner/workspace/temp/*
