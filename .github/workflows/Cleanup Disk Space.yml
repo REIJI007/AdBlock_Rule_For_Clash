@@ -1,0 +1,70 @@
+name: Cleanup Disk Space
+
+# 触发条件：
+# - 手动触发（workflow_dispatch）
+# - push 到 main 分支
+# - 定时任务（每天 UTC 时间 3:00）
+on:
+  workflow_dispatch:  # 添加手动触发
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * *"  # 每天 UTC 时间 3:00 执行一次
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 检出代码仓库
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          clean: true  # 强制清理旧的工作目录
+
+      # 2. 删除工作目录下的所有文件
+      - name: Clean workspace
+        run: |
+          echo "Cleaning workspace..."
+          rm -rf /home/runner/work/*
+
+      # 3. 清理 Docker 容器和镜像
+      - name: Remove Docker containers
+        run: |
+          echo "Removing Docker containers..."
+          docker container prune -f
+
+      - name: Remove Docker images
+        run: |
+          echo "Removing Docker images..."
+          docker image prune -af
+
+      # 4. 删除 GitHub Actions 生成的缓存
+      - name: Clear GitHub Actions cache
+        run: |
+          echo "Clearing GitHub Actions cache..."
+          rm -rf /home/runner/.cache/*
+
+      # 5. 删除构建产物
+      - name: Remove build artifacts
+        run: |
+          echo "Removing build artifacts..."
+          rm -rf ./build/ ./dist/
+
+      # 6. 清理临时文件
+      - name: Clean up temporary files
+        run: |
+          echo "Cleaning temporary files..."
+          rm -rf /tmp/*
+
+      # 7. 限制日志输出大小（可选，根据需要保留）
+      - name: Limit log output
+        run: |
+          echo "Limiting log output..."
+          some-command | tail -n 1000
+
+      # 8. 输出完成信息
+      - name: Disk Cleanup Completed
+        run: |
+          echo "Disk cleanup completed successfully."
