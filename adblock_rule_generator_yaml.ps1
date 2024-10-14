@@ -458,7 +458,11 @@ $urlList = @(
 "https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra.txt",
 "https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/extra_v6.txt",
 "https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update.txt",
-"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update_v6.txt"
+"https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/update_v6.txt",
+"https://someonewhocares.org/hosts/hosts",
+"https://someonewhocares.org/hosts/ipv6/hosts",
+"https://phishing.army/download/phishing_army_blocklist.txt",
+"https://phishing.army/download/phishing_army_blocklist_extended.txt"
 )
 
 # 日志文件路径
@@ -497,8 +501,13 @@ foreach ($url in $urlList) {
                     $domain = $Matches[1]
                     $uniqueRules.Add($domain) | Out-Null
                 }
-                # 匹配 Hosts 文件格式的规则
+                # 匹配 Hosts 文件格式的 IPv4 规则
                 elseif ($line -match '^(0\.0\.0\.0|127\.0\.0\.1)\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+                    $domain = $Matches[2]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 匹配 Hosts 文件格式的 IPv6 规则（以 ::1 或 :: 开头）
+                elseif ($line -match '^::(1)?\s+([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
                     $domain = $Matches[2]
                     $uniqueRules.Add($domain) | Out-Null
                 }
@@ -514,6 +523,11 @@ foreach ($url in $urlList) {
                 }
                 # 匹配通配符规则
                 elseif ($line -match '^\|\|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\^$') {
+                    $domain = $Matches[1]
+                    $uniqueRules.Add($domain) | Out-Null
+                }
+                # 处理纯域名行
+                elseif ($line -match '^([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
                     $domain = $Matches[1]
                     $uniqueRules.Add($domain) | Out-Null
                 }
