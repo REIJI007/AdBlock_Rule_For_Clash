@@ -462,7 +462,10 @@ $urlList = @(
 "https://someonewhocares.org/hosts/hosts",
 "https://someonewhocares.org/hosts/ipv6/hosts",
 "https://phishing.army/download/phishing_army_blocklist.txt",
-"https://phishing.army/download/phishing_army_blocklist_extended.txt"
+"https://phishing.army/download/phishing_army_blocklist_extended.txt",
+"https://raw.githubusercontent.com/Goooler/1024_hosts/master/hosts",
+"https://raw.githubusercontent.com/neoFelhz/neohosts/gh-pages/full/hosts.txt",
+"https://raw.githubusercontent.com/neoFelhz/neohosts/gh-pages/basic/hosts.txt"
 )
 
 # 日志文件路径
