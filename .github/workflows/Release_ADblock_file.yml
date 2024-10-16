@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 步骤0：清除之前的日志文件
+      - name: Clear previous logs
+        run: |
+          sudo rm -rf /home/runner/runners/*/_diag/*.log || true
+
       # 步骤1：检出代码
       - name: Checkout code
         uses: actions/checkout@v2
@@ -23,7 +28,6 @@ jobs:
       - name: Update timestamp file
         run: echo "${{ env.time }}" > timestamp.txt # 将时间写入 timestamp.txt 文件
 
-
       # 步骤4：拉取最新的 main 分支并合并（失败则跳过）
       - name: Pull and merge latest main
         run: |
@@ -33,7 +37,6 @@ jobs:
          git merge origin/main --no-edit || echo "Merge failed, skipping merge"
         env: 
          TOKEN: ${{ secrets.TOKEN }} # 使用存储在仓库密钥中的 TOKEN
-
 
       # 步骤5：强制添加、提交并推送更改
       - name: Force add and commit changes
