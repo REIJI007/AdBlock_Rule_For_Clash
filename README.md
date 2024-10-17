@@ -173,97 +173,43 @@ rules:
 
 
 
-**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前460个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用powershell脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
+**六、本仓库引用的广告过滤规则来源请查看```Referencing rule sources.txt```，后续考虑添加更多上游规则列表进行处理整合（目前455个来源）。至于是否误杀域名完全取决于这些处于上游的广告过滤器的域名拦截行为，若不满意的话可按照第二条在本地使用powershell脚本进行DIY本地定制化，亦或可以像本仓库一样DIY定制后部署到github上面，或者fork本仓库自行DIY**
 
 
 **七、特别鸣谢**
 
-<br>
-1、mihomo
-(https://github.com/MetaCubeX/mihomo)<br>
-2、anti-AD
-(https://github.com/privacy-protection-tools/anti-AD)<br>
-3、easylist
-(https://github.com/easylist/easylist)<br>
-4、oisd
-(https://github.com/sjhgvr/oisd)<br>
-5、cjxlist
-(https://github.com/cjx82630/cjxlist)<br>
-6、uniartisan
-(https://github.com/uniartisan/adblock_list)<br>
-7、Cats-Team
-(https://github.com/Cats-Team/AdRules)<br>
-8、217heidai
-(https://github.com/217heidai/adblockfilters)<br>
-9、GOODBYEADS
-(https://github.com/8680/GOODBYEADS)<br>
-10、AWAvenue-Ads-Rule
-(https://github.com/TG-Twilight/AWAvenue-Ads-Rule)<br>
-11、uBlockOrigin
-(https://github.com/uBlockOrigin/uAssets)<br>
-12、ADguardTeam
-(https://github.com/AdguardTeam/AdGuardFilters)<br>
-13、HyperADRules
-(https://github.com/Lynricsy/HyperADRules)<br>
-14、xinggsf
-(https://github.com/xinggsf/Adblock-Plus-Rule)<br>
-15、hoshsadiq
-(https://github.com/hoshsadiq/adblock-nocoin-list)<br>
-16、malware-filter
-(https://gitlab.com/malware-filter)<br>
-17、abp-filters
-(https://gitlab.com/eyeo/anti-cv/abp-filters-anti-cv)<br>
-18、banbendalao
-(https://github.com/banbendalao/ADgk)<br>
-19、yokoffing
-(https://github.com/yokoffing/filterlists)<br>
-20、Spam404
-(https://github.com/Spam404/lists)<br>
-21、brave
-(https://github.com/brave/adblock-lists)<br>
-22、Peter Lowe
-(https://pgl.yoyo.org/adservers/)<br>
-23、DandelionSprout
-(https://github.com/DandelionSprout/adfilt)<br>
-24、blocklistproject
-(https://github.com/blocklistproject/Lists)<br>
-25、reek
-(https://github.com/reek/anti-adblock-killer)<br>
-26、durablenapkin
-(https://github.com/durablenapkin/scamblocklist)<br>
-27、Perflyst
-(https://github.com/Perflyst/PiHoleBlocklist)<br>
-28、hagezi
-(https://github.com/hagezi/dns-blocklists)<br>
-29、neodevpro
-(https://github.com/neodevpro/neodevhost)<br>
-30、damengzhu
-(https://github.com/damengzhu/banad)<br>
-31、hectorm
-(https://github.com/hectorm/hblock)<br>
-32、paulgb
-(https://github.com/paulgb/BarbBlock)<br>
-33、Adblocker
-(https://adblockultimate.net/filters)<br>
-34、RPiList
-(https://github.com/RPiList/specials)<br>
-35、adaway
-(https://github.com/AdAway/AdAway)<br>
-36、StevenBlack
-(https://github.com/StevenBlack/hosts)<br>
-37、WindowsSpyBlocker
-(https://github.com/crazy-max/WindowsSpyBlocker)<br>
-38、DanPollock
-(https://someonewhocares.org)<br>
-39、phishing army
-(https://www.phishing.army)<br>
-40、1024_hosts
-(https://github.com/Goooler/1024_hosts)<br>
-41、neohosts
-(https://github.com/neoFelhz/neohosts)<br>
-
-
-
+1. [mihomo](https://github.com/MetaCubeX/mihomo)
+2. [Adguard](https://github.com/AdguardTeam/AdGuardFilters)
+3. [easylist](https://github.com/easylist/easylist)
+4. [uBlockOrigin](https://github.com/uBlockOrigin/uAssets)
+5. [Adblocker](https://adblockultimate.net/filters)
+6. [Adaway](https://github.com/AdAway/AdAway)
+7. [URLhaus](https://urlhaus.abuse.ch)
+8. [brave](https://github.com/brave/adblock-lists)
+9. [blocklist project](https://github.com/blocklistproject/Lists)
+10. [malware-filter](https://gitlab.com/malware-filter)
+11. [abp-filters](https://gitlab.com/eyeo/anti-cv/abp-filters-anti-cv)
+12. [phishing army](https://www.phishing.army)
+13. [oisd](https://github.com/sjhgvr/oisd)
+14. [cjxlist](https://github.com/cjx82630/cjxlist)
+15. [AWAvenue](https://github.com/TG-Twilight/AWAvenue-Ads-Rule)
+16. [xinggsf](https://github.com/xinggsf/Adblock-Plus-Rule)
+17. [hagezi](https://github.com/hagezi/dns-blocklists)
+18. [StevenBlack](https://github.com/StevenBlack/hosts)
+19. [RPiList](https://github.com/RPiList/specials)
+20. [WindowsSpyBlocker](https://github.com/crazy-max/WindowsSpyBlocker)
+21. [spam404](https://github.com/Spam404/lists)
+22. [scamblocklist](https://github.com/durablenapkin/scamblocklist)
+23. [nocoin](https://github.com/hoshsadiq/adblock-nocoin-list)
+24. [neodevhost](https://github.com/neodevpro/neodevhost)
+25. [DandelionSprout](https://github.com/DandelionSprout/adfilt)
+26. [DanPollock](https://someonewhocares.org)
+27. [yokoffing](https://github.com/yokoffing/filterlists)
+28. [Peter Lowe](https://pgl.yoyo.org)
+29. [d3ward](https://github.com/d3ward/toolz)
+30. [Smart-TV](https://github.com/Perflyst/PiHoleBlocklist)
+31. [Mvps](https://winhelp2002.mvps.org)
+32. [anti-adblock-killer](https://github.com/reek/anti-adblock-killer)
 
 
 ## LICENSE
