@@ -1,0 +1,42 @@
+name: Clear Git History
+on:
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: 'Commit message for the new initial commit'
+        required: true
+        default: 'chore: reset repository history'
+
+jobs:
+  clear-history:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      
+      - name: Clear history and keep files
+        run: |
+          # 保存当前文件的树对象
+          TREE=$(git write-tree)
+          
+          # 创建一个新的提交，使用保存的树对象
+          NEW_COMMIT=$(echo "${{ github.event.inputs.commit_message }}" | git commit-tree $TREE)
+          
+          # 将main分支指向新的提交
+          git update-ref refs/heads/main $NEW_COMMIT
+          
+          # 强制推送
+          git push -f origin main
+          
+          # 清理
+          git reflog expire --expire=now --all
+          git gc --prune=now --aggressive
