@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-17 22:16:20
+# Generated on: 2025-11-17 22:37:40
 # Generated AdBlock rules
-# Total entries: 112934
+# Total entries: 112936
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -58216,6 +58216,7 @@ payload:
 - 'jiramanage.lib-oa-1.net.daraz.com'
 - 'jiratwtelecom.azure.net.daraz.com'
 - 'jitsu.ixbt.com'
+- 'jitsu.ixbt.site'
 - 'jiujpc.asgoodasnew.fr'
 - 'jizpyy.bett1.ch'
 - 'jj203.equitablebank.ca'
@@ -83086,6 +83087,7 @@ payload:
 - 'sgtm.infobus.eu'
 - 'sgtm.innova3it.com.br'
 - 'sgtm.iu-fernstudium.de'
+- 'sgtm.ixbt.site'
 - 'sgtm.joga.dk'
 - 'sgtm.joinamble.com'
 - 'sgtm.joyspringvitamins.com'
