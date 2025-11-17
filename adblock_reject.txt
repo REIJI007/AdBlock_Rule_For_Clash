@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-18 01:50:04
+# Generated on: 2025-11-18 02:24:42
 # Generated AdBlock rules
-# Total entries: 112938
+# Total entries: 112937
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -20261,7 +20261,6 @@ payload:
 - 'canadapgs.pearson.com'
 - 'canadapost.tt.omtrdc.net'
 - 'canadiandiscst.mywellnessoffer.com'
-- 'canadiantire.tt.omtrdc.net'
 - 'candac.iridion.de'
 - 'candacetodd.stripchats.io'
 - 'candb.tt.omtrdc.net'
