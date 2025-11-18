@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-18 21:18:05
+# Generated on: 2025-11-18 21:45:27
 # Generated AdBlock rules
-# Total entries: 112940
+# Total entries: 112943
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -13803,6 +13803,7 @@ payload:
 - 'analytics.adam.page'
 - 'analytics.adfreetime.com'
 - 'analytics.adjust.com'
+- 'analytics.adjust.io'
 - 'analytics.adjust.net.in'
 - 'analytics.adjust.world'
 - 'analytics.adobe.ly'
@@ -63855,6 +63856,7 @@ payload:
 - 'log.snssdk.com'
 - 'log.strawpoll.com'
 - 'log.strm.yandex.ru'
+- 'log.suddenclean.com'
 - 'log.talkie-ai.com'
 - 'log.tbs.qq.com'
 - 'log.tf.co.kr'
@@ -99547,6 +99549,7 @@ payload:
 - 'tracking.adpinfo.com'
 - 'tracking.adpri.org'
 - 'tracking.adweb.co.kr'
+- 'tracking.affattr.com'
 - 'tracking.afffcompensation.com'
 - 'tracking.ai.rakuten.co.jp'
 - 'tracking.air-worldwide.com'
