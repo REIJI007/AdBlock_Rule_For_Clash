@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-18 21:45:27
+# Generated on: 2025-11-18 22:13:52
 # Generated AdBlock rules
-# Total entries: 112943
+# Total entries: 112945
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -63876,6 +63876,7 @@ payload:
 - 'log.voicecloud.cn'
 - 'log.wat.tv'
 - 'log.webnovel.com'
+- 'log.wigoliv.work'
 - 'log.xpln.tech'
 - 'log.yapaytech.com'
 - 'log.ycapp.yiche.com'
@@ -63905,6 +63906,7 @@ payload:
 - 'logbak.hicloud.com'
 - 'logcol.kyobobook.co.kr'
 - 'logcollect.totalcms.ncloud.or.kr'
+- 'logcollection.ronghub.com'
 - 'logcollector.note.com'
 - 'logconfig.polarisoffice.com'
 - 'logdev.openload.co'
