@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-18 20:33:37
+# Generated on: 2025-11-18 21:18:05
 # Generated AdBlock rules
-# Total entries: 112939
+# Total entries: 112940
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -55330,6 +55330,7 @@ payload:
 - 'inetprocess.actonservice.com'
 - 'inf.clickpay.com'
 - 'inf.miui.com'
+- 'infinario.com'
 - 'infineontechnologies.tt.omtrdc.net'
 - 'infinitiheliosameric.tt.omtrdc.net'
 - 'infinitiheliosemea.tt.omtrdc.net'
