@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-19 16:43:46
+# Generated on: 2025-11-19 17:15:39
 # Generated AdBlock rules
-# Total entries: 112957
+# Total entries: 112959
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -63900,6 +63900,7 @@ payload:
 - 'log1.wanmei.com'
 - 'log1.wtlogin.qq.com'
 - 'log16-normal-us-ttp.capcutapi.us'
+- 'log2.ihubgo.info'
 - 'log2.musical.ly'
 - 'log2.perfectworldgames.com'
 - 'log2.radiko.jp'
@@ -92840,6 +92841,7 @@ payload:
 - 'stats.unnaturalhistorytv.com'
 - 'stats.unusualtourist.com'
 - 'stats.urbanfinn.com'
+- 'stats.us-light-edge.com'
 - 'stats.useeffect.dev'
 - 'stats.uswitch.com'
 - 'stats.uticorp.com'
