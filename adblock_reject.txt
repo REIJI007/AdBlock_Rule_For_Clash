@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-20 21:18:45
+# Generated on: 2025-11-20 21:30:20
 # Generated AdBlock rules
-# Total entries: 112965
+# Total entries: 112968
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -17636,6 +17636,7 @@ payload:
 - 'assets-v2.invaluable.com'
 - 'assets-v2.northsidesun.com'
 - 'assets.35mm.es'
+- 'assets.9gtb.com'
 - 'assets.ahmybid.net'
 - 'assets.avadacom.com'
 - 'assets.ayp.vn'
@@ -20821,6 +20822,7 @@ payload:
 - 'cdn.krausefinancial.com'
 - 'cdn.laim.tv'
 - 'cdn.leightonbroadcasting.com'
+- 'cdn.logbase.io'
 - 'cdn.luyten-98c.com'
 - 'cdn.mafyak.com'
 - 'cdn.masbpi.com'
@@ -30585,6 +30587,7 @@ payload:
 - 'data.testing.alditalk-kundenbetreuung.de'
 - 'data.testing.o2.de'
 - 'data.testing.whatsappsim.de'
+- 'data.thoughtmetric.io'
 - 'data.tm-awx.com'
 - 'data.tmail.northeast.aaa.com'
 - 'data.todoalicante.es'
