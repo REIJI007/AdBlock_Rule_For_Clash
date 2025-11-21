@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-21 23:44:31
+# Generated on: 2025-11-22 00:17:53
 # Generated AdBlock rules
-# Total entries: 112974
+# Total entries: 112979
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -31033,6 +31033,7 @@ payload:
 - 'desvendado.mayraakemi.com.br'
 - 'desvendado.militarpatriota.com.br'
 - 'detail.iaperformance.com.br'
+- 'detaillog-global-dual.coolbcloud.com'
 - 'detaillog-global-dual.coolhcloud.com'
 - 'details.pella.com'
 - 'detect.clearme.com'
@@ -32274,6 +32275,7 @@ payload:
 - 'dtxtngytz5im1.cloudfront.net'
 - 'dtzru.colorescience.com'
 - 'dualstack-cgicol.amap.com'
+- 'dualstack-collection.rong-edge.com'
 - 'dualstack-logs.amap.com'
 - 'duamgl.magdeburger-jobanzeiger.de'
 - 'dubuque.townsquaremedia.info'
@@ -63928,6 +63930,7 @@ payload:
 - 'logcollection.ronghub.com'
 - 'logcollector.note.com'
 - 'logconfig.polarisoffice.com'
+- 'logdata.hatspotlight.asia'
 - 'logdev.openload.co'
 - 'logend.cookpad.com'
 - 'logevt.pubfinity.com'
@@ -64132,6 +64135,7 @@ payload:
 - 'logperf.vnexpress.net'
 - 'logql.yahoo.co.jp'
 - 'logr-ingest.com'
+- 'logreport-global-dual.coolbcloud.com'
 - 'logreport-global-dual.coolhcloud.com'
 - 'logrocket.com'
 - 'logs-ingress.svc.vinted.com'
@@ -107402,6 +107406,7 @@ payload:
 - 'wsicmo.bogsfootwear.com.au'
 - 'wsknow.net'
 - 'wsktql.mopar.eu'
+- 'wslog-global-dual.coolccloud.com'
 - 'wsmetrics.batch.com'
 - 'wsnjjj.arredinitaly.com'
 - 'wsnrfb.modlily.com'
