@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-23 11:16:38
+# Generated on: 2025-11-23 12:05:14
 # Generated AdBlock rules
-# Total entries: 112982
+# Total entries: 112983
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -106444,6 +106444,7 @@ payload:
 - 'web.advertising.naylor.com'
 - 'web.ajostg.cfs.com.au'
 - 'web.ajostg.colonialfirststate.com.au'
+- 'web.analytics.metrobyt-mobile.com'
 - 'web.araglegal.com'
 - 'web.autobodytoolmart.com'
 - 'web.autovista.fr'
