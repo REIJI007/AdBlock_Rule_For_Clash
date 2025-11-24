@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-24 09:43:42
+# Generated on: 2025-11-24 11:02:37
 # Generated AdBlock rules
-# Total entries: 112984
+# Total entries: 112985
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -107195,6 +107195,7 @@ payload:
 - 'witchitafalls.townsquaremedia.info'
 - 'withyou.shorr.com'
 - 'wiuyjxbqhsxwpus-c.adktrack39.xyz'
+- 'wix-engage-visitors-prod-6.firebaseio.com'
 - 'wixjcl.maginon.de'
 - 'wiz.sncf-connect.com'
 - 'wizaly.com'
