@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-24 19:14:29
+# Generated on: 2025-11-24 19:30:57
 # Generated AdBlock rules
-# Total entries: 105997
+# Total entries: 105998
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -56687,6 +56687,7 @@ payload:
 - 'live.xcamshd.live'
 - 'live.zrmtrm.com'
 - 'liveandsexy.cam'
+- 'livechat.oyunfor.com'
 - 'livecounter.theyosh.nl'
 - 'livestt.co'
 - 'livetex.ru'
