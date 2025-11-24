@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-24 11:02:37
+# Generated on: 2025-11-24 11:23:51
 # Generated AdBlock rules
-# Total entries: 112985
+# Total entries: 112987
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -12426,6 +12426,7 @@ payload:
 - 'aebpi.tiffany.es'
 - 'aec.faro.com'
 - 'aec.intuit.com'
+- 'aeg.offerup-apis.com'
 - 'aegis.miio.mx'
 - 'aegis.qq.com'
 - 'aehqk.tushbaby.com'
@@ -17692,6 +17693,7 @@ payload:
 - 'assets1.vero.com.au'
 - 'assets2.ihg.com'
 - 'assets2.terrischeer.com.au'
+- 'assetsconfigcdn.org'
 - 'assetsvops-ns2.viviotech.net.daraz.com'
 - 'assezeconomania.myavlive.com'
 - 'assinatura.marketingbmg.bancobmg.com.br'
