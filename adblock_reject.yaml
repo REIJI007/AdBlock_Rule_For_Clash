@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-26 16:45:01
+# Generated on: 2025-11-26 17:16:16
 # Generated AdBlock rules
-# Total entries: 106001
+# Total entries: 106003
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -13850,6 +13850,7 @@ payload:
 - 'analytics.cornbreadorganics.com'
 - 'analytics.cornbreadrelief.com'
 - 'analytics.corusent.com'
+- 'analytics.cosmicstack.org'
 - 'analytics.cosmonova.net'
 - 'analytics.cosmopolitanmag.com.tr'
 - 'analytics.craftygoblin.nl'
@@ -104909,6 +104910,7 @@ payload:
 - 'y000.wyff4.com'
 - 'y0d55bd7vsclehyk.aa.tt.omtrdc.net'
 - 'y0gkbv5vnciqktt-c.adkoffer.fr'
+- 'y194.asics.com'
 - 'y197.standardspeaker.com'
 - 'y3gptzqjos5jzw0-c.adkclicker.fr'
 - 'y3va7bytesowdkg-p.adkoffer.fr'
