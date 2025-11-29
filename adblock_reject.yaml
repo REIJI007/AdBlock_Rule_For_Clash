@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-11-29 16:42:30
+# Generated on: 2025-11-29 17:13:30
 # Generated AdBlock rules
-# Total entries: 106013
+# Total entries: 106012
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -19602,7 +19602,6 @@ payload:
 - 'brooksbrothers.tt.omtrdc.net'
 - 'brotherinternational.tt.omtrdc.net'
 - 'brownie.omg.adult'
-- 'browser.events.data.microsoft.com'
 - 'browser.events.data.msn.cn'
 - 'browser.events.data.msn.com'
 - 'browsercfg-drcn.cloud.dbankcloud.cn'
