@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-02 17:54:03
+# Generated on: 2025-12-02 18:20:37
 # Generated AdBlock rules
-# Total entries: 106273
+# Total entries: 106274
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -88905,6 +88905,7 @@ payload:
 - 'tags.mattressfirm.com'
 - 'tags.microbank.com'
 - 'tags.mindbodyonline.com'
+- 'tags.mlytics.com'
 - 'tags.moneytopay.com'
 - 'tags.mutua.es'
 - 'tags.mwg.aaa.com'
