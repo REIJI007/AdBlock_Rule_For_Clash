@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-04 01:22:38
+# Generated on: 2025-12-04 01:40:54
 # Generated AdBlock rules
-# Total entries: 106280
+# Total entries: 106283
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -20499,6 +20499,7 @@ payload:
 - 'cdn-lntmps.ultramobile.com'
 - 'cdn-media.brightline.tv'
 - 'cdn-redirector.glopal.com'
+- 'cdn-rtb.sape.ru'
 - 'cdn-s.chumbacasino.com'
 - 'cdn-s.dev.chumbacasino.com'
 - 'cdn-s.dev.globalpoker.com'
@@ -85830,6 +85831,7 @@ payload:
 - 'static.supernova.inc'
 - 'static.tahoe.com'
 - 'static.techdoor.com'
+- 'static.terratraf.com'
 - 'static.the-saleroom.com'
 - 'static.theardent.group'
 - 'static.themathem-bid.com'
@@ -93492,6 +93494,7 @@ payload:
 - 'tracker.xgen.dev'
 - 'tracker.yolo247.com'
 - 'tracker.zenia7.com'
+- 'tracker.zmaticoo.com'
 - 'trackerapi.ebxcdn.com'
 - 'trackerapi.service.echobox.com'
 - 'trackernew.ulivetv.net'
