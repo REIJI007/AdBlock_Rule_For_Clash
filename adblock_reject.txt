@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-04 03:22:24
+# Generated on: 2025-12-04 03:33:05
 # Generated AdBlock rules
-# Total entries: 106283
+# Total entries: 106285
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -61824,6 +61824,7 @@ payload:
 - 'mawwww0nodeketingpush.net.daraz.com'
 - 'max-adserv.com'
 - 'max-svc.docs.net.daraz.com'
+- 'maxesads.com'
 - 'maxesads.ru'
 - 'maximumdecimus.clicknplay.to'
 - 'maxtat.55truck.com'
@@ -63720,6 +63721,7 @@ payload:
 - 'mosquito.iamamandaperez.com'
 - 'mosquito.nooraldiyar.com'
 - 'mosquito.zero.io'
+- 'mossfast.com'
 - 'mosspf.net'
 - 'mossru.com'
 - 'mossturbo.com'
