@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-03 22:17:57
+# Generated on: 2025-12-03 22:41:59
 # Generated AdBlock rules
-# Total entries: 106279
+# Total entries: 106280
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -24327,6 +24327,7 @@ payload:
 - 'cmp.porsche.be'
 - 'cmp.seat.be'
 - 'cmp.skoda.be'
+- 'cmp.springernature.com'
 - 'cmp.vdfin.be'
 - 'cmp.volkswagen.be'
 - 'cmprofile.cards.citidirect.com'
