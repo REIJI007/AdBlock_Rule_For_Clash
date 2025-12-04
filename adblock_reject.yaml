@@ -3,7 +3,7 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-04 10:56:23
+# Generated on: 2025-12-04 11:49:43
 # Generated AdBlock rules
 # Total entries: 106285
 
@@ -5450,7 +5450,6 @@ payload:
 - '44cb3d66c1.34c72d94d3.com'
 - '44daybrand.kateperryprojects.com'
 - '44fc0648ef.6cde8b5544.com'
-- '44x.io'
 - '450a.feet9.com'
 - '4527824.notify6.com'
 - '4539496.notify6.com'
@@ -49518,6 +49517,7 @@ payload:
 - 'i.degoo.com'
 - 'i.do.adtrack.it'
 - 'i.findjoyinlife.com'
+- 'i.go.sohu.com'
 - 'i.hypeapp.co'
 - 'i.imgkcdn.com'
 - 'i.inspiredmoney.com.au'
