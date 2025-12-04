@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-04 10:57:55
+# Generated on: 2025-12-04 11:10:09
 # Generated AdBlock rules
-# Total entries: 106285
+# Total entries: 106286
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -49518,6 +49518,7 @@ payload:
 - 'i.degoo.com'
 - 'i.do.adtrack.it'
 - 'i.findjoyinlife.com'
+- 'i.go.sohu.com'
 - 'i.hypeapp.co'
 - 'i.imgkcdn.com'
 - 'i.inspiredmoney.com.au'
