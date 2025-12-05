@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-06 01:35:33
+# Generated on: 2025-12-06 01:47:04
 # Generated AdBlock rules
-# Total entries: 106289
+# Total entries: 106290
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -89760,8 +89760,9 @@ payload:
 - 'telecomitalia.tt.omtrdc.net'
 - 'telefonicavivo.tt.omtrdc.net'
 - 'telegraf.detmir-stats.ru'
-- 'telegraph.prd.api.bleacherreport.com'
 - 'telegraph.prd.api.discomax.com'
+- 'telegraph.prd.api.discoveryplus.com'
+- 'telegraph.prd.api.hbomax.com'
 - 'telegraph.prd.api.max.com'
 - 'telegraphmediagroupl.tt.omtrdc.net'
 - 'telehealth.bioserenity.com'
