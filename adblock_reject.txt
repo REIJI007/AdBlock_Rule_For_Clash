@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-06 02:23:52
+# Generated on: 2025-12-06 02:28:03
 # Generated AdBlock rules
-# Total entries: 106290
+# Total entries: 106294
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -40649,6 +40649,7 @@ payload:
 - 'events.geckoal.com'
 - 'events.getmodemagic.com'
 - 'events.getsitectrl.com'
+- 'events.gfe.nvidia.com'
 - 'events.hermanmiller.com'
 - 'events.hill-murray.org'
 - 'events.iap.unity3d.com'
@@ -48495,6 +48496,7 @@ payload:
 - 'gwt.businessheroes.io'
 - 'gwtc.sfr.fr'
 - 'gwupkw.flexform.com.br'
+- 'gx-target-experiments-frontend-api.gx.nvidia.com'
 - 'gx0.funfuckmovies.com'
 - 'gximqn.lojamundi.com.br'
 - 'gxjnyy.contorion.fr'
@@ -70021,6 +70023,7 @@ payload:
 - 'prod.cm.publishers.advertising.a2z.com'
 - 'prod.event.mwm-asset-manager.mwmwebapis.com'
 - 'prod.nitrosniffer.ottogroup.io'
+- 'prod.otel.kaizen.nvidia.com'
 - 'prod.report.nacustomerexperience.citi.com'
 - 'prod.tahoe-analytics.publishers.advertising.a2z.com'
 - 'prod.us-east-1.cxm-bcn.publisher-services.amazon.dev'
@@ -89782,6 +89785,7 @@ payload:
 - 'telemetry.commonspirit.org'
 - 'telemetry.doitbeststore.com'
 - 'telemetry.dzen.ru'
+- 'telemetry.gfe.nvidia.com'
 - 'telemetry.goodlifefitness.com'
 - 'telemetry.individual.githubcopilot.com'
 - 'telemetry.insights.video.a2z.com'
