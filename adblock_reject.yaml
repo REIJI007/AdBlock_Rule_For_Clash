@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-05 22:40:31
+# Generated on: 2025-12-05 22:49:49
 # Generated AdBlock rules
-# Total entries: 106287
+# Total entries: 106288
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -22443,6 +22443,7 @@ payload:
 - 'click.leasing.bankofamerica.com'
 - 'click.legacyscs-mail.com'
 - 'click.leinsterrugby.mobi'
+- 'click.lenovo.com'
 - 'click.level.centralmediacsoport.hu'
 - 'click.lifemission.church'
 - 'click.lilly-email.com'
