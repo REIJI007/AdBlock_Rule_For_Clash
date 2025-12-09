@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-09 13:20:21
+# Generated on: 2025-12-09 13:40:59
 # Generated AdBlock rules
-# Total entries: 105095
+# Total entries: 105096
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -25882,6 +25882,7 @@ payload:
 - 'd.neilpatel.com'
 - 'd.nordicbasketball.dk'
 - 'd.nordicbasketball.nl'
+- 'd.nordprotect.com'
 - 'd.norsol.no'
 - 'd.ns.azurevision.net.daraz.com'
 - 'd.ns.loadbalancer-emailvision.authenticate.net.daraz.com'
