@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-10 20:35:48
+# Generated on: 2025-12-10 21:23:17
 # Generated AdBlock rules
-# Total entries: 105098
+# Total entries: 105099
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -70241,6 +70241,7 @@ payload:
 - 'redirect.onjuno.com'
 - 'redirect2.goliaths.io'
 - 'redirectdemoqpay.2c2p.com'
+- 'redirectingat.com'
 - 'redlion.actonservice.com'
 - 'redmineraganredmineredmineropobjects.net.daraz.com'
 - 'redonetype.com'
