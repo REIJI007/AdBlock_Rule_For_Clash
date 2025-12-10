@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-10 19:18:57
+# Generated on: 2025-12-10 19:34:18
 # Generated AdBlock rules
-# Total entries: 105097
+# Total entries: 105098
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -87461,6 +87461,7 @@ payload:
 - 'tag.octopusenergy.fr'
 - 'tag.panorama.ai'
 - 'tag.phantomscreens.com.au'
+- 'tag.poomang.com'
 - 'tag.pprl.io'
 - 'tag.prospectdesk.ai'
 - 'tag.rendeuetop.com.br'
