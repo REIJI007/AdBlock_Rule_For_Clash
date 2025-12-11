@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-11 17:53:17
+# Generated on: 2025-12-11 18:20:54
 # Generated AdBlock rules
-# Total entries: 105100
+# Total entries: 105101
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -62425,6 +62425,7 @@ payload:
 - 'moai-dev-samsung.com'
 - 'moatads.com.edgekey.net'
 - 'mob.lowtid.fun'
+- 'mob2.cactus-bp.com'
 - 'mob2.healthapplines.com'
 - 'mob2.healthtrackergroup.com'
 - 'mob2.musicgostudio.com'
