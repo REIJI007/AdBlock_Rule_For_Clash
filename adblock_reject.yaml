@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-11 15:29:28
+# Generated on: 2025-12-11 15:47:16
 # Generated AdBlock rules
-# Total entries: 105099
+# Total entries: 105100
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -63570,6 +63570,7 @@ payload:
 - 'nexipayments.tt.omtrdc.net'
 - 'next.maispassagens.com.br'
 - 'next.minutodenoticias.com'
+- 'nextacdn.top'
 - 'nextjscms-sgtm.1800gotjunk.com'
 - 'nextstape.ppowerup.com.br'
 - 'nexus-svc.sc.com'
