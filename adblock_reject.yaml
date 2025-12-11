@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-11 18:19:16
+# Generated on: 2025-12-11 18:43:53
 # Generated AdBlock rules
-# Total entries: 105100
+# Total entries: 105103
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -57535,6 +57535,7 @@ payload:
 - 'log.optimizely.com'
 - 'log.outbrainimg.com'
 - 'log.particlenews.com'
+- 'log.pdfbookeditor.live'
 - 'log.pdfreaders.net'
 - 'log.pdfviewerscannerstore.live'
 - 'log.perfecttitspics.com'
@@ -61034,6 +61035,7 @@ payload:
 - 'meter.bref.sh'
 - 'meter.rhinobag.de'
 - 'metienestucontento.myavlive.com'
+- 'metis.truecaller.com'
 - 'metis.voysaude.com.br'
 - 'metlifeglobal.tt.omtrdc.net'
 - 'metok.sys.miui.com'
@@ -62425,6 +62427,7 @@ payload:
 - 'moai-dev-samsung.com'
 - 'moatads.com.edgekey.net'
 - 'mob.lowtid.fun'
+- 'mob2.cactus-bp.com'
 - 'mob2.healthapplines.com'
 - 'mob2.healthtrackergroup.com'
 - 'mob2.musicgostudio.com'
