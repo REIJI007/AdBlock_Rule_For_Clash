@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-11 21:59:08
+# Generated on: 2025-12-11 22:22:16
 # Generated AdBlock rules
-# Total entries: 105104
+# Total entries: 105105
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -18965,6 +18965,7 @@ payload:
 - 'bot.tt.omtrdc.net'
 - 'botb.rtl2.de'
 - 'botradar.tech'
+- 'boulder-collide.com'
 - 'bountyparents.e.aremedia.com.au'
 - 'bovid.neural.love'
 - 'bowie-cdn.fathomdns.com'
