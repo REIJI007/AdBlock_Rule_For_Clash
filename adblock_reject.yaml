@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-12 21:20:59
+# Generated on: 2025-12-12 21:48:26
 # Generated AdBlock rules
-# Total entries: 105113
+# Total entries: 105115
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -55454,6 +55454,7 @@ payload:
 - 'live.pushub.net'
 - 'live.quixova.com'
 - 'live.qwirlz.com'
+- 'live.ravelin.click'
 - 'live.sportsvot.com'
 - 'live.townsquaremedia.info'
 - 'live.trmzum.com'
@@ -67752,6 +67753,7 @@ payload:
 - 'perr.l-agent.me'
 - 'perr.l-err.biz'
 - 'perryellis.collect.igodigital.com'
+- 'perseus-productanalytics.deliveryhero.net'
 - 'pershing.actonservice.com'
 - 'personal.hubinternational.com'
 - 'perva.ashleyhomestore.ca'
