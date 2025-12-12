@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-12 18:52:55
+# Generated on: 2025-12-12 19:17:59
 # Generated AdBlock rules
-# Total entries: 105107
+# Total entries: 105110
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -39301,6 +39301,7 @@ payload:
 - 'event.airbridge.io'
 - 'event.api.drift.com'
 - 'event.ava.me'
+- 'event.bigkeyboardeasyphone.com'
 - 'event.chitai-gorod.ru'
 - 'event.clientgear.com'
 - 'event.condenastdigital.com'
@@ -80402,6 +80403,7 @@ payload:
 - 'somtr.financialengines.com'
 - 'somtrdc.jobstreet.vn'
 - 'sonic002.fumblingvacation.pro'
+- 'sonicsads.com'
 - 'sonne.helgahilft.com'
 - 'sonobi.com'
 - 'sonomamag.share.ntv.io'
@@ -84153,6 +84155,7 @@ payload:
 - 'stat.alibaba.com'
 - 'stat.alloha.tv'
 - 'stat.altalex.com'
+- 'stat.apfgexfusion.com'
 - 'stat.arzamas.academy'
 - 'stat.bdc.ca'
 - 'stat.beetfreunde.de'
