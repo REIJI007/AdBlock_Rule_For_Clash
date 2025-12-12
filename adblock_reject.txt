@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-12 22:50:17
+# Generated on: 2025-12-12 23:20:10
 # Generated AdBlock rules
-# Total entries: 105115
+# Total entries: 105116
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -61507,6 +61507,7 @@ payload:
 - 'metrics.maxizoo.pl'
 - 'metrics.mcrewards.com'
 - 'metrics.mdstrm.com'
+- 'metrics.media-amazon.com'
 - 'metrics.mei.co.jp'
 - 'metrics.meiers-weltreisen.de'
 - 'metrics.meineversicherungswelt.de'
