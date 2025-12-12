@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-13 01:17:39
+# Generated on: 2025-12-13 01:19:35
 # Generated AdBlock rules
-# Total entries: 105117
+# Total entries: 105116
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -11366,7 +11366,6 @@ payload:
 - 'ads.imgdesu.art'
 - 'ads.imovideo.ru'
 - 'ads.info.doordash.com'
-- 'ads.inmobi.com'
 - 'ads.intellidoctor.ai'
 - 'ads.iosappsworld.com'
 - 'ads.its-newid.net'
@@ -41685,7 +41684,6 @@ payload:
 - 'gl-product-analytics.com'
 - 'gl1kps7xasxt2bp-p.clickomo.fr'
 - 'glamipixel.com'
-- 'glance.inmobi.com'
 - 'glass.notifysrv.com'
 - 'glassy.glassybot.com'
 - 'glaxosmithklinebeech.tt.omtrdc.net'
@@ -50850,6 +50848,7 @@ payload:
 - 'inmense.site'
 - 'inmmyp.lenspecsmu.ru'
 - 'inmobi.cn'
+- 'inmobi.com'
 - 'inmobi.net'
 - 'inmobicdn.net'
 - 'inmobisdk-a.akamaihd.net'
