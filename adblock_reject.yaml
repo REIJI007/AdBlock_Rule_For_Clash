@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-23 02:24:59
+# Generated on: 2025-12-23 02:56:11
 # Generated AdBlock rules
-# Total entries: 99829
+# Total entries: 99832
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -7184,6 +7184,7 @@ payload:
 - 'a.swd5.com'
 - 'a.swime.online'
 - 'a.t5z3w0p.com'
+- 'a.tampermonkey.net'
 - 'a.team.iziptoday.com'
 - 'a.teencfnm.com'
 - 'a.telus.com'
@@ -89600,6 +89601,7 @@ payload:
 - 'u.btserve.com'
 - 'u.fluics.com'
 - 'u.getgoose.com'
+- 'u.tampermonkey.net'
 - 'u.zhugeapi.net'
 - 'u066.ocregister.com'
 - 'u082.wapt.com'
@@ -90840,6 +90842,7 @@ payload:
 - 'v.perfumesclub.com'
 - 'v.sagasavings.co.uk'
 - 'v.shopify.com'
+- 'v.tampermonkey.net'
 - 'v.topya.com'
 - 'v.xvds.tv'
 - 'v040419.badjojo.com'
