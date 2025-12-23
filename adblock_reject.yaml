@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-24 04:51:13
+# Generated on: 2025-12-24 05:13:58
 # Generated AdBlock rules
-# Total entries: 99840
+# Total entries: 99842
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -10915,6 +10915,7 @@ payload:
 - 'adc-js.nine.com.au'
 - 'adc.9news.com.au'
 - 'adc.api.nine.com.au'
+- 'adc.indextops.com'
 - 'adc.interia.pl'
 - 'adc.nine.com.au'
 - 'adc.xxxlshop.de'
@@ -90809,6 +90810,7 @@ payload:
 - 'uwy4.aegon.es'
 - 'uwzdds.premiummobile.pl'
 - 'uxkxoi.pflege.de'
+- 'uxlog-api.danawa.com'
 - 'uxlog.next.koapp.com'
 - 'uxqzcu.raunt.com'
 - 'uyaawl.lampenwelt.at'
