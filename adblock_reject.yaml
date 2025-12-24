@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-24 09:17:24
+# Generated on: 2025-12-24 11:00:42
 # Generated AdBlock rules
-# Total entries: 99842
+# Total entries: 99843
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -25356,6 +25356,7 @@ payload:
 - 'ctv-ads.api.leiniao.com'
 - 'ctx.toponefutures.com'
 - 'ctx.toponetrader.com'
+- 'ctxcollect.com'
 - 'ctyjsf.cellphones.com.vn'
 - 'ctzcqz.impromptugourmet.com'
 - 'cu01dvqlnkzbpfn-p.adktrack37.xyz'
