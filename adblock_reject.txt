@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-24 19:35:14
+# Generated on: 2025-12-24 19:47:15
 # Generated AdBlock rules
-# Total entries: 99843
+# Total entries: 99845
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -83879,6 +83879,7 @@ payload:
 - 'telemetry.proton.me'
 - 'telemetry.ruthschris.com'
 - 'telemetry.schwinnfitness.com'
+- 'telemetry.sdk.inmobi.com'
 - 'telemetry.sentara.com'
 - 'telemetry.sentarahealthplans.com'
 - 'telemetry.services.yofi.ai'
@@ -90261,6 +90262,7 @@ payload:
 - 'usdbbx.mmartan.com.br'
 - 'usdiagnosis.icocofun.com'
 - 'use-cr.svr-algorix.com'
+- 'use-trk.monetune.com'
 - 'use.fvr.to'
 - 'useast.datacygnal.io'
 - 'usebc.vertellis.nl'
