@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-25 02:57:05
+# Generated on: 2025-12-25 03:14:30
 # Generated AdBlock rules
-# Total entries: 99850
+# Total entries: 99851
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -14097,6 +14097,7 @@ payload:
 - 'analytics.synchronyfinancial.com'
 - 'analytics.synchronyretail.com'
 - 'analytics.synchronyuniversity.com'
+- 'analytics.t-mobile.com'
 - 'analytics.taahirajewellery.com'
 - 'analytics.tabichan.jp'
 - 'analytics.tatadigital.com'
