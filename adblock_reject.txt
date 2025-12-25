@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-25 21:20:24
+# Generated on: 2025-12-25 21:32:15
 # Generated AdBlock rules
-# Total entries: 99852
+# Total entries: 99853
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -82390,6 +82390,7 @@ payload:
 - 't.javhd-trk.com'
 - 't.jaxstatesports.com'
 - 't.jetrck.com'
+- 't.jibeno.xyz'
 - 't.jmusports.com'
 - 't.karitraa.ch'
 - 't.karte.io'
