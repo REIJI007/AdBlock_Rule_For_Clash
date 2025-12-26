@@ -3,7 +3,7 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-26 19:45:56
+# Generated on: 2025-12-26 20:28:56
 # Generated AdBlock rules
 # Total entries: 99856
 
@@ -22819,6 +22819,7 @@ payload:
 - 'client-log.box.com'
 - 'client-log.karte.io'
 - 'client-metrics.chess.com'
+- 'client-sdk.hackle.io'
 - 'client-telemetry.hingeprod.net'
 - 'client-telemetry.roblox.com'
 - 'client.botchk.net'
@@ -28392,7 +28393,6 @@ payload:
 - 'data.online.clubeextra.com.br'
 - 'data.online.paodeacucar.com'
 - 'data.orain.eus'
-- 'data.orders.costco.com'
 - 'data.orthovital-pro.com'
 - 'data.outbound.luxair.lu'
 - 'data.papeo.fr'
