@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-30 05:17:33
+# Generated on: 2025-12-30 05:19:22
 # Generated AdBlock rules
-# Total entries: 101023
+# Total entries: 101022
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -66882,7 +66882,6 @@ payload:
 - 'proskore.xhamsterlive.info'
 - 'prospex.actonservice.com'
 - 'protapes.actonservice.com'
-- 'protected-api.branch.io'
 - 'protected-by.clarium.io'
 - 'protection.bt.com'
 - 'protection.ee.co.uk'
