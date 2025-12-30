@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2025-12-31 01:52:25
+# Generated on: 2025-12-31 02:21:35
 # Generated AdBlock rules
-# Total entries: 101030
+# Total entries: 101031
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -13241,6 +13241,7 @@ payload:
 - 'analytics-v2.wetransfer.com'
 - 'analytics-was-nba.yinzcam.com'
 - 'analytics-wcms.joins.net'
+- 'analytics-webhook.doximity.com'
 - 'analytics-wol-fa.yinzcam.com'
 - 'analytics-wso-ten.yinzcam.com'
 - 'analytics.126.net'
