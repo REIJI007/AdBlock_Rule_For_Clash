@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-03 00:20:27
+# Generated on: 2026-01-03 00:43:54
 # Generated AdBlock rules
-# Total entries: 101040
+# Total entries: 101041
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -10659,7 +10659,6 @@ payload:
 - 'ad.aucview.com'
 - 'ad.audiencemanager.de'
 - 'ad.autorace.jp'
-- 'ad.bandlab.io'
 - 'ad.belleeau.jp'
 - 'ad.bench.utorrent.com'
 - 'ad.bluepartner.eu'
@@ -46472,6 +46471,7 @@ payload:
 - 'gvyyri.major-auto.ru'
 - 'gw-analytics.panasonic.com'
 - 'gw-dv.vip'
+- 'gw-usa-tracker.zmaticoo.com'
 - 'gw.alliedhousing.com'
 - 'gw.blacked.com'
 - 'gw.blackedraw.com'
@@ -70056,6 +70056,7 @@ payload:
 - 'rtblab.net'
 - 'rtbplatform.net'
 - 'rtbserve.io'
+- 'rtbuniverse.com'
 - 'rtc-logger-va.tiktokv.com'
 - 'rtc-logger.bytevcloud.com'
 - 'rtc.dymatrix.cloud'
