@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-02 16:47:23
+# Generated on: 2026-01-02 17:18:21
 # Generated AdBlock rules
-# Total entries: 101034
+# Total entries: 101035
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -29203,6 +29203,7 @@ payload:
 - 'digital.qmctelecom.com'
 - 'digital.trustmark.com'
 - 'digitalacademy-00-bootstrap.net.daraz.com'
+- 'digitalcaramel.com'
 - 'digitalcurrent.actonservice.com'
 - 'digitalid-qa.santanderbank.com'
 - 'digitalid.santanderbank.com'
