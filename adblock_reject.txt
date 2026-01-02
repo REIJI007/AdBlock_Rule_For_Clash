@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-02 16:30:12
+# Generated on: 2026-01-02 16:57:16
 # Generated AdBlock rules
-# Total entries: 101033
+# Total entries: 101035
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -28129,6 +28129,7 @@ payload:
 - 'data.decathlon.fr'
 - 'data.decathlon.it'
 - 'data.decathlon.pl'
+- 'data.deep-content.io'
 - 'data.delivers.buick.com'
 - 'data.delivers.cadillac.com'
 - 'data.delivers.chevrolet.com'
@@ -29202,6 +29203,7 @@ payload:
 - 'digital.qmctelecom.com'
 - 'digital.trustmark.com'
 - 'digitalacademy-00-bootstrap.net.daraz.com'
+- 'digitalcaramel.com'
 - 'digitalcurrent.actonservice.com'
 - 'digitalid-qa.santanderbank.com'
 - 'digitalid.santanderbank.com'
