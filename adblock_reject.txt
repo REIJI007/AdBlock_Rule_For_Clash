@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 12:13:31
+# Generated on: 2026-01-16 12:27:08
 # Generated AdBlock rules
-# Total entries: 101621
+# Total entries: 101622
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -60603,6 +60603,7 @@ payload:
 - 'mix.iaraudio.com'
 - 'mixadvert.com'
 - 'mixpanel-proxy.ted.com'
+- 'mixpanel.tigocloud.net'
 - 'mj23.eulerian.com'
 - 'mjafvw.jungborn.de'
 - 'mjbizcon.montel.com'
