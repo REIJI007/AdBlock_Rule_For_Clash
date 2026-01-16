@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 12:27:08
+# Generated on: 2026-01-16 12:55:45
 # Generated AdBlock rules
-# Total entries: 101622
+# Total entries: 101624
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -38655,6 +38655,7 @@ payload:
 - 'engage2.accfb.org'
 - 'engage2demand.cisco.com'
 - 'engagefront.theweathernetwork.com'
+- 'engagelab.cc'
 - 'engagement.education.minecraft.net'
 - 'engagement.globalsign.com'
 - 'engagement.moodmedia.com'
@@ -41601,6 +41602,7 @@ payload:
 - 'glkge.ekster.com'
 - 'glob13lid3.click.s11.sfmc-osl.com'
 - 'global-go.experian.com'
+- 'global-sis.engagelab.com'
 - 'global.appnext.com'
 - 'global.cognizant.com'
 - 'global.notifysrv.com'
