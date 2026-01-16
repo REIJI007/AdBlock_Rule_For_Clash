@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 19:34:03
+# Generated on: 2026-01-16 19:48:19
 # Generated AdBlock rules
-# Total entries: 101629
+# Total entries: 101631
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -13392,6 +13392,7 @@ payload:
 - 'analytics.carecreditprovidercenter.com'
 - 'analytics.cartoonnetwork.jp'
 - 'analytics.cartoonnetworkasia.com'
+- 'analytics.carvana.io'
 - 'analytics.cashably.com'
 - 'analytics.castel.jp'
 - 'analytics.castelliinaria.info'
@@ -89396,6 +89397,7 @@ payload:
 - 'tracking.care.essentiahealth.org'
 - 'tracking.care.muschealth.org'
 - 'tracking.care.salinasvalleyhealth.com'
+- 'tracking.carfax.com'
 - 'tracking.carprices.com'
 - 'tracking.carpshop24.com'
 - 'tracking.carsales.com.au'
