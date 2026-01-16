@@ -3,7 +3,7 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 19:16:28
+# Generated on: 2026-01-16 19:33:10
 # Generated AdBlock rules
 # Total entries: 101629
 
@@ -19423,7 +19423,6 @@ payload:
 - 'c.stext.id'
 - 'c.tbex.ru'
 - 'c.tyb.xyz'
-- 'c.us.heap-api.com'
 - 'c.vrvm.com'
 - 'c.webp2p.letv.com'
 - 'c.werally.com'
@@ -46818,6 +46817,7 @@ payload:
 - 'healthfirstst.mywellnessoffer.com'
 - 'healthier.aahs.org'
 - 'healthy.spartanburgregional.com'
+- 'heap-api.com'
 - 'heap.drop.com'
 - 'heapanalytics.com'
 - 'heartbeat.crackle.com'
