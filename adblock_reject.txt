@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 18:53:53
+# Generated on: 2026-01-16 19:18:25
 # Generated AdBlock rules
-# Total entries: 101624
+# Total entries: 101629
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -14108,6 +14108,7 @@ payload:
 - 'analytics.thetab.com'
 - 'analytics.thevideo.me'
 - 'analytics.ticimax.cloud'
+- 'analytics.ticketmaster.com'
 - 'analytics.timbertrove.com'
 - 'analytics.tio.ch'
 - 'analytics.tmonews.com'
@@ -14188,6 +14189,7 @@ payload:
 - 'analytics.volvocars.com'
 - 'analytics.voxbusinesscard.com'
 - 'analytics.vpplayer.tech'
+- 'analytics.wachanga.app'
 - 'analytics.wadimanuka.com'
 - 'analytics.waifu2x.org'
 - 'analytics.waltherapparelwebshop.nl'
@@ -19421,7 +19423,6 @@ payload:
 - 'c.stext.id'
 - 'c.tbex.ru'
 - 'c.tyb.xyz'
-- 'c.us.heap-api.com'
 - 'c.vrvm.com'
 - 'c.webp2p.letv.com'
 - 'c.werally.com'
@@ -46816,6 +46817,7 @@ payload:
 - 'healthfirstst.mywellnessoffer.com'
 - 'healthier.aahs.org'
 - 'healthy.spartanburgregional.com'
+- 'heap-api.com'
 - 'heap.drop.com'
 - 'heapanalytics.com'
 - 'heartbeat.crackle.com'
@@ -68967,6 +68969,7 @@ payload:
 - 'report.oewa.at'
 - 'report.pixverse.ai'
 - 'report.seznamzpravy.cz'
+- 'report.starshort.online'
 - 'report2.iciba.com'
 - 'reporting-api.gannettinnovation.com'
 - 'reporting.aatkit.com'
@@ -88890,6 +88893,7 @@ payload:
 - 'track.ogrowthlabs.com'
 - 'track.omegapharmasrl.com'
 - 'track.onahole.com'
+- 'track.opentable.com'
 - 'track.oportalbemviver.com'
 - 'track.oregonstateintl.com'
 - 'track.organicbazar.net'
@@ -92001,6 +92005,7 @@ payload:
 - 'usaang.tt.omtrdc.net'
 - 'usacg1essmtp1.tt.omtrdc.net'
 - 'usaerklaert.foolhardywear.pro'
+- 'usage.digitalconcerthall.com'
 - 'usage.growthbook.io'
 - 'usage.ideasnap.co'
 - 'usage.influxdata.com'
