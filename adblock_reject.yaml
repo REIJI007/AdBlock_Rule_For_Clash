@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-16 22:26:39
+# Generated on: 2026-01-16 22:54:08
 # Generated AdBlock rules
-# Total entries: 101632
+# Total entries: 101634
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -73308,6 +73308,7 @@ payload:
 - 'servertracking.mohamadalaya.com'
 - 'servertype.selfiestore.uz'
 - 'servervmidia.venturohub.com'
+- 'service-ad-image-ga-weighted.prd.pluto.tv'
 - 'service-ad-image-ga.prd.pluto.tv'
 - 'service-ad-impression-proxy-use1-1.prd.pluto.tv'
 - 'service-api.flarelane.com'
@@ -77496,6 +77497,7 @@ payload:
 - 'sp.pal-item.com'
 - 'sp.pamklein.com'
 - 'sp.pcid.ca'
+- 'sp.pluto.tv'
 - 'sp.pnj.com'
 - 'sp.portclintonnewsherald.com'
 - 'sp.postcrescent.com'
