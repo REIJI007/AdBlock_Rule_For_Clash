@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-19 22:27:59
+# Generated on: 2026-01-19 22:50:01
 # Generated AdBlock rules
-# Total entries: 136396
+# Total entries: 136397
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -25635,6 +25635,7 @@ payload:
 - 'console.channelvas.com'
 - 'console.cincinnatimagazine.com'
 - 'console.cricketworld.com'
+- 'console.data4.net'
 - 'console.datateam.co.uk'
 - 'console.engineeringnews.co.za'
 - 'console.everythingcolorado.com'
