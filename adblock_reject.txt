@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-19 19:51:02
+# Generated on: 2026-01-19 20:42:12
 # Generated AdBlock rules
-# Total entries: 136394
+# Total entries: 136395
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -12808,6 +12808,7 @@ payload:
 - 'agenciaplanner.arenaeletromusic.com.br'
 - 'agency.bigfatlinks.com'
 - 'agency.reportgarden.com'
+- 'agencysignals.com'
 - 'agencysst.mda-digital.com'
 - 'agenda.avadacom.com'
 - 'agenda.ns.emailvision.panel.net.daraz.com'
