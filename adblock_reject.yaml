@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-21 14:30:13
+# Generated on: 2026-01-21 15:44:30
 # Generated AdBlock rules
-# Total entries: 136402
+# Total entries: 136404
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -18535,6 +18535,7 @@ payload:
 - 'bankwithunited.tt.omtrdc.net'
 - 'banner-media.ru'
 - 'banner.appsflyer.com'
+- 'banner.bet365partners.com'
 - 'banner.cedubook.com'
 - 'banner.dabi.ir'
 - 'banner.hpmdnetwork.ru'
@@ -115510,6 +115511,7 @@ payload:
 - 'stats.innoforge.com.au'
 - 'stats.innoq.com'
 - 'stats.inselloft-norderney.de'
+- 'stats.insighttimer.com'
 - 'stats.instabudget.app'
 - 'stats.instawares.com'
 - 'stats.interactjs.io'
