@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-21 18:26:49
+# Generated on: 2026-01-21 18:59:20
 # Generated AdBlock rules
-# Total entries: 136404
+# Total entries: 136411
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -15045,6 +15045,7 @@ payload:
 - 'api-bill-dev-services.net.jumia.com'
 - 'api-dev.boyfriend.show'
 - 'api-fp-retry-bj.fengkongcloud.com'
+- 'api-fp-retry-sa.fengkongcloud.com'
 - 'api-ktm.kkday.com'
 - 'api-meta.mercelsantos.com.br'
 - 'api-notify.markarch.com'
@@ -29754,6 +29755,7 @@ payload:
 - 'data-nl.medical-design.news'
 - 'data-nl.tageskarte.io'
 - 'data-optout-service.uca.cloud.unity3d.com'
+- 'data-p.gryphline.com'
 - 'data-ssl.catererglobal.com'
 - 'data-ssl.cityjobs.com'
 - 'data-ssl.cwjobs.co.uk'
@@ -57019,6 +57021,8 @@ payload:
 - 'event-dot-learning-piano.appspot.com'
 - 'event-dot-procolor-backend.appspot.com'
 - 'event-hce-eu.fujifilm.com'
+- 'event-log-api-data-platform-data-lake-prod.gryphline.com'
+- 'event-log-api-ipv6.gryphline.com'
 - 'event-portal.dailyinnovation.biz'
 - 'event-reporting-dot-webylytics.appspot.com'
 - 'event-router.chime.com'
@@ -57096,6 +57100,7 @@ payload:
 - 'eventcom.api.np.km.playstation.net'
 - 'eventgw.twilio.com'
 - 'eventlog-aws.jftechws.com'
+- 'eventlog.gryphline.com'
 - 'eventlog.inspsearchapi.com'
 - 'eventlog.jackpot.de'
 - 'eventlog.outbrain.com'
@@ -59028,6 +59033,7 @@ payload:
 - 'foxtel.tt.omtrdc.net'
 - 'foxtinfo.foxt.com'
 - 'fp-it.fengkongcloud.com'
+- 'fp-sa-it.fengkongcloud.com'
 - 'fp.aion.be'
 - 'fp.ambrosewilson.com'
 - 'fp.avatrade.com'
@@ -89179,6 +89185,7 @@ payload:
 - 'nationalbankofcanada.tt.omtrdc.net'
 - 'nationalbankofnewzea.tt.omtrdc.net'
 - 'nationaltrust.tt.omtrdc.net'
+- 'native-log-collect.gryphline.com'
 - 'native.cli.bz'
 - 'nativead.s3.amazonaws.com'
 - 'nativesdks.mparticle.com'
