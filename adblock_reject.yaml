@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-21 18:59:20
+# Generated on: 2026-01-21 19:25:00
 # Generated AdBlock rules
-# Total entries: 136411
+# Total entries: 136412
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -24079,6 +24079,7 @@ payload:
 - 'client-log.karte.io'
 - 'client-metrics.chess.com'
 - 'client-sdk.hackle.io'
+- 'client-telemetry-preauth.hingeprod.net'
 - 'client-telemetry.hingeprod.net'
 - 'client-telemetry.roblox.com'
 - 'client.botchk.net'
