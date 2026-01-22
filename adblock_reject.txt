@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-23 03:53:27
+# Generated on: 2026-01-23 04:23:24
 # Generated AdBlock rules
-# Total entries: 136424
+# Total entries: 136425
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -94145,6 +94145,7 @@ payload:
 - 'pinniped.resist.bot'
 - 'pinniped.spacecountdown.com'
 - 'pinoy101tv.fumblingvacation.pro'
+- 'pinpoint.espn.com'
 - 'pinpoll.com'
 - 'pinptg.milleni.com.tr'
 - 'pint-dev-branch.airship.com'
