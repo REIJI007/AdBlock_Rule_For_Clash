@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-23 04:28:31
+# Generated on: 2026-01-23 04:55:45
 # Generated AdBlock rules
-# Total entries: 136425
+# Total entries: 136427
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -59314,6 +59314,7 @@ payload:
 - 'frog.yuanfudao.com'
 - 'front.optimonk.com'
 - 'frontend-logger.flippback.com'
+- 'frontier.capcutw.us'
 - 'frontier.musical.ly'
 - 'frontier100-toutiao-lf.fqnovel.com'
 - 'frontiercomm.tt.omtrdc.net'
@@ -88692,6 +88693,7 @@ payload:
 - 'mssdk-va.byteoversea.com'
 - 'mssdk.bytedance.com'
 - 'mssdk.tiktokw.us'
+- 'mssdk16-normal-us-ttp.capcutapi.us'
 - 'mssfv.aspinaloflondon.com'
 - 'mst.physiotherapie-mobili.de'
 - 'mst.rnd.de'
