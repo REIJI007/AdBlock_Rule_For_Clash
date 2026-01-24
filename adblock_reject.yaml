@@ -3,9 +3,9 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-GPL 3.0
 # LICENSE2: https://github.com/REIJI007/AdBlock_Rule_For_Clash/blob/main/LICENSE-CC-BY-NC-SA 4.0
-# Generated on: 2026-01-25 04:17:58
+# Generated on: 2026-01-25 04:35:19
 # Generated AdBlock rules
-# Total entries: 136428
+# Total entries: 136429
 
 payload:
 - '0--skitch--0.tt.omtrdc.net'
@@ -123162,6 +123162,7 @@ payload:
 - 'trackersimulator.org'
 - 'trackerstats.davidthe.dev'
 - 'trackgun.alrajhi-capital.com'
+- 'trackhorizon.nnmtools.com'
 - 'trackid.globoid.globo.com'
 - 'trackimpression.com'
 - 'tracking-api-4lasu2nlcq-ew.a.run.app'
