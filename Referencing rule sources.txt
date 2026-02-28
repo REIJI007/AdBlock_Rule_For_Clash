@@ -1,0 +1,322 @@
+引用列表如下：
+
+1. ADguard Base filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt
+
+2. ADguard Spyware filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt
+
+3. ADguard Social filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt
+
+4. ADguard Mobile filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt
+
+5. ADguard Annoyances filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt
+
+6. ADguard Dns Filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt
+
+7. ADguard TrackParam fliter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt
+
+8. ADguard Annoyances_Cookies filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_18_Annoyances_Cookies/filter.txt
+
+9. ADguard Annoyances_Popups filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_19_Annoyances_Popups/filter.txt
+
+10. ADguard Annoyances_MobileApp filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_20_Annoyances_MobileApp/filter.txt
+
+11. ADguard Annoyances_Other filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_21_Annoyances_Other/filter.txt
+
+12. ADguard Annoyances_Widgets filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_22_Annoyances_Widgets/filter.txt
+
+13. ADguard Chinese filter
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt
+
+14. ADguard ThirdParty EasyList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_101_EasyList/filter.txt
+
+15. ADguard ThirdParty EasyListChina
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_104_EasyListChina/filter.txt
+
+16. ADguard ThirdParty EasyPrivacy
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_118_EasyPrivacy/filter.txt
+
+17. ADguard ThirdParty Fanboy's Annoyance List
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_122_FanboysAnnoyances/filter.txt
+
+18. ADguard ThirdParty FanboysSocialBlockingList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_123_FanboysSocialBlockingList/filter.txt
+
+19. ADguard ThirdParty WebAnnoyancesUltralist
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_201_WebAnnoyancesUltralist/filter.txt
+
+20. ADguard ThirdParty PeterLowesList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_204_PeterLowesList/filter.txt
+
+21. ADguard ThirdParty AdblockWarningRemovalList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_207_AdblockWarningRemovalList/filter.txt
+
+22. ADguard ThirdParty Online_Malicious_URL_Blocklist
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_208_Online_Malicious_URL_Blocklist/filter.txt
+
+23. ADguard ThirdParty ADgkMobileChinalist
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_209_ADgkMobileChinalist/filter.txt
+
+24. ADguard ThirdParty Spam404
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_210_Spam404/filter.txt
+
+25. ADguard ThirdParty Anti-Adblock Killer
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_211_AntiAdblockKillerReek/filter.txt
+
+26. ADguard ThirdParty ChinaListAndEasyList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_219_ChinaListAndEasyList/filter.txt
+
+27. ADguard ThirdParty CJXsAnnoyanceList
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_220_CJXsAnnoyanceList/filter.txt
+
+28. ADguard ThirdParty xinggsf
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_228_xinggsf/filter.txt
+
+29. ADguard ThirdParty IdontCareAboutCookies
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_229_IdontCareAboutCookies/filter.txt
+
+30. ADguard ThirdParty FanboyAntifonts
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_239_FanboyAntifonts/filter.txt
+
+31. ADguard ThirdParty BarbBlock
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_240_BarbBlock/filter.txt
+
+32. ADguard ThirdParty FanboyCookiemonster
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_241_FanboyCookiemonster/filter.txt
+
+33. ADguard ThirdParty NoCoin
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_242_NoCoin/filter.txt
+
+34. ADguard ThirdParty DandelionSproutAnnoyances
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_250_DandelionSproutAnnoyances/filter.txt
+
+35. ADguard ThirdParty Legitimate_URL_Shortener
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_251_LegitimateURLShortener/filter.txt
+
+36. ADguard ThirdParty Phishing_URL_Blocklist
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_255_Phishing_URL_Blocklist/filter.txt
+
+37. ADguard ThirdParty Scam_Blocklist
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_256_Scam_Blocklist/filter.txt
+
+38. ADguard ThirdParty uBlock_Origin_Badware_risks
+https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/ThirdParty/filter_257_uBlock_Origin_Badware_risks/filter.txt
+
+39. ADguard Base filter—first-party servers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/adservers_firstparty.txt  
+
+40. ADguard Base filter—foreign servers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/foreign.txt  
+
+41. ADguard Base filter cryptominers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/cryptominers.txt  
+
+42. ADguard Base filter-adservers
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/adservers.txt
+
+43. ADguard Base filter-adservers_firstparty
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/adservers_firstparty.txt
+
+44. ADguard Base filter-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/allowlist.txt
+
+45. ADguard Base filter-allowlist_stealth
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/allowlist_stealth.txt
+
+46. ADguard Base filter-antiadblock
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/antiadblock.txt
+
+47. ADguard Base filter-replace
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/replace.txt
+
+48. ADguard Base filter-content_blocker
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/BaseFilter/sections/content_blocker.txt
+
+49. ADguard Exclusion rules  
+https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exclusions.txt  
+
+50. ADguard Exception rules  
+https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exceptions.txt  
+
+51. ADguard SDNSFilter rules 
+https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/rules.txt  
+
+52. ADguard Tracking Protection filter — first-party trackers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/tracking_servers_firstparty.txt  
+
+53. ADguard Tracking Protection filter — third-party trackers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/tracking_servers.txt  
+
+54. ADguard Tracking Protection filter — mobile trackers  
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/mobile.txt
+
+55. ADguard Social filter-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/allowlist.txt
+
+56. ADguard Social filter-general_elemhide
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/general_elemhide.txt
+
+57. ADguard Social filter-general_extensions
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/general_extensions.txt
+
+58. ADguard Social filter-general_url
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/general_url.txt
+
+59. ADguard Social filter-popups
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/popups.txt
+
+60. ADguard Social filter-social_trackers
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SocialFilter/sections/social_trackers.txt
+
+61. ADguard Annoyances filter-cookies_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Cookies/sections/cookies_allowlist.txt
+
+62. ADguard Annoyances filter-cookies_general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Cookies/sections/cookies_general.txt
+
+63. ADguard Annoyances filter-mobile-app_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/MobileApp/sections/mobile-app_allowlist.txt
+
+64. ADguard Annoyances filter-mobile-app_general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/MobileApp/sections/mobile-app_general.txt
+
+65. ADguard Annoyances filter-popups-antiadblock
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/antiadblock.txt
+
+66. ADguard Annoyances filter-popups-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/popups_allowlist.txt
+
+67. ADguard Annoyances filter-popups-general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/popups_general.txt
+
+68. ADguard Annoyances filter-popups-push-notifications_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_allowlist.txt
+
+69. ADguard Annoyances filter-popups-push-notifications_general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_general.txt
+
+70. ADguard Annoyances filter-popups-subscriptions_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_allowlist.txt
+
+71. ADguard Annoyances filter-popups-subscriptions_general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_general.txt
+
+72. ADguard Annoyances filter-Widgets
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/AnnoyancesFilter/Widgets/sections/widgets.txt
+
+73. ADguard CNAME original trackers list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_original_trackers.txt
+
+74. ADguard CNAME disguised ads list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads.txt
+
+75. ADguard CNAME disguised clickthroughs list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs.txt
+
+76. ADguard CNAME disguised microsites list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites.txt
+
+77. ADguard CNAME disguised trackers list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
+
+78. ADguard CNAME disguised mail_trackers list  
+https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers.txt
+
+79. ADguard Chinese filter-adservers
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/adservers.txt
+
+80. ADguard Chinese filter-adservers_firstparty
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/adservers_firstparty.txt
+
+81. ADguard ChineseFilter-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/allowlist.txt
+
+82. ADguard ChineseFilter-antiadblock
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/antiadblock.txt
+
+83. ADguard ChineseFilter-general_elemhide
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/general_elemhide.txt
+
+84. ADguard ChineseFilter-general_extensions
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/general_extensions.txt
+
+85. ADguard ChineseFilter-general_url
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/general_url.txt
+
+86. ADguard ChineseFilter-replace
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/ChineseFilter/sections/replace.txt
+
+87. ADguard Mobile filter-adservers
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/adservers.txt
+
+88. ADguard MobileFilter-allowlist_app
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/allowlist_app.txt
+
+89. ADguard MobileFilter-allowlist_web
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/allowlist_web.txt
+
+90. ADguard MobileFilter-antiadblock
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/antiadblock.txt
+
+91. ADguard MobileFilter-general_elemhide
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/general_elemhide.txt
+
+92. ADguard MobileFilter-general_extensions
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/general_extensions.txt
+
+93. ADguard MobileFilter-general_url
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/general_url.txt
+
+94. ADguard MobileFilter-replace
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/MobileFilter/sections/replace.txt
+
+95. ADguard SpywareFilter-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/allowlist.txt
+
+96. ADguard SpywareFilter-cookies_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/cookies_allowlist.txt
+
+97. ADguard SpywareFilter-cookies_general
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/cookies_general.txt
+
+98. ADguard SpywareFilter-cookies_specific
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/cookies_specific.txt
+
+99. ADguard SpywareFilter-general_elemhide
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/general_elemhide.txt
+
+100. ADguard SpywareFilter-general_extensions
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/general_extensions.txt
+
+101. ADguard SpywareFilter-general_url
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/general_url.txt
+
+102. ADguard SpywareFilter-mobile
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/mobile.txt
+
+103. ADguard SpywareFilter-mobile_allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/mobile_allowlist.txt
+
+104. ADguard SpywareFilter-tracking_servers
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/tracking_servers.txt
+
+105. ADguard SpywareFilter-tracking_servers_firstparty
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+
+106. ADguard TrackParamFilter-allowlist
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/TrackParamFilter/sections/allowlist.txt
+
+107. ADguard TrackParamFilter-general_url
+https://raw.githubusercontent.com/AdguardTeam/ADguardFilters/master/TrackParamFilter/sections/general_url.txt
