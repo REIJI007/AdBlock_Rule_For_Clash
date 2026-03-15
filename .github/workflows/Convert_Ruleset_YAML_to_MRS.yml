@@ -1,0 +1,253 @@
+name: Convert_Ruleset_YAML_to_MRS
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update-and-convert:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    # 使用名为 TOKEN 的 secret
+    env:
+      TOKEN: ${{ secrets.TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Prepare PowerShell environment
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          $ProgressPreference = 'SilentlyContinue'
+
+      - name: Check TOKEN secret exists
+        run: |
+          if (-not $env:TOKEN) {
+            Write-Error "Secret 'TOKEN' is not set. Please add repository secret named 'TOKEN'."
+            exit 1
+          } else {
+            Write-Host "TOKEN secret present (masked)."
+          }
+
+      - name: Check and update mihomo
+        id: update_mihomo
+        run: |
+          $repoOwner = 'MetaCubeX'
+          $repoName  = 'mihomo'
+          $exePath   = Join-Path $PWD 'mihomo.exe'
+          $zipFile   = Join-Path $PWD 'mihomo.download'
+          $tempDir   = Join-Path $PWD 'mihomo_tmp'
+          $maxAttempts = 5
+
+          function Get-Local-Version([string]$path) {
+            if (-not (Test-Path $path)) { return [version]"0.0.0" }
+            try {
+              $out = & $path -v 2>&1
+              $m = [regex]::Match($out, '([0-9]+\.[0-9]+\.[0-9]+)')
+              if ($m.Success) { return [version]$m.Groups[1].Value }
+            } catch {
+              Write-Host '无法读取本地 mihomo 版本，视为 0.0.0'
+            }
+            return [version]"0.0.0"
+          }
+
+          function Decompress-GzipToFile([string]$gzPath, [string]$outPath) {
+            $inStream = [System.IO.File]::OpenRead($gzPath)
+            $outStream = [System.IO.File]::Create($outPath)
+            try {
+              $gz = New-Object System.IO.Compression.GzipStream($inStream, [IO.Compression.CompressionMode]::Decompress)
+              $gz.CopyTo($outStream)
+              $gz.Dispose()
+            } finally {
+              $inStream.Dispose()
+              $outStream.Dispose()
+            }
+          }
+
+          Write-Host ("查询 {0}/{1} 最新 release..." -f $repoOwner, $repoName)
+          $apiUrl = "https://api.github.com/repos/$repoOwner/$repoName/releases/latest"
+
+          # 使用 TOKEN 增加速率配额（Authorization 头）
+          $headers = @{
+            'User-Agent' = 'GitHubActions'
+            'Accept'     = 'application/vnd.github+json'
+            'Authorization' = "token $env:TOKEN"
+          }
+
+          $release = Invoke-RestMethod -Uri $apiUrl -Headers $headers
+
+          if (-not $release) { Write-Error '获取 release 失败'; exit 1 }
+
+          $tagName = $release.tag_name
+          $latestVersionString = ($tagName -replace '[^0-9\.]', '')
+          try { $latestVersion = [version]$latestVersionString } catch { $latestVersion = [version]"0.0.0" }
+
+          $existingVersion = Get-Local-Version $exePath
+
+          Write-Host ("本地版本: {0}" -f $existingVersion)
+          Write-Host ("远端最新: {0} (tag {1})" -f $latestVersion, $tagName)
+
+          if (($latestVersion -le $existingVersion) -and (Test-Path $exePath)) {
+            Write-Host "mihomo 已是最新版本，跳过。"
+            return
+          }
+
+          $assets = $release.assets
+          $asset = $null
+
+          $asset = $assets | Where-Object { $_.name -match '(?i)windows' } | Select-Object -First 1
+          if (-not $asset) {
+            $asset = $assets | Where-Object { ($_.name -match '(?i)win') -and ($_.name -match '(?i)amd64') -and ($_.name -notmatch '(?i)android') } | Select-Object -First 1
+          }
+          if (-not $asset) {
+            $asset = $assets | Where-Object { $_.name -match '\.zip$' } | Select-Object -First 1
+          }
+          if (-not $asset) {
+            $asset = $assets | Where-Object { $_.name -match '\.exe$' } | Select-Object -First 1
+          }
+          if (-not $asset) {
+            $asset = $assets | Where-Object { ($_.name -match '(?i)amd64') -and ($_.name -notmatch '(?i)android') } | Select-Object -First 1
+          }
+
+          if (-not $asset) {
+            Write-Error "未找到合适的 release 资产"
+            exit 1
+          }
+
+          $downloadUrl = $asset.browser_download_url
+          Write-Host ("选择的资产: {0}" -f $asset.name)
+
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            try {
+              Write-Host ("下载尝试 {0}/{1}" -f $attempt, $maxAttempts)
+
+              if (Test-Path $zipFile) { Remove-Item $zipFile -Force -ErrorAction SilentlyContinue }
+
+              Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile -TimeoutSec 300 -Headers $headers
+
+              if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+              New-Item -ItemType Directory -Path $tempDir | Out-Null
+
+              $assetName = $asset.name.ToLowerInvariant()
+
+              if ($assetName -match '\.zip$') {
+                Expand-Archive $zipFile $tempDir -Force
+              }
+              elseif ($assetName -match '\.tar\.gz$' -or $assetName -match '\.tgz$') {
+                tar -xzf $zipFile -C $tempDir
+              }
+              elseif ($assetName -match '\.gz$') {
+                $decompressed = Join-Path $tempDir ([IO.Path]::GetFileNameWithoutExtension($asset.name))
+                Decompress-GzipToFile -gzPath $zipFile -outPath $decompressed
+              }
+              elseif ($assetName -match '\.exe$') {
+                Copy-Item $zipFile (Join-Path $tempDir $asset.name) -Force
+              }
+              else {
+                Copy-Item $zipFile (Join-Path $tempDir $asset.name) -Force
+              }
+
+              Remove-Item $zipFile -Force -ErrorAction SilentlyContinue
+
+              $exeCandidate = Get-ChildItem -Path $tempDir -Recurse -File -Include *.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+
+              if (-not $exeCandidate) {
+                $files = Get-ChildItem -Path $tempDir -Recurse -File
+                foreach ($f in $files) {
+                  try {
+                    $fs = [System.IO.File]::OpenRead($f.FullName)
+                    $b = New-Object byte[] 2
+                    $read = $fs.Read($b, 0, 2)
+                    $fs.Close()
+
+                    if ($read -eq 2 -and $b[0] -eq 0x4D -and $b[1] -eq 0x5A) {
+                      $target = Join-Path $tempDir 'mihomo.exe'
+                      Copy-Item $f.FullName $target -Force
+                      $exeCandidate = Get-Item $target
+                      break
+                    }
+                  } catch { }
+                }
+              }
+
+              if (-not $exeCandidate) {
+                throw "未找到可执行文件"
+              }
+
+              Copy-Item $exeCandidate.FullName $exePath -Force
+
+              Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+
+              Write-Host "mihomo 更新成功"
+              break
+            }
+            catch {
+              Write-Host ("失败: {0}" -f $_.Exception.Message)
+              if ($attempt -eq $maxAttempts) { exit 1 }
+              Start-Sleep -Seconds (10 * $attempt)
+            }
+          }
+
+      - name: Show mihomo version
+        run: |
+          $exePath = Join-Path $PWD 'mihomo.exe'
+          if (-not (Test-Path $exePath)) { Write-Error "mihomo.exe 未找到"; exit 1 }
+          & $exePath -v
+
+      - name: Convert ruleset
+        run: |
+          $exePath = Join-Path $PWD 'mihomo.exe'
+          $inputYaml  = Join-Path $PWD 'adblock_reject.yaml'
+          $outputMrs  = Join-Path $PWD 'adblock_reject.mrs'
+          $maxAttempts = 5
+
+          if (-not (Test-Path $inputYaml)) { Write-Error "找不到 YAML 文件"; exit 1 }
+
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            try {
+              Write-Host ("转换尝试 {0}/{1}" -f $attempt, $maxAttempts)
+              & $exePath convert-ruleset domain yaml $inputYaml $outputMrs
+              if ($LASTEXITCODE -eq 0) { break } else { throw "转换失败" }
+            }
+            catch {
+              if ($attempt -eq $maxAttempts) { exit 1 }
+              Start-Sleep -Seconds (5 * $attempt)
+            }
+          }
+
+      - name: Commit and push changes
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+
+          $repo = "${{ github.repository }}"
+          $branch = "${{ github.ref_name }}"
+
+          if (-not $branch) {
+            $ref = "${{ github.ref }}"
+            if ($ref -match 'refs/heads/(.+)') { $branch = $matches[1] } else { $branch = 'main' }
+          }
+
+          # 使用 TOKEN 推送（通过环境变量，不直接把 secret 展开在 workflow 文件）
+          git remote set-url origin "https://x-access-token:$env:TOKEN@github.com/$repo.git"
+
+          git add adblock_reject.mrs mihomo.exe
+
+          $status = git status --porcelain
+          if ($status) {
+            git commit -m "Update adblock_reject.mrs and mihomo (auto)"
+            git push origin "HEAD:refs/heads/$branch" --force
+          }
+          else {
+            Write-Host "无需提交"
+          }
