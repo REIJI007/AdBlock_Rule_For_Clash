@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest  # 使用最新的 Ubuntu 版本作为运行环境
 
     steps:
-    - name: Setup Node.js 20  # 设置 Node.js 20 环境
+    - name: Setup Node.js 24  # 设置 Node.js 24 环境
       uses: actions/setup-node@v3  # 使用官方的 setup-node 操作来设置 Node.js 环境
       with:
-        node-version: '20'  # 指定使用 Node.js 版本 20
+        node-version: '24'  # 指定使用 Node.js 版本 24
 
     - name: Checkout repository  # 检出代码仓库
       uses: actions/checkout@v3  # 使用官方的 checkout 操作来检出代码
