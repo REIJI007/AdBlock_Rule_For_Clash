@@ -1,0 +1,27 @@
+name: Delete All Tags
+
+on:
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时执行一次
+
+jobs:
+  delete-all-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all tags
+        run: |
+          # 获取所有标签
+          tags=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/git/refs/tags" \
+               | jq -r '.[].ref' | sed 's|refs/tags/||')
+          
+          # 遍历并删除每个标签
+          for tag in $tags
+          do
+            curl -X DELETE -H "Authorization: token ${{ secrets.TOKEN }}" \
+                 "https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag"
+            echo "Deleted tag: $tag"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
