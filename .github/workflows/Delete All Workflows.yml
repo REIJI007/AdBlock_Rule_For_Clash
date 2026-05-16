@@ -1,0 +1,98 @@
+name: Delete All Workflows
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天午夜运行
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  delete-all-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all workflows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 获取仓库信息
+          repo_info=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}")
+          
+          # 检查仓库信息是否成功获取
+          if [ $(echo "$repo_info" | jq -r '.message // empty') = "Not Found" ]; then
+            echo "Error: Unable to access repository. Please check your permissions."
+            exit 1
+          fi
+          
+          # 提取所有者和仓库名
+          OWNER=$(echo "$repo_info" | jq -r '.owner.login')
+          REPO=$(echo "$repo_info" | jq -r '.name')
+          
+          echo "Repository: $OWNER/$REPO"
+          
+          # 设置分页参数
+          per_page=100
+          page=1
+          
+          while true; do
+            echo "Fetching page $page of all workflow runs..."
+            
+            # 获取工作流运行（不再过滤状态）
+            response=$(curl -s -w "\n%{http_code}" -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$OWNER/$REPO/actions/runs?per_page=$per_page&page=$page")
+            
+            http_status=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            
+            echo "HTTP Status: $http_status"
+            echo "Response body:"
+            echo "$body"
+            
+            if [ "$http_status" -ne 200 ]; then
+              echo "Error: HTTP request failed with status $http_status"
+              echo "Please ensure that GITHUB_TOKEN has the necessary permissions."
+              exit 1
+            fi
+            
+            # 检查响应是否为空
+            if [ -z "$body" ]; then
+              echo "Error: Empty response received from GitHub API"
+              exit 1
+            fi
+            
+            # 验证JSON格式
+            if ! echo "$body" | jq empty; then
+              echo "Error: Invalid JSON received from GitHub API"
+              exit 1
+            fi
+            
+            # 提取工作流运行 ID
+            run_ids=$(echo "$body" | jq -r '.workflow_runs[].id')
+            
+            # 如果没有更多的工作流运行，退出循环
+            if [ -z "$run_ids" ]; then
+              echo "No more runs found. Exiting loop."
+              break
+            fi
+            
+            # 删除每个工作流运行
+            for run_id in $run_ids; do
+              echo "Deleting workflow run $run_id"
+              delete_response=$(curl -s -w "\n%{http_code}" -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
+                "https://api.github.com/repos/$OWNER/$REPO/actions/runs/$run_id")
+              
+              delete_status=$(echo "$delete_response" | tail -n1)
+              delete_body=$(echo "$delete_response" | sed '$d')
+              
+              if [ "$delete_status" -ne 204 ]; then
+                echo "Warning: Failed to delete run $run_id. Status: $delete_status"
+                echo "Response: $delete_body"
+              else
+                echo "Successfully deleted run $run_id"
+              fi
+            done
+            
+            # 增加页数以获取下一页结果
+            page=$((page + 1))
+          done
+          
+          echo "All workflow runs have been processed."
