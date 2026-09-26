@@ -1,0 +1,48 @@
+name: Delete All Releases
+
+on:
+  workflow_dispatch:  # 手动触发
+  schedule:
+    - cron: '0 */6 * * *'  # 每6小时执行一次
+
+jobs:
+  delete-releases:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: List and delete all releases (with pagination)
+        run: |
+          # 初始化页码和release ID列表
+          page=1
+          releases=""
+
+          # 获取所有分页中的release ID
+          while true; do
+            result=$(curl -s -H "Authorization: token ${{ secrets.TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/releases?per_page=100&page=$page" | jq -r '.[].id')
+
+            if [ -z "$result" ]; then
+              break
+            fi
+
+            releases="$releases $result"
+            page=$((page + 1))
+          done
+
+          # 检查是否有 releases
+          if [ -z "$releases" ]; then
+            echo "No releases found."
+            exit 0
+          fi
+
+          # 删除每个 release
+          for id in $releases; do
+            echo "Deleting release ID: $id"
+            curl -s -X DELETE -H "Authorization: token ${{ secrets.TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/$id"
+          done
+
+          echo "All releases deleted."
