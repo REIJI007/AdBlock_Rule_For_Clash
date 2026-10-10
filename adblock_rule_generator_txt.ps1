@@ -308,6 +308,7 @@ $urlList = @(
 	"https://malware-filter.gitlab.io/malware-filter/tracking-filter.txt"
 )
 
+
 # 凡携带以下修饰符的规则均在 HTTP/浏览器/应用层生效，DNS 层无法实施，直接跳过整条规则
 $modSkipSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 @(
@@ -399,28 +400,24 @@ function Get-ParentDomains([string]$domain) {
     return $result
 }
 
+$modAllowSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+@('all','document','doc','reason') | ForEach-Object { $modAllowSet.Add($_) | Out-Null }
+
 function Resolve-Modifiers([string]$modStr) {
     $ret = [PSCustomObject]@{ Decision = "CONTINUE"; SkipReason = $null; IsImportant = $false }
     if ([string]::IsNullOrWhiteSpace($modStr)) { return $ret }
     foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
         $modName = ($mod -split '=')[0]
-        if ($modSkipSet.Contains($modName)) {
-            $ret.Decision = "SKIP";
-            $ret.SkipReason = "non-dns-modifier:$modName"; return $ret
-        }
+        if ($modName -eq 'important') { $ret.IsImportant = $true; continue }
+        if ($modAllowSet.Contains($modName)) { continue }
         if ($modName -eq 'dnsrewrite') {
             $rv = if ($mod -match '=(.+)$') { $Matches[1] } else { '' }
             if ($rv -eq 'nxdomain' -or $rv -match '^noerror;a;[\d.]+$' -or $rv -match '^noerror;aaaa;[0:]*$' -or $rv -eq 'noerror;aaaa;::1') { continue }
             $ret.Decision = "SKIP";
             $ret.SkipReason = "dnsrewrite-non-block:$rv"; return $ret
         }
-        if ($modName -eq 'domain') {
-            $dv = if ($mod -match '=(.+)$') { $Matches[1] } else { '' }
-            if ($dv -eq '*' -or $dv -eq '~*') { continue }
-            $ret.Decision = "SKIP";
-            $ret.SkipReason = "context-dependent:domain=$dv"; return $ret
-        }
-        if ($modName -eq 'important') { $ret.IsImportant = $true; continue }
+        $ret.Decision = "SKIP"
+        $ret.SkipReason = "unsupported-modifier:$modName"; return $ret
     }
     if ($ret.IsImportant) { $ret.Decision = "IMPORTANT_CONTINUE" }
     return $ret
@@ -431,7 +428,7 @@ $whitelistSubresourceTypes = [System.Collections.Generic.HashSet[string]]@('docu
 function Is-ContextConstrainedWhitelist([string]$modStr) {
     if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
     foreach ($mod in ($modStr -split ',' | ForEach-Object { ($_ -split '=')[0].Trim().ToLower() })) {
-        if ($whitelistSubresourceTypes.Contains($mod) -or $modSkipSet.Contains($mod)) { return $true }
+        if ($mod -ne 'important') { return $true }
     }
     return $false
 }
@@ -497,9 +494,15 @@ function Parse-Rule {
                 $result.SkipReason = "whitelist-path-or-query-specific"
                 return $result
             }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
 
-            if ($afterDomain -match '^\^?\$(.+)$') {
-                $modPartRaw = $Matches[1]
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
             }
         }
         elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
@@ -757,7 +760,6 @@ function Parse-Rule {
 
     return $result
 }
-
 # ── 主采集循环 ───────────────────────────────────────────────
 $logFilePath = "$PSScriptRoot/adblock_log.txt"
 $badfilterCancelDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -893,7 +895,6 @@ $validExactRules.UnionWith($validPslRules)
 Write-Host "正在执行 `$badfilter 撤销规则，共 $($badfilterCancelDomains.Count) 条撤销目标..."
 $validSuffixRules.ExceptWith($badfilterCancelDomains)
 $validExactRules.ExceptWith($badfilterCancelDomains)
-
 
 # ==========================================
 # 核心逻辑：五级优先级判定矩阵与最近邻原则
