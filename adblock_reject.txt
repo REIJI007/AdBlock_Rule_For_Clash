@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-19 01:35:20
-# Total Rules: 611549
-# DOMAIN : 47692
-# DOMAIN-SUFFIX : 563857
+# Generated Time: 2026-10-19 03:31:47
+# Total Rules: 611551
+# DOMAIN : 47693
+# DOMAIN-SUFFIX : 563858
 # Whitelist : 904
 
 payload:
@@ -446225,6 +446225,7 @@ payload:
   - DOMAIN-SUFFIX,qfwfbo.decofurnsa.co.za
   - DOMAIN-SUFFIX,qfxdvti.cn
   - DOMAIN-SUFFIX,qfxheyyfxnply.site
+  - DOMAIN-SUFFIX,qfxqmbwvrywfu.website
   - DOMAIN-SUFFIX,qfxwqa.lens-smile.com
   - DOMAIN-SUFFIX,qfy.innotechx.com
   - DOMAIN-SUFFIX,qfzsogrsoxiue.site
@@ -610604,6 +610605,7 @@ payload:
   - DOMAIN,zalps.tt.omtrdc.net
   - DOMAIN,zam098224.tt.omtrdc.net
   - DOMAIN,zamannowmagz.tt.omtrdc.net
+  - DOMAIN,zamatours.net
   - DOMAIN,zamboli.admins1.accountfcanr.tt.omtrdc.net
   - DOMAIN,zamboni-eu.tt.omtrdc.net
   - DOMAIN,zambu.tt.omtrdc.net
