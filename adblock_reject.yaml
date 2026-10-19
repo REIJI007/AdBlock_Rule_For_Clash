@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-19 23:49:01
-# Total Rules: 626062
-# DOMAIN : 47703
-# DOMAIN-SUFFIX : 578359
+# Generated Time: 2026-10-20 00:01:11
+# Total Rules: 626067
+# DOMAIN : 47704
+# DOMAIN-SUFFIX : 578363
 # Whitelist : 904
 
 payload:
@@ -8066,6 +8066,7 @@ payload:
   - DOMAIN-SUFFIX,77u.com
   - DOMAIN-SUFFIX,77union.cn
   - DOMAIN-SUFFIX,77wye93uy1.com
+  - DOMAIN-SUFFIX,77y5c9bl3hi9yvt.rest
   - DOMAIN-SUFFIX,77zdmt8yq.com
   - DOMAIN-SUFFIX,78-20-115-5.access.telenet.be
   - DOMAIN-SUFFIX,780-gkhv-y5x3-8fc228-iyr.pages.dev
@@ -422784,6 +422785,7 @@ payload:
   - DOMAIN-SUFFIX,mgun.applied-valuation.com
   - DOMAIN-SUFFIX,mgun.mylifeline.org
   - DOMAIN-SUFFIX,mgun.premier-comp.com
+  - DOMAIN-SUFFIX,mguwqoedetnfl.website
   - DOMAIN-SUFFIX,mguxmveyfwdyo.space
   - DOMAIN-SUFFIX,mgvmi.micocinaus.com
   - DOMAIN-SUFFIX,mgvrst.mi-shop.com
@@ -466218,6 +466220,7 @@ payload:
   - DOMAIN-SUFFIX,rjbcm.wearejude.com
   - DOMAIN-SUFFIX,rjbof.naturalrems.com
   - DOMAIN-SUFFIX,rjbvma.alicesgarden.fr
+  - DOMAIN-SUFFIX,rjbwsbwupldoj.space
   - DOMAIN-SUFFIX,rjddv.koch.com.au
   - DOMAIN-SUFFIX,rjdhg.liveagaindetox.com
   - DOMAIN-SUFFIX,rjemafqzprwxc.space
@@ -577481,6 +577484,7 @@ payload:
   - DOMAIN-SUFFIX,zqlgc.facethefuture.co.uk
   - DOMAIN-SUFFIX,zqmblmvzkvwmb.top
   - DOMAIN-SUFFIX,zqmhl8lgj.com
+  - DOMAIN-SUFFIX,zqmmambgpkdlv.site
   - DOMAIN-SUFFIX,zqmpenssnrzmc.site
   - DOMAIN-SUFFIX,zqmwf.xyz
   - DOMAIN-SUFFIX,zqofhft.cn
@@ -611714,6 +611718,7 @@ payload:
   - DOMAIN,mx.preview10.int.tt.omtrdc.net
   - DOMAIN,mx.sc.tt.omtrdc.net
   - DOMAIN,mx1-uk.tt-stage-ci1.omtrdc.net
+  - DOMAIN,mx9x.com
   - DOMAIN,mxmacromedia-mboxedge37-02.tt.omtrdc.net
   - DOMAIN,mycb-ml13.tt-stage3.omtrdc.net
   - DOMAIN,mycb-ml4-1.tt.omtrdc.net
