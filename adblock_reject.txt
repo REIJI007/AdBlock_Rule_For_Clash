@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-20 05:02:51
-# Total Rules: 625742
+# Generated Time: 2026-10-20 05:20:57
+# Total Rules: 625749
 # DOMAIN : 47709
-# DOMAIN-SUFFIX : 578033
+# DOMAIN-SUFFIX : 578040
 # Whitelist : 904
 
 payload:
@@ -34724,7 +34724,6 @@ payload:
   - DOMAIN-SUFFIX,b.pscp.live
   - DOMAIN-SUFFIX,b.publicmobile.ca
   - DOMAIN-SUFFIX,b.puravidabracelets.com
-  - DOMAIN-SUFFIX,b.qgfkv4wyj7t8m6nk4.cfd
   - DOMAIN-SUFFIX,b.ranking.apis.sankei-digital.co.jp
   - DOMAIN-SUFFIX,b.redbrickhealth.com
   - DOMAIN-SUFFIX,b.rohde-schwarz.com
@@ -87041,6 +87040,7 @@ payload:
   - DOMAIN-SUFFIX,donecalory.qpon
   - DOMAIN-SUFFIX,donecperficiam.net
   - DOMAIN-SUFFIX,donehealthcovered.tt.omtrdc.net
+  - DOMAIN-SUFFIX,donehumoral.cyou
   - DOMAIN-SUFFIX,dones9.wixsite.com
   - DOMAIN-SUFFIX,dongbeisurewin.com
   - DOMAIN-SUFFIX,dongchen888.com
@@ -361184,6 +361184,7 @@ payload:
   - DOMAIN-SUFFIX,hawkeye-elb-aps.tt.omtrdc.net
   - DOMAIN-SUFFIX,hawkeysalconde.cfd
   - DOMAIN-SUFFIX,hawking.tt.omtrdc.net
+  - DOMAIN-SUFFIX,hawkingcarnel.qpon
   - DOMAIN-SUFFIX,hawkins.tt-stage3.omtrdc.net
   - DOMAIN-SUFFIX,hawkinsrattly.com
   - DOMAIN-SUFFIX,hawkirb.research.tt.omtrdc.net
@@ -380836,6 +380837,7 @@ payload:
   - DOMAIN-SUFFIX,ivcbrasil.org.br
   - DOMAIN-SUFFIX,ivcertqa2.tt.omtrdc.net
   - DOMAIN-SUFFIX,ivcfsi3dr0.com
+  - DOMAIN-SUFFIX,ivcmdzkjmmfz.com
   - DOMAIN-SUFFIX,ivcrecordings.tt.omtrdc.net
   - DOMAIN-SUFFIX,ivcsmrt.com
   - DOMAIN-SUFFIX,ivcxpw.kogan.com
@@ -386358,6 +386360,7 @@ payload:
   - DOMAIN-SUFFIX,kdhod.rotita.com
   - DOMAIN-SUFFIX,kdhwaqcwpqvwo.website
   - DOMAIN-SUFFIX,kdiaa.bestpricenutrition.com
+  - DOMAIN-SUFFIX,kdicxpjsdzfxc.space
   - DOMAIN-SUFFIX,kdiwpsdrk.com
   - DOMAIN-SUFFIX,kdjjkg.rajapack.pl
   - DOMAIN-SUFFIX,kdjyejumiotmh.online
@@ -388992,6 +388995,7 @@ payload:
   - DOMAIN-SUFFIX,krddufisqivnq.website
   - DOMAIN-SUFFIX,krdktxzcfvfrg.site
   - DOMAIN-SUFFIX,krdtvkoyuhwjs.site
+  - DOMAIN-SUFFIX,krdurnfkxmxqv.space
   - DOMAIN-SUFFIX,kre.wes.org
   - DOMAIN-SUFFIX,kreasitour.tt.omtrdc.net
   - DOMAIN-SUFFIX,kreativo.tt.omtrdc.net
@@ -453391,6 +453395,7 @@ payload:
   - DOMAIN-SUFFIX,pretendshipmentvision.com
   - DOMAIN-SUFFIX,pretension48.top
   - DOMAIN-SUFFIX,pretergante.com
+  - DOMAIN-SUFFIX,pretestyoe.cfd
   - DOMAIN-SUFFIX,pretextmagicalaccumulate.com
   - DOMAIN-SUFFIX,pretpikakes.cyou
   - DOMAIN-SUFFIX,pretrackings.com
@@ -459018,6 +459023,7 @@ payload:
   - DOMAIN-SUFFIX,qgerr.com
   - DOMAIN-SUFFIX,qgfdmuyzgrosw.online
   - DOMAIN-SUFFIX,qgfdqjf.cn
+  - DOMAIN-SUFFIX,qgfkv4wyj7t8m6nk4.cfd
   - DOMAIN-SUFFIX,qgftba.jetmar.com.uy
   - DOMAIN-SUFFIX,qgfwets.cn
   - DOMAIN-SUFFIX,qggie.inovaairpurifiers.com.au
@@ -577485,6 +577491,7 @@ payload:
   - DOMAIN-SUFFIX,ztvx8.com
   - DOMAIN-SUFFIX,ztvzfq.com
   - DOMAIN-SUFFIX,ztwf8lr.cn
+  - DOMAIN-SUFFIX,ztwueuqspwxvy.website
   - DOMAIN-SUFFIX,ztwxwaeenxymn.space
   - DOMAIN-SUFFIX,ztwynkeinevag.website
   - DOMAIN-SUFFIX,ztxbd.com
