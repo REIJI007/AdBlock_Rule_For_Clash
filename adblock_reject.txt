@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-19 11:02:19
-# Total Rules: 611326
+# Generated Time: 2026-10-19 11:50:39
+# Total Rules: 611335
 # DOMAIN : 47689
-# DOMAIN-SUFFIX : 563637
+# DOMAIN-SUFFIX : 563646
 # Whitelist : 904
 
 payload:
@@ -7610,6 +7610,7 @@ payload:
   - DOMAIN-SUFFIX,6uc.cc
   - DOMAIN-SUFFIX,6uliq2uive.com
   - DOMAIN-SUFFIX,6ulv19ce9.com
+  - DOMAIN-SUFFIX,6um8cyhwgub2g6zz7xnvi.rest
   - DOMAIN-SUFFIX,6v2wkfw6pc.com
   - DOMAIN-SUFFIX,6v3e9t6g71vc4fcq9ljwuev4iqo.rest
   - DOMAIN-SUFFIX,6v41p4bsq.com
@@ -36391,6 +36392,7 @@ payload:
   - DOMAIN-SUFFIX,bayar-terus2u.shop
   - DOMAIN-SUFFIX,bayarea.summitry.com
   - DOMAIN-SUFFIX,bayarpilihan.shop
+  - DOMAIN-SUFFIX,bayboltrubdownoutshot.cyou
   - DOMAIN-SUFFIX,baycorp-a.icu
   - DOMAIN-SUFFIX,bayctrk.com
   - DOMAIN-SUFFIX,baycwn.cornilleau.com
@@ -66382,6 +66384,7 @@ payload:
   - DOMAIN-SUFFIX,cq1.contequebec.ca
   - DOMAIN-SUFFIX,cq13541.tw1.ru
   - DOMAIN-SUFFIX,cq2f5kn85c.top
+  - DOMAIN-SUFFIX,cq3gblk8lq9co826kvn.cfd
   - DOMAIN-SUFFIX,cq507289.tw1.ru
   - DOMAIN-SUFFIX,cq515559.tw1.ru
   - DOMAIN-SUFFIX,cq5nsp7kya.com
@@ -319215,6 +319218,7 @@ payload:
   - DOMAIN-SUFFIX,fwumc.tt-qe-ci1.omtrdc.net
   - DOMAIN-SUFFIX,fwunymlwmsebu.site
   - DOMAIN-SUFFIX,fwvduofolpzzj.site
+  - DOMAIN-SUFFIX,fwvfpweyygiqc.site
   - DOMAIN-SUFFIX,fwvonuigotkft.space
   - DOMAIN-SUFFIX,fwvzx907rr.com
   - DOMAIN-SUFFIX,fww-5-54.jamf.tt.omtrdc.net
@@ -386834,6 +386838,7 @@ payload:
   - DOMAIN-SUFFIX,lk0v8teerw.com
   - DOMAIN-SUFFIX,lk2vr84mkricuveci9xtuy.cfd
   - DOMAIN-SUFFIX,lk54dfg87.com
+  - DOMAIN-SUFFIX,lkahiwjvotmjg.site
   - DOMAIN-SUFFIX,lkaowvjzjfkyd.store
   - DOMAIN-SUFFIX,lkcfyglveryvl.online
   - DOMAIN-SUFFIX,lkcoffe.com
@@ -415926,6 +415931,7 @@ payload:
   - DOMAIN-SUFFIX,mxpopad.com
   - DOMAIN-SUFFIX,mxptint.net
   - DOMAIN-SUFFIX,mxpucjutlugfn.site
+  - DOMAIN-SUFFIX,mxqdpxzybpx.com
   - DOMAIN-SUFFIX,mxqrwohczgqlt.space
   - DOMAIN-SUFFIX,mxqvygpfsmtfk.space
   - DOMAIN-SUFFIX,mxradon.com
@@ -425557,6 +425563,7 @@ payload:
   - DOMAIN-SUFFIX,olmvkq.cn
   - DOMAIN-SUFFIX,olnfdv.f-academy.jp
   - DOMAIN-SUFFIX,olntyyszaelkp.online
+  - DOMAIN-SUFFIX,olnxwufpgegsm.website
   - DOMAIN-SUFFIX,olodlstape.collegevidya.com
   - DOMAIN-SUFFIX,olohg9e3agmambs-p.adktrack30.xyz
   - DOMAIN-SUFFIX,olomaoborscht.cyou
@@ -522755,6 +522762,7 @@ payload:
   - DOMAIN-SUFFIX,tutorshelf.com
   - DOMAIN-SUFFIX,tutpaste.com
   - DOMAIN-SUFFIX,tuttevadavantirol.firebaseapp.com
+  - DOMAIN-SUFFIX,tuttiesoilier.com
   - DOMAIN-SUFFIX,tuttivadavantity.firebaseapp.com
   - DOMAIN-SUFFIX,tutu.lendoncapital.com
   - DOMAIN-SUFFIX,tututiki.com
@@ -557195,6 +557203,7 @@ payload:
   - DOMAIN-SUFFIX,ycwsiwxfokyhn.site
   - DOMAIN-SUFFIX,ycwzd.lacoste.com
   - DOMAIN-SUFFIX,ycxbtm.caffeborboneonline.it
+  - DOMAIN-SUFFIX,ycxwdczuvsxkw.online
   - DOMAIN-SUFFIX,ycxxulehaukaw.website
   - DOMAIN-SUFFIX,ycyxddmy.com
   - DOMAIN-SUFFIX,ycyzpk.easycash.fr
