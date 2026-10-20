@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-20 18:00:53
-# Total Rules: 625749
-# DOMAIN : 47715
-# DOMAIN-SUFFIX : 578034
+# Generated Time: 2026-10-20 18:15:12
+# Total Rules: 625759
+# DOMAIN : 47713
+# DOMAIN-SUFFIX : 578046
 # Whitelist : 904
 
 payload:
@@ -61692,6 +61692,7 @@ payload:
   - DOMAIN-SUFFIX,cojwnb.com
   - DOMAIN-SUFFIX,cokedalk.com
   - DOMAIN-SUFFIX,cokedpariti.com
+  - DOMAIN-SUFFIX,cokeyreseek.cfd
   - DOMAIN-SUFFIX,col.casa.it
   - DOMAIN-SUFFIX,col.idealista.com
   - DOMAIN-SUFFIX,col.idealista.fr
@@ -318327,6 +318328,7 @@ payload:
   - DOMAIN-SUFFIX,expwycheapie.com
   - DOMAIN-SUFFIX,expycoster.qpon
   - DOMAIN-SUFFIX,exqrzl.evcloset.com
+  - DOMAIN-SUFFIX,exqubzkygkntn.space
   - DOMAIN-SUFFIX,exquisite-startup-192000.framer.app
   - DOMAIN-SUFFIX,exquisiteartisanship.com
   - DOMAIN-SUFFIX,exquisitedarkersurprising.com
@@ -326639,6 +326641,7 @@ payload:
   - DOMAIN-SUFFIX,fp.thejuicelearning.com
   - DOMAIN-SUFFIX,fp.tongdun.net
   - DOMAIN-SUFFIX,fp.ubagroup.com
+  - DOMAIN-SUFFIX,fp.uncensored.com
   - DOMAIN-SUFFIX,fp.ups.com
   - DOMAIN-SUFFIX,fp.uxi9f4pxvmvzhf.cyou
   - DOMAIN-SUFFIX,fp0ao2bav.com
@@ -329813,6 +329816,7 @@ payload:
   - DOMAIN-SUFFIX,fwlkokvvkx.icu
   - DOMAIN-SUFFIX,fwlpazuvbhmkg.online
   - DOMAIN-SUFFIX,fwlusc.evolutioncycles.co.nz
+  - DOMAIN-SUFFIX,fwlyluvwhurli.space
   - DOMAIN-SUFFIX,fwm.focusedwealthmgmt.com
   - DOMAIN-SUFFIX,fwmknvveyfahw.site
   - DOMAIN-SUFFIX,fwmqki.eckerle.de
@@ -382131,6 +382135,7 @@ payload:
   - DOMAIN-SUFFIX,jds4i5gcfv.com
   - DOMAIN-SUFFIX,jdsbyb.webmd.com
   - DOMAIN-SUFFIX,jdskwuirefshkjioq.weebly.com
+  - DOMAIN-SUFFIX,jdsppzwikhqgd.website
   - DOMAIN-SUFFIX,jdssykdlwygwj.site
   - DOMAIN-SUFFIX,jdst.vgbolig.dk
   - DOMAIN-SUFFIX,jdsy.ltd
@@ -393858,6 +393863,7 @@ payload:
   - DOMAIN-SUFFIX,lingsui.top
   - DOMAIN-SUFFIX,linguetlainer.cfd
   - DOMAIN-SUFFIX,linguette.net
+  - DOMAIN-SUFFIX,lingywonners.cyou
   - DOMAIN-SUFFIX,lingzhushijie.cn
   - DOMAIN-SUFFIX,linhabranca-oficial10.vercel.app
   - DOMAIN-SUFFIX,linhabranca-oficial21.vercel.app
@@ -423440,6 +423446,7 @@ payload:
   - DOMAIN-SUFFIX,mintaza.xyz
   - DOMAIN-SUFFIX,mintegral.com
   - DOMAIN-SUFFIX,mintegral.net
+  - DOMAIN-SUFFIX,minterspilleek.qpon
   - DOMAIN-SUFFIX,mintfunnel.co
   - DOMAIN-SUFFIX,mintiia.com
   - DOMAIN-SUFFIX,minto.tt.omtrdc.net
@@ -435215,6 +435222,7 @@ payload:
   - DOMAIN-SUFFIX,ntihwhqe.usatours.se
   - DOMAIN-SUFFIX,ntin.tt.omtrdc.net
   - DOMAIN-SUFFIX,ntirety.siteintercept.atlassian-app.tt.omtrdc.net
+  - DOMAIN-SUFFIX,ntisospefixmi.space
   - DOMAIN-SUFFIX,ntivl.emf-harmony.com
   - DOMAIN-SUFFIX,ntjanyc.cn
   - DOMAIN-SUFFIX,ntjhidsipuvcj.site
@@ -464462,6 +464470,7 @@ payload:
   - DOMAIN-SUFFIX,report.meituan.com
   - DOMAIN-SUFFIX,report.mitsubishicars.com
   - DOMAIN-SUFFIX,report.pixverse.ai
+  - DOMAIN-SUFFIX,report.senzia.cc
   - DOMAIN-SUFFIX,report.seznamzpravy.cz
   - DOMAIN-SUFFIX,report.starshort.online
   - DOMAIN-SUFFIX,report.tantanapp.com
@@ -517747,6 +517756,7 @@ payload:
   - DOMAIN-SUFFIX,t.valleiautogroep.nl
   - DOMAIN-SUFFIX,t.valuegolf.com
   - DOMAIN-SUFFIX,t.vcuathletics.com
+  - DOMAIN-SUFFIX,t.venice.ai
   - DOMAIN-SUFFIX,t.veranco.be
   - DOMAIN-SUFFIX,t.veranda-veranco.com
   - DOMAIN-SUFFIX,t.veranstaltungsticket-bahn.de
@@ -567776,6 +567786,7 @@ payload:
   - DOMAIN-SUFFIX,xealth.froedtert.com
   - DOMAIN-SUFFIX,xeamlrjpogegb.com
   - DOMAIN-SUFFIX,xeayxkzdnaqxq.site
+  - DOMAIN-SUFFIX,xeb3x4yj4t.com
   - DOMAIN-SUFFIX,xebfomhenqxin.online
   - DOMAIN-SUFFIX,xebtux.neweracap.com.au
   - DOMAIN-SUFFIX,xecdcjxhuefhg.space
@@ -571411,6 +571422,7 @@ payload:
   - DOMAIN-SUFFIX,yavapaigazer.cfd
   - DOMAIN-SUFFIX,yavli.com
   - DOMAIN-SUFFIX,yavteam.com
+  - DOMAIN-SUFFIX,yavurxepklnzm.space
   - DOMAIN-SUFFIX,yawkwxxretzyl.site
   - DOMAIN-SUFFIX,yawlsheared.com
   - DOMAIN-SUFFIX,yawmarqmnbndi.website
@@ -579106,7 +579118,6 @@ payload:
   - DOMAIN,app-sn01.marketo.com
   - DOMAIN,app.adywind.com
   - DOMAIN,app.aflink.com
-  - DOMAIN,app.app-river.icu
   - DOMAIN,app.bugfender.com
   - DOMAIN,app.bugreplay.com
   - DOMAIN,app.cdn.lookbookhq.com
@@ -603192,7 +603203,6 @@ payload:
   - DOMAIN,horizon.sailthru.com
   - DOMAIN,hornet.tt.omtrdc.net
   - DOMAIN,horning.tt.omtrdc.net
-  - DOMAIN,horno-rafelet.es
   - DOMAIN,horo-admin.app-youngmoney.tt.omtrdc.net
   - DOMAIN,horo-dev.tt.omtrdc.net
   - DOMAIN,horoscope.tt.omtrdc.net
