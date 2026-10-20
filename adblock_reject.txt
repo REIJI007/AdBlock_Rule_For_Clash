@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-21 06:13:12
-# Total Rules: 633172
-# DOMAIN : 47724
-# DOMAIN-SUFFIX : 585448
+# Generated Time: 2026-10-21 06:45:10
+# Total Rules: 633182
+# DOMAIN : 47727
+# DOMAIN-SUFFIX : 585455
 # Whitelist : 905
 
 payload:
@@ -413625,6 +413625,7 @@ payload:
   - DOMAIN-SUFFIX,lundbeck.tt.omtrdc.net
   - DOMAIN-SUFFIX,lundi-suivi-jour.com
   - DOMAIN-SUFFIX,lundi111-recor.com
+  - DOMAIN-SUFFIX,lunetoisinggawked.cfd
   - DOMAIN-SUFFIX,lunettesde.com
   - DOMAIN-SUFFIX,lunexmods.io
   - DOMAIN-SUFFIX,lungfulbunks.shop
@@ -442222,6 +442223,7 @@ payload:
   - DOMAIN-SUFFIX,nwbuhr.icu
   - DOMAIN-SUFFIX,nwcqt.bellabubear.com
   - DOMAIN-SUFFIX,nwcrzarmm.com
+  - DOMAIN-SUFFIX,nwdjmbqeebpzn.site
   - DOMAIN-SUFFIX,nwemnd.com
   - DOMAIN-SUFFIX,nwest.int.tst-cfp.nl
   - DOMAIN-SUFFIX,nwesternunion.tt.omtrdc.net
@@ -459500,6 +459502,7 @@ payload:
   - DOMAIN-SUFFIX,pqatj.thecontractorconsultants.com
   - DOMAIN-SUFFIX,pqbjuufejlasa.website
   - DOMAIN-SUFFIX,pqbonm.swedoffice.se
+  - DOMAIN-SUFFIX,pqbtkxqareumx.site
   - DOMAIN-SUFFIX,pqcixi.sparco-official.com
   - DOMAIN-SUFFIX,pqckg.keds.com
   - DOMAIN-SUFFIX,pqcqg.maxjerky.com
@@ -521290,6 +521293,7 @@ payload:
   - DOMAIN-SUFFIX,subsvideo-prime.com
   - DOMAIN-SUFFIX,subtleretortspat.com
   - DOMAIN-SUFFIX,subtraction59.com
+  - DOMAIN-SUFFIX,subtrahend70.com
   - DOMAIN-SUFFIX,suburban-deposit.pro
   - DOMAIN-SUFFIX,suburbcriticizefragment.com
   - DOMAIN-SUFFIX,suburbincriminatesubdue.com
@@ -565909,6 +565913,7 @@ payload:
   - DOMAIN-SUFFIX,wogqaqyqakmfl.website
   - DOMAIN-SUFFIX,wohong5.com
   - DOMAIN-SUFFIX,woihtwxtybnzw.store
+  - DOMAIN-SUFFIX,woilruyvdtjwx.site
   - DOMAIN-SUFFIX,woitznohskwpz.online
   - DOMAIN-SUFFIX,wojanpkkxcntg.website
   - DOMAIN-SUFFIX,wojiabaoye.com
@@ -574813,6 +574818,7 @@ payload:
   - DOMAIN-SUFFIX,xazafvbmicmi.com
   - DOMAIN-SUFFIX,xazhangshaohui.xyz
   - DOMAIN-SUFFIX,xazhuozhi.com
+  - DOMAIN-SUFFIX,xazxkducwblzf.online
   - DOMAIN-SUFFIX,xb3cicbx53m8rjxyi94kumyujr.cfd
   - DOMAIN-SUFFIX,xb588.net
   - DOMAIN-SUFFIX,xbam7box6.com
@@ -582616,6 +582622,7 @@ payload:
   - DOMAIN-SUFFIX,zhdpyo.saveeye.co.kr
   - DOMAIN-SUFFIX,zhdqegmnehrpl.site
   - DOMAIN-SUFFIX,zhduni.rizap.jp
+  - DOMAIN-SUFFIX,zhdwlnwvknhki.online
   - DOMAIN-SUFFIX,zhe8000.pw
   - DOMAIN-SUFFIX,zheard.net
   - DOMAIN-SUFFIX,zhekoudajie.com
@@ -585942,6 +585949,7 @@ payload:
   - DOMAIN,acecashexpress.tt.hb-fa-dev.tt.omtrdc.net
   - DOMAIN,acecashexpress.tt.omtrdc.net
   - DOMAIN,acme.tango.me
+  - DOMAIN,acrilicoporto.pt
   - DOMAIN,acron.tt.omtrdc.net
   - DOMAIN,acsorg.tt.omtrdc.net
   - DOMAIN,acswso.tt.omtrdc.net
@@ -585996,6 +586004,7 @@ payload:
   - DOMAIN,adimg.rekmob.com
   - DOMAIN,adio.hb.tt.omtrdc.net
   - DOMAIN,adityabirlafashion.tt.omtrdc.net
+  - DOMAIN,adiyamancamkornis.com.tr
   # adjust.net.in 因白名单子域冲突降级
   - DOMAIN,adjust.net.in
   - DOMAIN,adktracking-1671721947.eu-west-3.elb.amazonaws.com
@@ -607817,6 +607826,7 @@ payload:
   - DOMAIN,gobang.tt.omtrdc.net
   - DOMAIN,gobbit.users.tt.omtrdc.net
   - DOMAIN,gobhatia.citizensbank.tt.omtrdc.net
+  - DOMAIN,gobiotechpestcontrol.com
   - DOMAIN,gobjectcache.hdfclife.tt.omtrdc.net
   - DOMAIN,gobjectcache.wintrustfinancialcor.tt.omtrdc.net
   - DOMAIN,gobleteer01.tt.omtrdc.net
