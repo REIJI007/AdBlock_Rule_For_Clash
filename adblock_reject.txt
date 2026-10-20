@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-20 13:03:36
-# Total Rules: 625647
-# DOMAIN : 47703
-# DOMAIN-SUFFIX : 577944
+# Generated Time: 2026-10-20 13:23:46
+# Total Rules: 625658
+# DOMAIN : 47712
+# DOMAIN-SUFFIX : 577946
 # Whitelist : 904
 
 payload:
@@ -410472,6 +410472,7 @@ payload:
   - DOMAIN-SUFFIX,mahabaliexpress.com
   - DOMAIN-SUFFIX,mahaldenaryfrit.qpon
   - DOMAIN-SUFFIX,mahallastaboy.com
+  - DOMAIN-SUFFIX,mahantdominuspedros.cfd
   - DOMAIN-SUFFIX,mahao.xyz
   - DOMAIN-SUFFIX,mahassvibccui.store
   - DOMAIN-SUFFIX,mahatroo.com
@@ -447476,6 +447477,7 @@ payload:
   - DOMAIN-SUFFIX,pcnuhzoxhjhvd.website
   - DOMAIN-SUFFIX,pco-sm-log.tantanapp.com
   - DOMAIN-SUFFIX,pcp.coupert.com
+  - DOMAIN-SUFFIX,pcpbzqghreucy.space
   - DOMAIN-SUFFIX,pcplayz.com
   - DOMAIN-SUFFIX,pcpr.cn
   - DOMAIN-SUFFIX,pcprotect.com
@@ -578791,6 +578793,7 @@ payload:
   - DOMAIN,anixterinc.tt.omtrdc.net
   - DOMAIN,anntaylorinc.tt.omtrdc.net
   - DOMAIN,anquan.org
+  - DOMAIN,anubisclient.co.uk
   - DOMAIN,anznz.tt.omtrdc.net
   - DOMAIN,aoki.tt.omtrdc.net
   - DOMAIN,aol.tt.omtrdc.net
@@ -578909,6 +578912,7 @@ payload:
   - DOMAIN,api.wonderpush.com
   - DOMAIN,api.wootric.com
   - DOMAIN,api.wootric.com.herokudns.com
+  - DOMAIN,api.xyz-code.biz
   - DOMAIN,api2.batmobi.net
   - DOMAIN,api4.1mobile.com
   - DOMAIN,apicosdk.onemt.co
@@ -579014,6 +579018,7 @@ payload:
   - DOMAIN,app-sn01.marketo.com
   - DOMAIN,app.adywind.com
   - DOMAIN,app.aflink.com
+  - DOMAIN,app.app-river.icu
   - DOMAIN,app.bugfender.com
   - DOMAIN,app.bugreplay.com
   - DOMAIN,app.cdn.lookbookhq.com
@@ -582598,6 +582603,7 @@ payload:
   - DOMAIN,check-symbols.tt.omtrdc.net
   - DOMAIN,check-test.next35.next.tt.omtrdc.net
   - DOMAIN,check.aida.tt.omtrdc.net
+  - DOMAIN,check.okx3.io
   - DOMAIN,check.theboeingcompany.tt.omtrdc.net
   - DOMAIN,check.tt.omtrdc.net
   - DOMAIN,check123.tt.omtrdc.net
@@ -588330,6 +588336,7 @@ payload:
   - DOMAIN,do-15.tt.omtrdc.net
   - DOMAIN,do-centertel.tt.omtrdc.net
   - DOMAIN,do.hcsc.tt.omtrdc.net
+  - DOMAIN,do.opinionvip.club
   - DOMAIN,do08.tt.omtrdc.net
   - DOMAIN,do158-143.tt.omtrdc.net
   - DOMAIN,do220.tt.omtrdc.net
@@ -588809,6 +588816,7 @@ payload:
   - DOMAIN,download-pf.tt.omtrdc.net
   - DOMAIN,download-psoriasis.tt.omtrdc.net
   - DOMAIN,download-raw.stage.tt.omtrdc.net
+  - DOMAIN,download.foden.site
   - DOMAIN,download.q2-np.ac.tt.omtrdc.net
   - DOMAIN,download.stacytilton.tt.omtrdc.net
   - DOMAIN,download.tt.omtrdc.net
@@ -613732,6 +613740,7 @@ payload:
   - DOMAIN,pics.hpww.tt.omtrdc.net
   - DOMAIN,pictet.tt.omtrdc.net
   - DOMAIN,picturet.ci.fr.tt.omtrdc.net
+  - DOMAIN,pictureurl.com
   - DOMAIN,picuris4-qa.srvtest.tt.omtrdc.net
   - DOMAIN,pidlabelling.users.allnipponairwayscolt.tt.omtrdc.net
   - DOMAIN,pidlabelling.users.bmwofnorthamericallc.tt.omtrdc.net
@@ -614389,6 +614398,7 @@ payload:
   - DOMAIN,sbicard.tt.omtrdc.net
   - DOMAIN,sbicardspaymentservi.tt.omtrdc.net
   - DOMAIN,sbisecuritiescoltd.tt.omtrdc.net
+  - DOMAIN,sbmods.top
   - DOMAIN,sbs.tt.omtrdc.net
   - DOMAIN,sbux-dl.urbanairship.com
   - DOMAIN,sc.iasds01.com
@@ -614611,6 +614621,7 @@ payload:
   - DOMAIN,skoda.tt.omtrdc.net
   - DOMAIN,sky.tt.omtrdc.net
   - DOMAIN,skype.tt.omtrdc.net
+  - DOMAIN,skyvault.help
   - DOMAIN,slalom.tt.omtrdc.net
   - DOMAIN,slapi-bts.logsss.com
   - DOMAIN,sleephappens.tt.omtrdc.net
