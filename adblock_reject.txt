@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-20 08:15:20
-# Total Rules: 625790
+# Generated Time: 2026-10-20 08:31:28
+# Total Rules: 625797
 # DOMAIN : 47711
-# DOMAIN-SUFFIX : 578079
+# DOMAIN-SUFFIX : 578086
 # Whitelist : 904
 
 payload:
@@ -6162,7 +6162,6 @@ payload:
   - DOMAIN-SUFFIX,4710.connector-qa1.marketingcloudqaapis.com
   - DOMAIN-SUFFIX,4710.sfap-qa1.marketingcloudqaops.com
   - DOMAIN-SUFFIX,4710.sock-qa1.marketingcloudqaops.com
-  - DOMAIN-SUFFIX,47106b2a6e.57b3a65c7b.com
   - DOMAIN-SUFFIX,47235645.xyz
   - DOMAIN-SUFFIX,4726.sock-qa1.marketingcloudqaops.com
   - DOMAIN-SUFFIX,4744.connector-qa1.marketingcloudqaapis.com
@@ -6371,6 +6370,7 @@ payload:
   - DOMAIN-SUFFIX,4pcp5e2w7i.com
   - DOMAIN-SUFFIX,4ppj7n846t.com
   - DOMAIN-SUFFIX,4pr9wkn.hair
+  - DOMAIN-SUFFIX,4pxbxqzp98wmte.cfd
   - DOMAIN-SUFFIX,4pyszxxaw.com
   - DOMAIN-SUFFIX,4pzhkxyrqicp06f-p.bonnelectureatous.fr
   - DOMAIN-SUFFIX,4q7unmlg5.com
@@ -6851,6 +6851,7 @@ payload:
   - DOMAIN-SUFFIX,57927432-3rdpartyrou.weebly.com
   - DOMAIN-SUFFIX,5797.connector-qa1.marketingcloudqaapis.com
   - DOMAIN-SUFFIX,57and9.info
+  - DOMAIN-SUFFIX,57b3a65c7b.com
   - DOMAIN-SUFFIX,57db2dbfa3.com
   - DOMAIN-SUFFIX,57f6508c2d.com
   - DOMAIN-SUFFIX,57fe705a09.com
@@ -367184,6 +367185,7 @@ payload:
   - DOMAIN-SUFFIX,humourspot.com
   - DOMAIN-SUFFIX,humpcliffs.com
   - DOMAIN-SUFFIX,humpdecompose.com
+  - DOMAIN-SUFFIX,humqqsmykymmi.website
   - DOMAIN-SUFFIX,humsoolt.net
   - DOMAIN-SUFFIX,humsrecatch.com
   - DOMAIN-SUFFIX,humstoppageminimal.com
@@ -389038,6 +389040,7 @@ payload:
   - DOMAIN-SUFFIX,krhkmt.offroadstore.it
   - DOMAIN-SUFFIX,krhkyp1jn6y.bl5lfn46htwct1ewum5.cyou
   - DOMAIN-SUFFIX,krhmtdzuxxmsc.space
+  - DOMAIN-SUFFIX,kri7xrwzlypx7bwcg3zno24f9fr.rest
   - DOMAIN-SUFFIX,krill.far.dev
   - DOMAIN-SUFFIX,krill.far.site
   - DOMAIN-SUFFIX,krill.spoonrage.com
@@ -398551,6 +398554,7 @@ payload:
   - DOMAIN-SUFFIX,lmbsy.qq.com
   - DOMAIN-SUFFIX,lmbtmfkhdqkki.website
   - DOMAIN-SUFFIX,lmbxvsykkceox.online
+  - DOMAIN-SUFFIX,lmcijmfgkdbuy.space
   - DOMAIN-SUFFIX,lmcraft.pw
   - DOMAIN-SUFFIX,lmcua.vibranthealth.com
   - DOMAIN-SUFFIX,lmcuacesmainsecureorg.weebly.com
@@ -434703,6 +434707,7 @@ payload:
   - DOMAIN-SUFFIX,nphqw.cn
   - DOMAIN-SUFFIX,nphxtgyzxotgf.online
   - DOMAIN-SUFFIX,npilkasacdu.in
+  - DOMAIN-SUFFIX,npitaqvuwci.in
   - DOMAIN-SUFFIX,npixaybinazjt.site
   - DOMAIN-SUFFIX,npjdvywxsbtbz.online
   - DOMAIN-SUFFIX,npjgm.petersheppard.com.au
@@ -552596,6 +552601,7 @@ payload:
   - DOMAIN-SUFFIX,vxxdhcxtcy.net
   - DOMAIN-SUFFIX,vxxgxicadjtia.space
   - DOMAIN-SUFFIX,vxxjhaug.com
+  - DOMAIN-SUFFIX,vxxkejpudeday.online
   - DOMAIN-SUFFIX,vxxqbm-a5zc-p1r-vhiuwt-5es278.pages.dev
   - DOMAIN-SUFFIX,vxxybwpygvjpc.online
   - DOMAIN-SUFFIX,vxydbok.com
@@ -572161,6 +572167,7 @@ payload:
   - DOMAIN-SUFFIX,yikrmn.ciceksepeti.com
   - DOMAIN-SUFFIX,yikuaiqian.com.cn
   - DOMAIN-SUFFIX,yilmaz.pro
+  - DOMAIN-SUFFIX,yiltbeulahsteeved.cfd
   - DOMAIN-SUFFIX,yilufff.com
   - DOMAIN-SUFFIX,yilzeq.bornshoes.com
   - DOMAIN-SUFFIX,yimbo.torm.tt.omtrdc.net
