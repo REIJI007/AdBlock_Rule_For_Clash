@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-21 13:30:00
-# Total Rules: 633270
-# DOMAIN : 47735
-# DOMAIN-SUFFIX : 585535
+# Generated Time: 2026-10-21 13:50:45
+# Total Rules: 633281
+# DOMAIN : 47744
+# DOMAIN-SUFFIX : 585537
 # Whitelist : 905
 
 payload:
@@ -32761,6 +32761,7 @@ payload:
   - DOMAIN-SUFFIX,atableofcup.com
   - DOMAIN-SUFFIX,atad.douchezaak.nl
   - DOMAIN-SUFFIX,ataevsupyrqxg.website
+  - DOMAIN-SUFFIX,atag.adgile.media
   - DOMAIN-SUFFIX,ataiyalstrays.com
   - DOMAIN-SUFFIX,atala-apw.com
   - DOMAIN-SUFFIX,atamarvtcznxj.website
@@ -335583,6 +335584,7 @@ payload:
   - DOMAIN-SUFFIX,fwhzvlaftuwbb7uf.sparta.members.tt.omtrdc.net
   - DOMAIN-SUFFIX,fwjtfo8f4z.com
   - DOMAIN-SUFFIX,fwkcnqye3qvehgm-p.adkclick.fr
+  - DOMAIN-SUFFIX,fwknqimiwvpls.website
   - DOMAIN-SUFFIX,fwkqnknqmuful.site
   - DOMAIN-SUFFIX,fwkwtw.amorossa.com
   - DOMAIN-SUFFIX,fwl-cloudstation-us-us-west.qa.hydra.tt.omtrdc.net
@@ -591975,6 +591977,7 @@ payload:
   - DOMAIN,community.emplois-locaux.tt.omtrdc.net
   - DOMAIN,community.ezproxy.com.lib.tt.omtrdc.net
   - DOMAIN,community.fas-gate.citizensbank.tt.omtrdc.net
+  - DOMAIN,community.firm.in
   - DOMAIN,community.iad.citizensbank.tt.omtrdc.net
   - DOMAIN,community.interia.tt.omtrdc.net
   - DOMAIN,community.med-qat.tt.omtrdc.net
@@ -592942,7 +592945,6 @@ payload:
   - DOMAIN,creditsafebusinessso.tt.omtrdc.net
   - DOMAIN,crest-vratpa.tt.omtrdc.net
   - DOMAIN,crestwood.doitbest.tt.omtrdc.net
-  - DOMAIN,cresvin.com
   - DOMAIN,creusatcom.tt.omtrdc.net
   - DOMAIN,crew.ttsfa.tt.omtrdc.net
   - DOMAIN,crewchiefv4.deltadentalca.tt.omtrdc.net
@@ -599236,6 +599238,7 @@ payload:
   - DOMAIN,eidas-button-eu2.tt.omtrdc.net
   - DOMAIN,eidas-sso3.tt.tt.omtrdc.net
   - DOMAIN,eidastest-staging.tryout.lu.tt.omtrdc.net
+  - DOMAIN,eidoss.mx
   - DOMAIN,eidupont21.na.tt.omtrdc.net
   - DOMAIN,eie22.tsa.tt.omtrdc.net
   - DOMAIN,eie9.cbp.tt.omtrdc.net
@@ -620334,6 +620337,7 @@ payload:
   - DOMAIN,onsite-tag-logs.apps.nielsen.com
   - DOMAIN,onsitestats.bluecore.com
   - DOMAIN,ontarioteacherspensi.tt.omtrdc.net
+  - DOMAIN,onyx-medical.com
   - DOMAIN,open.inc2.igexin.com
   - DOMAIN,open.phone.igexin.com
   - DOMAIN,open.talk.igexin.com
@@ -620708,6 +620712,7 @@ payload:
   - DOMAIN,pagetrack.tt.omtrdc.net
   - DOMAIN,paginasamarillas.tt.omtrdc.net
   - DOMAIN,pagonxt.tt.omtrdc.net
+  - DOMAIN,paidinsunshine.com
   - DOMAIN,pakalniai.utena.tt.omtrdc.net
   - DOMAIN,pal.tt.omtrdc.net
   - DOMAIN,pal2.my.tt.omtrdc.net
@@ -621771,7 +621776,6 @@ payload:
   - DOMAIN,rakutentoto.tt.omtrdc.net
   - DOMAIN,rambler.pushwoosh.com
   - DOMAIN,rate.tt.omtrdc.net
-  - DOMAIN,rathodsoftware.in
   - DOMAIN,rbs.tt.omtrdc.net
   - DOMAIN,rc-ext-geo.rlcdn.com
   - DOMAIN,rcci.tt.omtrdc.net
@@ -622220,8 +622224,8 @@ payload:
   - DOMAIN,skipton.tt.omtrdc.net
   - DOMAIN,skistarmboxedge37-02.tt.omtrdc.net
   - DOMAIN,skoda.tt.omtrdc.net
-  - DOMAIN,skolazasisanjepasa.com
   - DOMAIN,sky.tt.omtrdc.net
+  - DOMAIN,skymods.top
   - DOMAIN,skype.tt.omtrdc.net
   - DOMAIN,slalom.tt.omtrdc.net
   - DOMAIN,slapi-bts.logsss.com
@@ -622385,6 +622389,7 @@ payload:
   - DOMAIN,step-service.crossinstall.io
   - DOMAIN,stepancompany.tt.omtrdc.net
   - DOMAIN,stepstone.tt.omtrdc.net
+  - DOMAIN,stepupnetworks.com
   - DOMAIN,stericycle.tt.omtrdc.net
   - DOMAIN,stewartinformationse.tt.omtrdc.net
   - DOMAIN,stg.mmspdistribe.tt.omtrdc.net
@@ -622404,6 +622409,7 @@ payload:
   - DOMAIN,stsdk.vivo.com.cn
   - DOMAIN,stsdk.vivoglobal.com
   - DOMAIN,stubhub.tt.omtrdc.net
+  - DOMAIN,studiogioeli.it
   - DOMAIN,stwatermboxedge37-02.tt.omtrdc.net
   - DOMAIN,stylegeneration.ma
   - DOMAIN,sub.intel.tt.omtrdc.net
@@ -622435,6 +622441,7 @@ payload:
   - DOMAIN,sutterpoint.com
   - DOMAIN,swa.demdex.net
   - DOMAIN,swansonhealth-mmspdistribe.tt.omtrdc.net
+  - DOMAIN,swiftonyx16.com
   - DOMAIN,swisslifeag.tt.omtrdc.net
   - DOMAIN,switch.atdmt.com
   - DOMAIN,switchboard.mixpanel.com
@@ -622462,6 +622469,7 @@ payload:
   - DOMAIN,t.tt.omtrdc.net
   - DOMAIN,t.vi-serve.com
   - DOMAIN,ta-collector.centurygame.com
+  - DOMAIN,tabak.hr
   - DOMAIN,tafequeensland.tt.omtrdc.net
   - DOMAIN,tag.adincube.com
   - DOMAIN,tag.dickssportinggoods.com
@@ -622568,7 +622576,9 @@ payload:
   - DOMAIN,theoremreach.com
   - DOMAIN,theproactivcompanyll.tt.omtrdc.net
   - DOMAIN,therandomhousegroupl.tt.omtrdc.net
+  - DOMAIN,thesalons.in
   - DOMAIN,thesalvationarmy.tt.omtrdc.net
+  - DOMAIN,thesnapchatmodapk.com
   - DOMAIN,thetatapowercompanyl.tt.omtrdc.net
   - DOMAIN,theteachingcompanysa.tt.omtrdc.net
   - DOMAIN,thetimmedia.site
@@ -629344,6 +629354,7 @@ payload:
   - DOMAIN,wiam.tt-stage-ci1.omtrdc.net
   - DOMAIN,wib2b.tt.omtrdc.net
   - DOMAIN,wicked.versacespa.tt.omtrdc.net
+  - DOMAIN,wicreset.online
   - DOMAIN,wideoterminal.wcss.tt.omtrdc.net
   - DOMAIN,wideroeas-gpt.tt.tt.omtrdc.net
   - DOMAIN,wideroeas.tt.omtrdc.net
