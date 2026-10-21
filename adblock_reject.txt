@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-22 06:53:04
-# Total Rules: 633121
+# Generated Time: 2026-10-22 07:35:11
+# Total Rules: 633132
 # DOMAIN : 47701
-# DOMAIN-SUFFIX : 585420
+# DOMAIN-SUFFIX : 585431
 # Whitelist : 905
 
 payload:
@@ -6222,6 +6222,7 @@ payload:
   - DOMAIN-SUFFIX,47b48d19d4.com
   - DOMAIN-SUFFIX,47b5895cy6eil1.cfd
   - DOMAIN-SUFFIX,47c7zhqak.com
+  - DOMAIN-SUFFIX,47f9jdixm7.com
   - DOMAIN-SUFFIX,47g8quyf3m2izku.cfd
   - DOMAIN-SUFFIX,47n78xprrvp1.top
   - DOMAIN-SUFFIX,48.shibataya.co.jp
@@ -80629,6 +80630,7 @@ payload:
   - DOMAIN-SUFFIX,ddvbjehruuj5y.cloudfront.net
   - DOMAIN-SUFFIX,ddvfoj5yrl2oi.cloudfront.net
   - DOMAIN-SUFFIX,ddwant.cn
+  - DOMAIN-SUFFIX,ddwododotg.com
   - DOMAIN-SUFFIX,ddwqruebgyjuy.site
   - DOMAIN-SUFFIX,ddwt.am
   - DOMAIN-SUFFIX,ddwwsf.xlmoto.ch
@@ -83822,6 +83824,7 @@ payload:
   - DOMAIN-SUFFIX,dfydnyk.cn
   - DOMAIN-SUFFIX,dfyknirqkmity.space
   - DOMAIN-SUFFIX,dfyxzuog.com
+  - DOMAIN-SUFFIX,dfzmvzctdgcti.website
   - DOMAIN-SUFFIX,dg-hospital.com
   - DOMAIN-SUFFIX,dg.champion-compressors.com
   - DOMAIN-SUFFIX,dg.compair.com
@@ -370870,6 +370873,7 @@ payload:
   - DOMAIN-SUFFIX,hornet.newburycompanies.com
   - DOMAIN-SUFFIX,hornet.stechstudio.com
   - DOMAIN-SUFFIX,hornet.tt.omtrdc.net
+  - DOMAIN-SUFFIX,hornetywestersaloysia.cyou
   - DOMAIN-SUFFIX,horning.tt.omtrdc.net
   - DOMAIN-SUFFIX,horno-rafelet.es
   - DOMAIN-SUFFIX,hornstaughtsession.com
@@ -372142,6 +372146,7 @@ payload:
   - DOMAIN-SUFFIX,hrxratjshcuog.website
   - DOMAIN-SUFFIX,hrxwfp.icu
   - DOMAIN-SUFFIX,hryanv.nunnbush.com
+  - DOMAIN-SUFFIX,hryduolmotmmk.online
   - DOMAIN-SUFFIX,hryidhf.ltd
   - DOMAIN-SUFFIX,hrypwbqr.calingo.ch
   - DOMAIN-SUFFIX,hryqskmfufykh.online
@@ -388146,6 +388151,7 @@ payload:
   - DOMAIN-SUFFIX,jdvzwpsfnjphs.com
   - DOMAIN-SUFFIX,jdwqsewrbvnnt.website
   - DOMAIN-SUFFIX,jdwxshfw.cn
+  - DOMAIN-SUFFIX,jdxdotoyuskmv.space
   - DOMAIN-SUFFIX,jdxnelgnhtfyq.space
   - DOMAIN-SUFFIX,jdxq.club
   - DOMAIN-SUFFIX,jdyz3.cn
@@ -416611,6 +416617,7 @@ payload:
   - DOMAIN-SUFFIX,magnitudeplatform.com
   - DOMAIN-SUFFIX,magnituderealitychap.com
   - DOMAIN-SUFFIX,magnolia77.top
+  - DOMAIN-SUFFIX,magnonjohnnie.cfd
   - DOMAIN-SUFFIX,magnus.probioform.com
   - DOMAIN-SUFFIX,magpie-staging-565f46742e-aae0e646ada2f.webflow.io
   - DOMAIN-SUFFIX,magpie.onething.org
@@ -472918,6 +472925,7 @@ payload:
   - DOMAIN-SUFFIX,rjsdiikketqvt.online
   - DOMAIN-SUFFIX,rjsgoj.senobiru-shop.jp
   - DOMAIN-SUFFIX,rjsouj.clubd.co.jp
+  - DOMAIN-SUFFIX,rjsyuqyrazykm.website
   - DOMAIN-SUFFIX,rjtoo.stewmac.com
   - DOMAIN-SUFFIX,rjtpnsou.curvii.dk
   - DOMAIN-SUFFIX,rjtpnsou.curvii.nl
@@ -523104,6 +523112,7 @@ payload:
   - DOMAIN-SUFFIX,swmkru.zlutahala.cz
   - DOMAIN-SUFFIX,swml.xyz
   - DOMAIN-SUFFIX,swmlidloaetad.site
+  - DOMAIN-SUFFIX,swmpzqgvnfcpx.site
   - DOMAIN-SUFFIX,swniihebhwxip.site
   - DOMAIN-SUFFIX,swnptn.cn
   - DOMAIN-SUFFIX,swnr0b7c.xyz
@@ -544292,6 +544301,7 @@ payload:
   - DOMAIN-SUFFIX,twtiq.xyz
   - DOMAIN-SUFFIX,twu-hwt.org
   - DOMAIN-SUFFIX,twubjuew.thebrennan.com
+  - DOMAIN-SUFFIX,twudrvgrahopo.online
   - DOMAIN-SUFFIX,twuekgl.cn
   - DOMAIN-SUFFIX,twujydoj.werkenbijwesseling.nl
   - DOMAIN-SUFFIX,twvgoaewdmluf.online
@@ -551684,6 +551694,7 @@ payload:
   - DOMAIN-SUFFIX,vads.stellaplus.xyz
   - DOMAIN-SUFFIX,vads.vn
   - DOMAIN-SUFFIX,vaedan.top
+  - DOMAIN-SUFFIX,vaegpkuxjilgs.website
   - DOMAIN-SUFFIX,vaem.gene.com
   - DOMAIN-SUFFIX,vaem.veeva.gene.com
   - DOMAIN-SUFFIX,vaemob.tupimob.com
