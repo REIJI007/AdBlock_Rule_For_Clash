@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-22 03:30:31
-# Total Rules: 633073
+# Generated Time: 2026-10-22 03:43:30
+# Total Rules: 633074
 # DOMAIN : 47701
-# DOMAIN-SUFFIX : 585372
+# DOMAIN-SUFFIX : 585373
 # Whitelist : 905
 
 payload:
@@ -530803,6 +530803,7 @@ payload:
   - DOMAIN-SUFFIX,tjxcqzyrfamtk.site
   - DOMAIN-SUFFIX,tjxilfchgxsrl.online
   - DOMAIN-SUFFIX,tjxvnkuokbb.com
+  - DOMAIN-SUFFIX,tjyhoanihjlxs.online
   - DOMAIN-SUFFIX,tjylzsoxytqnf.website
   - DOMAIN-SUFFIX,tjyrup.templeandwebster.com.au
   - DOMAIN-SUFFIX,tjys88.com
