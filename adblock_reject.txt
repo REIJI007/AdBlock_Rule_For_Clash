@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-22 09:18:43
-# Total Rules: 633096
+# Generated Time: 2026-10-22 09:55:00
+# Total Rules: 633101
 # DOMAIN : 47701
-# DOMAIN-SUFFIX : 585395
+# DOMAIN-SUFFIX : 585400
 # Whitelist : 905
 
 payload:
@@ -319160,6 +319160,7 @@ payload:
   - DOMAIN-SUFFIX,engpeng.cn
   - DOMAIN-SUFFIX,engr-dev.tt.omtrdc.net
   - DOMAIN-SUFFIX,engr-syns-prod-apache.tt.omtrdc.net
+  - DOMAIN-SUFFIX,engrasppercipi.cfd
   - DOMAIN-SUFFIX,engrbubber.com
   - DOMAIN-SUFFIX,engre.digitalpublishing.tt.omtrdc.net
   - DOMAIN-SUFFIX,engrishforum.tt.omtrdc.net
@@ -340970,6 +340971,7 @@ payload:
   - DOMAIN-SUFFIX,glitter-2025.com
   - DOMAIN-SUFFIX,glittering-draft.pro
   - DOMAIN-SUFFIX,glitteringbrook.com
+  - DOMAIN-SUFFIX,glitzytracery.qpon
   - DOMAIN-SUFFIX,glivalid3.click.s11.sfmc-osl.com
   - DOMAIN-SUFFIX,glizauvo.net
   - DOMAIN-SUFFIX,glizoakri.net
@@ -388163,6 +388165,7 @@ payload:
   - DOMAIN-SUFFIX,jeflrvle.facialteam.eu
   - DOMAIN-SUFFIX,jegan-centralplumbing.myportfolio.com
   - DOMAIN-SUFFIX,jegiopad.top
+  - DOMAIN-SUFFIX,jegouryzasiao.site
   - DOMAIN-SUFFIX,jehalisipo.ddnsgeek.com
   - DOMAIN-SUFFIX,jehblue.com
   - DOMAIN-SUFFIX,jehfl.shoepalace.com
@@ -429100,6 +429103,7 @@ payload:
   - DOMAIN-SUFFIX,mgetuj.brandos.dk
   - DOMAIN-SUFFIX,mgfap.mercimamanboutique.com
   - DOMAIN-SUFFIX,mgfikuktpi.com
+  - DOMAIN-SUFFIX,mgfobjwkemzpu.online
   - DOMAIN-SUFFIX,mgfovsauwpkkp.website
   - DOMAIN-SUFFIX,mggakg.littleblack.co.kr
   - DOMAIN-SUFFIX,mghjqe.gloomyeyes.com
@@ -583476,6 +583480,7 @@ payload:
   - DOMAIN-SUFFIX,zlqmf.lillegsbaby.com
   - DOMAIN-SUFFIX,zlrwxkrwslawu.online
   - DOMAIN-SUFFIX,zlryp.tt.omtrdc.net
+  - DOMAIN-SUFFIX,zlsyzrlcsuzdf.online
   - DOMAIN-SUFFIX,zlt01615.vci.tt.omtrdc.net
   - DOMAIN-SUFFIX,zlt02459.tt-stage-ci1.omtrdc.net
   - DOMAIN-SUFFIX,zlt05040.tt-qe-ci1.omtrdc.net
