@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-28 03:08:22
-# Total Rules: 685685
+# Generated Time: 2026-10-28 03:39:41
+# Total Rules: 685690
 # DOMAIN : 69174
-# DOMAIN-SUFFIX : 616511
+# DOMAIN-SUFFIX : 616516
 # Whitelist : 905
 
 payload:
@@ -341310,6 +341310,7 @@ payload:
   - DOMAIN-SUFFIX,eqidtjiskmjoo.site
   - DOMAIN-SUFFIX,eqilyppdackel.website
   - DOMAIN-SUFFIX,eqingl.ivet.bg
+  - DOMAIN-SUFFIX,eqinqhfkzlvkw.website
   - DOMAIN-SUFFIX,eqizpgutcgers.online
   - DOMAIN-SUFFIX,eqkltgnbbygnv.website
   - DOMAIN-SUFFIX,eqkwat.histoiredor.com
@@ -474758,6 +474759,7 @@ payload:
   - DOMAIN-SUFFIX,nzfbe16aqht4kow-p.adkplan.fr
   - DOMAIN-SUFFIX,nzfbv.topline.com
   - DOMAIN-SUFFIX,nzfd4n.csb.app
+  - DOMAIN-SUFFIX,nzfhttwighvmr.online
   - DOMAIN-SUFFIX,nzhgy.farrow-ball.com
   - DOMAIN-SUFFIX,nzht.cn
   - DOMAIN-SUFFIX,nzhzsh.dickhannahtoyota.com
@@ -554215,6 +554217,7 @@ payload:
   - DOMAIN-SUFFIX,swbihztgbtqcs.space
   - DOMAIN-SUFFIX,swbkgsgpzwknx.site
   - DOMAIN-SUFFIX,swblz.funjet.com
+  - DOMAIN-SUFFIX,swbvrckibyfrn.website
   - DOMAIN-SUFFIX,swc.weather.com.cn
   - DOMAIN-SUFFIX,swcxid1mzvtmtl6-p.adktrack30.xyz
   - DOMAIN-SUFFIX,swdbcdsqexvxs.website
@@ -573224,6 +573227,7 @@ payload:
   - DOMAIN-SUFFIX,trff9links.com
   - DOMAIN-SUFFIX,trffcdmn.com
   - DOMAIN-SUFFIX,trffsites.com
+  - DOMAIN-SUFFIX,trfpossiesmola.cfd
   - DOMAIN-SUFFIX,trfpump.com
   - DOMAIN-SUFFIX,trfpwt.kokendwaterkranen.com
   - DOMAIN-SUFFIX,trfqbzvcofmsz.space
@@ -613243,6 +613247,7 @@ payload:
   - DOMAIN-SUFFIX,zdjoq.parentidea.com
   - DOMAIN-SUFFIX,zdkcbujzihbhd.website
   - DOMAIN-SUFFIX,zdl4o6sp3.com
+  - DOMAIN-SUFFIX,zdmxykes.com
   - DOMAIN-SUFFIX,zdnfiyknhvwtj.online
   - DOMAIN-SUFFIX,zdnhvgamvbmxt.online
   - DOMAIN-SUFFIX,zdnnue.clubllondon.com
