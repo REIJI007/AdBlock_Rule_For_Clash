@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-30 07:08:03
-# Total Rules: 685732
+# Generated Time: 2026-10-30 07:44:28
+# Total Rules: 685737
 # DOMAIN : 69174
-# DOMAIN-SUFFIX : 616558
+# DOMAIN-SUFFIX : 616563
 # Whitelist : 905
 
 payload:
@@ -43866,6 +43866,7 @@ payload:
   - DOMAIN-SUFFIX,brandbuildr.accountalpha-s3-chef-status-stagingdefaultproduction.tt-stage3.omtrdc.net
   - DOMAIN-SUFFIX,brandcaa.tt.omtrdc.net
   - DOMAIN-SUFFIX,brandcalb.net.mydays.de
+  - DOMAIN-SUFFIX,brandcasters.com
   - DOMAIN-SUFFIX,brandcdn-origin-aws.tt.omtrdc.net
   - DOMAIN-SUFFIX,brandclik.com
   - DOMAIN-SUFFIX,brandcms-dev.assets-dev.tt.omtrdc.net
@@ -395757,6 +395758,7 @@ payload:
   - DOMAIN-SUFFIX,holtruck8.tt.omtrdc.net
   - DOMAIN-SUFFIX,holuagency.top
   - DOMAIN-SUFFIX,holx-bsh-de-ua-aks-poc2-f3e67543.myavlive.com
+  - DOMAIN-SUFFIX,holxlriacffphq.com
   - DOMAIN-SUFFIX,holy-push.com
   - DOMAIN-SUFFIX,holy-ruddy-brace.glitch.me
   - DOMAIN-SUFFIX,holy-water-cannot-help-you-now.tt.omtrdc.net
@@ -522938,6 +522940,7 @@ payload:
   - DOMAIN-SUFFIX,sht.sparkhormonetherapy.com
   - DOMAIN-SUFFIX,sht7.com
   - DOMAIN-SUFFIX,sht87.com
+  - DOMAIN-SUFFIX,shticksmares.cyou
   - DOMAIN-SUFFIX,shticksyahuna.com
   - DOMAIN-SUFFIX,shtipukdnuusx.site
   - DOMAIN-SUFFIX,shtptt.cupshe.com
@@ -591114,6 +591117,7 @@ payload:
   - DOMAIN-SUFFIX,vub-appsk.web.app
   - DOMAIN-SUFFIX,vubamm.corso101.com
   - DOMAIN-SUFFIX,vubcp.bondno9.com
+  - DOMAIN-SUFFIX,vubhmskprvebn.online
   - DOMAIN-SUFFIX,vubmzx.com
   - DOMAIN-SUFFIX,vuclrlmqpq3wjbwv.tt.omtrdc.net
   - DOMAIN-SUFFIX,vucxfzsavoxdd.online
@@ -595831,6 +595835,7 @@ payload:
   - DOMAIN-SUFFIX,whiskerlake.com
   - DOMAIN-SUFFIX,whiskersbiographypropulsion.com
   - DOMAIN-SUFFIX,whiskerspeppersane.com
+  - DOMAIN-SUFFIX,whiskeyoportodasyure.qpon
   - DOMAIN-SUFFIX,whiskeypatrol.com
   - DOMAIN-SUFFIX,whiskyqueue.com
   - DOMAIN-SUFFIX,whisla.com
