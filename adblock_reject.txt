@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-29 14:02:31
-# Total Rules: 685636
+# Generated Time: 2026-10-29 14:33:58
+# Total Rules: 685642
 # DOMAIN : 69174
-# DOMAIN-SUFFIX : 616462
+# DOMAIN-SUFFIX : 616468
 # Whitelist : 905
 
 payload:
@@ -8698,6 +8698,7 @@ payload:
   - DOMAIN-SUFFIX,8nc8shot.txxx.com
   - DOMAIN-SUFFIX,8nkqg8j1iyn2vl63q2wbncx6x7b4m42f6p.cfd
   - DOMAIN-SUFFIX,8nqp2.ur5tyhny69q53nntcz.cyou
+  - DOMAIN-SUFFIX,8nqye9t119qtlmv8pc6ry8.rest
   - DOMAIN-SUFFIX,8o1-cil-p35-7ywss9-mwhnd.pages.dev
   - DOMAIN-SUFFIX,8o5v23yip.com
   - DOMAIN-SUFFIX,8o9m.cn
@@ -423101,6 +423102,7 @@ payload:
   - DOMAIN-SUFFIX,kkgyqe.worldwine.com.br
   - DOMAIN-SUFFIX,kkh3e6ylwt.com
   - DOMAIN-SUFFIX,kkh818.com
+  - DOMAIN-SUFFIX,kkiawwtir.in
   - DOMAIN-SUFFIX,kkjdksdklkdslel.weebly.com
   - DOMAIN-SUFFIX,kkjiaofei.com
   - DOMAIN-SUFFIX,kkjlieuijcafr.website
@@ -468837,6 +468839,7 @@ payload:
   - DOMAIN-SUFFIX,nadwkwzfjnxzw.site
   - DOMAIN-SUFFIX,nadyascloset.us13.list-manage.com
   - DOMAIN-SUFFIX,naebodyeyes.com
+  - DOMAIN-SUFFIX,naedumqqunjyn.space
   - DOMAIN-SUFFIX,naeeo.zogics.com
   - DOMAIN-SUFFIX,naeietrjpjfng.space
   - DOMAIN-SUFFIX,naenidktmcjne.store
@@ -474435,6 +474438,7 @@ payload:
   - DOMAIN-SUFFIX,nxnszu.ettoday.net
   - DOMAIN-SUFFIX,nxnxnddjjk12323442.weebly.com
   - DOMAIN-SUFFIX,nxovay.fo-online.jp
+  - DOMAIN-SUFFIX,nxpbhvgwxtpdw.site
   - DOMAIN-SUFFIX,nxprqibx.seesubiaco.com.au
   - DOMAIN-SUFFIX,nxpuap.job-con.jp
   - DOMAIN-SUFFIX,nxrcpsuaovaru.space
@@ -562303,6 +562307,7 @@ payload:
   - DOMAIN-SUFFIX,tim.nextinpact.com
   - DOMAIN-SUFFIX,tim.webtim.si
   - DOMAIN-SUFFIX,timanigriped.qpon
+  - DOMAIN-SUFFIX,timbalschinookternar.qpon
   - DOMAIN-SUFFIX,timbresthump.qpon
   - DOMAIN-SUFFIX,timbuk2.com.de
   - DOMAIN-SUFFIX,timcard25.airmiles.ca
@@ -609646,6 +609651,7 @@ payload:
   - DOMAIN-SUFFIX,y1i4.tt.omtrdc.net
   - DOMAIN-SUFFIX,y1vcfa.webwave.dev
   - DOMAIN-SUFFIX,y1zoxngxp.com
+  - DOMAIN-SUFFIX,y22erxf4rvklk4o.cfd
   - DOMAIN-SUFFIX,y28pcxblct008.tt-qe2.omtrdc.net
   - DOMAIN-SUFFIX,y2ehvxgs.xyz
   - DOMAIN-SUFFIX,y2ej3xxfve.com
