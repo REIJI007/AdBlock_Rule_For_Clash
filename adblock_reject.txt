@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-30 17:02:40
-# Total Rules: 685637
+# Generated Time: 2026-10-30 17:49:36
+# Total Rules: 685649
 # DOMAIN : 69174
-# DOMAIN-SUFFIX : 616463
+# DOMAIN-SUFFIX : 616475
 # Whitelist : 905
 
 payload:
@@ -8216,6 +8216,7 @@ payload:
   - DOMAIN-SUFFIX,7magjd84rd.com
   - DOMAIN-SUFFIX,7me0ssd6.de
   - DOMAIN-SUFFIX,7mus3aqqv.com
+  - DOMAIN-SUFFIX,7mv57j214eeb4ky5.cfd
   - DOMAIN-SUFFIX,7mx.eider.com
   - DOMAIN-SUFFIX,7mx.eidershop.com
   - DOMAIN-SUFFIX,7mx63ygcti.com
@@ -37289,6 +37290,7 @@ payload:
   - DOMAIN-SUFFIX,bdll55113248.pro
   - DOMAIN-SUFFIX,bdll843954.pro
   - DOMAIN-SUFFIX,bdlmggcs1.familydoctor.com.cn
+  - DOMAIN-SUFFIX,bdlswelled.qpon
   - DOMAIN-SUFFIX,bdlymj8o.promos2.h.tt.omtrdc.net
   - DOMAIN-SUFFIX,bdm.911cha.com
   - DOMAIN-SUFFIX,bdm.ye-su.cn
@@ -39530,6 +39532,7 @@ payload:
   - DOMAIN-SUFFIX,biffingmatina.com
   - DOMAIN-SUFFIX,bifocalacid.com
   - DOMAIN-SUFFIX,bifpt.pepperfinance.es
+  - DOMAIN-SUFFIX,bifrost-api.hotstar.com
   - DOMAIN-SUFFIX,bifrost0601.aws.tt.omtrdc.net
   - DOMAIN-SUFFIX,bifvabfroza.in
   - DOMAIN-SUFFIX,big-bang-ads.com
@@ -70009,6 +70012,7 @@ payload:
   - DOMAIN-SUFFIX,cora29.tt.omtrdc.net
   - DOMAIN-SUFFIX,cora2cars.tt.omtrdc.net
   - DOMAIN-SUFFIX,coracaodeportugal.myavlive.com
+  - DOMAIN-SUFFIX,coraclesubhall.qpon
   - DOMAIN-SUFFIX,coral-broccoli-386459.framer.app
   - DOMAIN-SUFFIX,coral-outcomes-139800.framer.app
   - DOMAIN-SUFFIX,coral-prod-iap.tt.omtrdc.net
@@ -352838,6 +352842,7 @@ payload:
   - DOMAIN-SUFFIX,flxerros2.web.app
   - DOMAIN-SUFFIX,flxpxl.com
   - DOMAIN-SUFFIX,flxr.myplan-c.com
+  - DOMAIN-SUFFIX,flxscuwvp.com
   - DOMAIN-SUFFIX,fly-ads.net
   - DOMAIN-SUFFIX,fly.caljetelite.com
   - DOMAIN-SUFFIX,fly.cardflight.com
@@ -418932,6 +418937,7 @@ payload:
   - DOMAIN-SUFFIX,jouturez.web.app
   - DOMAIN-SUFFIX,jouwaikekaivep.net
   - DOMAIN-SUFFIX,jovialcadence.com
+  - DOMAIN-SUFFIX,joviallength.com
   - DOMAIN-SUFFIX,joviallysafely.com
   - DOMAIN-SUFFIX,jovialmobile.pro
   - DOMAIN-SUFFIX,jovialvalue.com
@@ -487953,6 +487959,7 @@ payload:
   - DOMAIN-SUFFIX,phpcl.tt.omtrdc.net
   - DOMAIN-SUFFIX,phpfandango.tt.omtrdc.net
   - DOMAIN-SUFFIX,phph.yalt.co
+  - DOMAIN-SUFFIX,phphteremic.cyou
   - DOMAIN-SUFFIX,phphtscriver.com
   - DOMAIN-SUFFIX,phpipam.datainfra12.tt.omtrdc.net
   - DOMAIN-SUFFIX,phplist.tt.omtrdc.net
@@ -507040,6 +507047,7 @@ payload:
   - DOMAIN-SUFFIX,runcrannypots.com
   - DOMAIN-SUFFIX,rundenongye.com
   - DOMAIN-SUFFIX,rundev-whatsapp.com
+  - DOMAIN-SUFFIX,rundidangedhouss.qpon
   - DOMAIN-SUFFIX,rundsp.com
   - DOMAIN-SUFFIX,runduobj.cn
   - DOMAIN-SUFFIX,rune-luna-moon.com
@@ -560921,6 +560929,7 @@ payload:
   - DOMAIN-SUFFIX,tewbraatobuan.site
   - DOMAIN-SUFFIX,tewisg.monster.fi
   - DOMAIN-SUFFIX,tework.cn
+  - DOMAIN-SUFFIX,tewtergosport.cyou
   - DOMAIN-SUFFIX,tex-server.99met.com
   - DOMAIN-SUFFIX,tex-ttt.weebly.com
   - DOMAIN-SUFFIX,texasholdemfreechips.com
@@ -598161,6 +598170,7 @@ payload:
   - DOMAIN-SUFFIX,wtp101.com
   - DOMAIN-SUFFIX,wtpaaxtlhxedo.space
   - DOMAIN-SUFFIX,wtpcchfzhfjin.site
+  - DOMAIN-SUFFIX,wtpiylrmavdfp.space
   - DOMAIN-SUFFIX,wtqpl19hwu-axcnh98fyn-7u4t2g-zm688c.pages.dev
   - DOMAIN-SUFFIX,wtqpl31hwu-axcnh74fyn-4u2t8g-zm177c.pages.dev
   - DOMAIN-SUFFIX,wtqptl.taksimpazar.com
@@ -614318,6 +614328,7 @@ payload:
   - DOMAIN-SUFFIX,zkz-web.tt.omtrdc.net
   - DOMAIN-SUFFIX,zkzfa.47brand.com
   - DOMAIN-SUFFIX,zkzlcp.swipcar.com
+  - DOMAIN-SUFFIX,zkzmpnlljeqiilmqr.rest
   - DOMAIN-SUFFIX,zkzvtpieputzg.site
   - DOMAIN-SUFFIX,zl.tt.omtrdc.net
   - DOMAIN-SUFFIX,zl.wharton.upenn.edu
@@ -614975,6 +614986,7 @@ payload:
   - DOMAIN-SUFFIX,zonst.com
   - DOMAIN-SUFFIX,zontera.com
   - DOMAIN-SUFFIX,zonularproal.cyou
+  - DOMAIN-SUFFIX,zonureataunto.qpon
   - DOMAIN-SUFFIX,zoo.care
   - DOMAIN-SUFFIX,zoo.replai.now
   - DOMAIN-SUFFIX,zoo.tt.omtrdc.net
