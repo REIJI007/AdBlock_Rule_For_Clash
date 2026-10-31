@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-10-31 08:01:51
-# Total Rules: 685473
+# Generated Time: 2026-10-31 08:35:03
+# Total Rules: 685485
 # DOMAIN : 69174
-# DOMAIN-SUFFIX : 616299
+# DOMAIN-SUFFIX : 616311
 # Whitelist : 905
 
 payload:
@@ -69,6 +69,7 @@ payload:
   - DOMAIN-SUFFIX,003store.com
   - DOMAIN-SUFFIX,004-angels.tt.omtrdc.net
   - DOMAIN-SUFFIX,00427011ae.com
+  - DOMAIN-SUFFIX,005ad66f1d.com
   - DOMAIN-SUFFIX,00609c257b.com
   - DOMAIN-SUFFIX,007itshop.com
   - DOMAIN-SUFFIX,008844.cc
@@ -12941,6 +12942,7 @@ payload:
   - DOMAIN-SUFFIX,abwkoeln.de
   - DOMAIN-SUFFIX,abwyjwpsbvqil.online
   - DOMAIN-SUFFIX,abxajspanob.in
+  - DOMAIN-SUFFIX,abxbcuordows.in
   - DOMAIN-SUFFIX,abxenldkpytji.online
   - DOMAIN-SUFFIX,abxslg.jollyroom.fi
   - DOMAIN-SUFFIX,abxvr.ndkp.tech
@@ -90705,6 +90707,7 @@ payload:
   - DOMAIN-SUFFIX,dinomysstorm.com
   - DOMAIN-SUFFIX,dinosaurprinciples.com
   - DOMAIN-SUFFIX,dinosaursluice.com
+  - DOMAIN-SUFFIX,dinoyxdywaaxja.com
   - DOMAIN-SUFFIX,dinsbetrlsiqc.space
   - DOMAIN-SUFFIX,dinxkqucszaza.space
   - DOMAIN-SUFFIX,dinxteam.com
@@ -349345,6 +349348,7 @@ payload:
   - DOMAIN-SUFFIX,fenrirmidiron.qpon
   - DOMAIN-SUFFIX,fensifuligo.com
   - DOMAIN-SUFFIX,fentent.stre4mplay.one
+  - DOMAIN-SUFFIX,fentop.xyz
   - DOMAIN-SUFFIX,fentpsyllid.com
   - DOMAIN-SUFFIX,fents.primary.com
   - DOMAIN-SUFFIX,fentwentieth.com
@@ -363999,6 +364003,7 @@ payload:
   - DOMAIN-SUFFIX,gjckaevsdjzvhcu74edjchj-yrwadksdjfhwa87623ywesgv.teemill.com
   - DOMAIN-SUFFIX,gjcvvmwz.com
   - DOMAIN-SUFFIX,gjeinv.kraftkoket.se
+  - DOMAIN-SUFFIX,gjeklziyrtqqs.website
   - DOMAIN-SUFFIX,gjesm.honeybirdette.com
   - DOMAIN-SUFFIX,gjfayongoeneq.space
   - DOMAIN-SUFFIX,gjfyeghpsuxmx.space
@@ -364064,6 +364069,7 @@ payload:
   - DOMAIN-SUFFIX,gk.sina.cn
   - DOMAIN-SUFFIX,gk1.582582.com
   - DOMAIN-SUFFIX,gk1.zjbiz.net
+  - DOMAIN-SUFFIX,gk3c4ibb7nmvx3wcgic.rest
   - DOMAIN-SUFFIX,gk5440.craftum.io
   - DOMAIN-SUFFIX,gk596.cn
   - DOMAIN-SUFFIX,gk7qlc.ru
@@ -395007,6 +395013,7 @@ payload:
   - DOMAIN-SUFFIX,hlygsp.modivo.ro
   - DOMAIN-SUFFIX,hlyixinwujin.com
   - DOMAIN-SUFFIX,hlzad.com
+  - DOMAIN-SUFFIX,hlzqimwyeprjh.website
   - DOMAIN-SUFFIX,hlzxgcw.com
   - DOMAIN-SUFFIX,hlzyb.cn
   - DOMAIN-SUFFIX,hlzz3qt35ko683.rest
@@ -417457,6 +417464,7 @@ payload:
   - DOMAIN-SUFFIX,jgmdckvhjk4jk.tt.omtrdc.net
   - DOMAIN-SUFFIX,jgmdckvhjk8jk.tt.omtrdc.net
   - DOMAIN-SUFFIX,jgmes.myavlive.com
+  - DOMAIN-SUFFIX,jgmoxwbotwcoa.space
   - DOMAIN-SUFFIX,jgmqttacelivu.site
   - DOMAIN-SUFFIX,jgnprdljkpexm.online
   - DOMAIN-SUFFIX,jgnsrz.bannerbuzz.com.au
@@ -472405,6 +472413,7 @@ payload:
   - DOMAIN-SUFFIX,nnhbqqzpsyoid.online
   - DOMAIN-SUFFIX,nnhfyultzrtzn.space
   - DOMAIN-SUFFIX,nnhxjd.zielonalazienka.pl
+  - DOMAIN-SUFFIX,nniavcphnjuef.website
   - DOMAIN-SUFFIX,nnidobzroskbh.site
   - DOMAIN-SUFFIX,nnivvr.zimmo.be
   - DOMAIN-SUFFIX,nnjizwcurchyp.online
@@ -533327,6 +533336,7 @@ payload:
   - DOMAIN-SUFFIX,sr8jcp5fp.com
   - DOMAIN-SUFFIX,srabwu.wordans.es
   - DOMAIN-SUFFIX,srajdwwglxpzso.com
+  - DOMAIN-SUFFIX,sranqxczjxstp.online
   - DOMAIN-SUFFIX,sraoyuvchtdja.site
   - DOMAIN-SUFFIX,srb-communique.srb-es.com
   - DOMAIN-SUFFIX,srbtluibwkhqy.site
@@ -595755,6 +595765,7 @@ payload:
   - DOMAIN-SUFFIX,whsyfigscmbif.space
   - DOMAIN-SUFFIX,whumpedbeennut.cyou
   - DOMAIN-SUFFIX,whusihgq.cn
+  - DOMAIN-SUFFIX,whuzjigsawnaukrar.cyou
   - DOMAIN-SUFFIX,whuzucot.net
   - DOMAIN-SUFFIX,whvyhcvlszizp.online
   - DOMAIN-SUFFIX,whvzonhdonaqo.website
@@ -597595,6 +597606,7 @@ payload:
   - DOMAIN-SUFFIX,wqoruynunigia.website
   - DOMAIN-SUFFIX,wqpgjenwxsbyd.space
   - DOMAIN-SUFFIX,wqpkffkrcnqyw.online
+  - DOMAIN-SUFFIX,wqpttcwjnqqxn8tzhe.cfd
   - DOMAIN-SUFFIX,wqrebmjfbphwk.website
   - DOMAIN-SUFFIX,wqrkuukxyoi.com
   - DOMAIN-SUFFIX,wqs4.destinia.pt
