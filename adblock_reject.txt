@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-11-07 07:20:16
-# Total Rules: 740768
+# Generated Time: 2026-11-07 08:07:32
+# Total Rules: 740775
 # DOMAIN : 69212
-# DOMAIN-SUFFIX : 671556
+# DOMAIN-SUFFIX : 671563
 # Whitelist : 906
 
 payload:
@@ -89909,6 +89909,7 @@ payload:
   - DOMAIN-SUFFIX,cosanostra.openapp.link
   - DOMAIN-SUFFIX,cosbftje.sttgdc.com
   - DOMAIN-SUFFIX,cosdate.jp
+  - DOMAIN-SUFFIX,cosecant36.com
   - DOMAIN-SUFFIX,cosedcost.com
   - DOMAIN-SUFFIX,cosercosplay.com
   - DOMAIN-SUFFIX,cosetengarb.com
@@ -441746,6 +441747,7 @@ payload:
   - DOMAIN-SUFFIX,hb0dv4pftqm7odl-p.linkomo.fr
   - DOMAIN-SUFFIX,hb12.tt.omtrdc.net
   - DOMAIN-SUFFIX,hb13n1.tt.omtrdc.net
+  - DOMAIN-SUFFIX,hb287nh0w.com
   - DOMAIN-SUFFIX,hb3l6o.yughbny41r6qo4ylw6mrf4l.cyou
   - DOMAIN-SUFFIX,hb4muqyf.ujoxqluovwwvy79p5rz2h.cyou
   - DOMAIN-SUFFIX,hb94dnbe.de
@@ -441772,6 +441774,7 @@ payload:
   - DOMAIN-SUFFIX,hbdaperfmtzvo.site
   - DOMAIN-SUFFIX,hbdjkojscptyc.site
   - DOMAIN-SUFFIX,hbears.com
+  - DOMAIN-SUFFIX,hbedtvugrfdgm.space
   - DOMAIN-SUFFIX,hbfnmdsimhzvb.space
   - DOMAIN-SUFFIX,hbfpml.cn
   - DOMAIN-SUFFIX,hbfpvm.comolib.com
@@ -465600,6 +465603,7 @@ payload:
   - DOMAIN-SUFFIX,iycifx.coldwatercreek.com
   - DOMAIN-SUFFIX,iycljnpwjyvyk.website
   - DOMAIN-SUFFIX,iycqldnxdqgft.online
+  - DOMAIN-SUFFIX,iycwqwgywlyyc.space
   - DOMAIN-SUFFIX,iycxcmlzanbmk.website
   - DOMAIN-SUFFIX,iyd-dns7.tt.omtrdc.net
   - DOMAIN-SUFFIX,iydheybdse.w3spaces.com
@@ -504948,6 +504952,7 @@ payload:
   - DOMAIN-SUFFIX,mbww.com
   - DOMAIN-SUFFIX,mbxsku.cn
   - DOMAIN-SUFFIX,mbxt.net
+  - DOMAIN-SUFFIX,mbyfhkzasrxbn.space
   - DOMAIN-SUFFIX,mbytyeonamnqc.space
   - DOMAIN-SUFFIX,mbzkvc.junghanswolle.de
   - DOMAIN-SUFFIX,mc-aoyama.com
@@ -538701,6 +538706,7 @@ payload:
   - DOMAIN-SUFFIX,pedlersinswell.cfd
   - DOMAIN-SUFFIX,pednhqumosxpt.space
   - DOMAIN-SUFFIX,pedropanther.com
+  - DOMAIN-SUFFIX,pedxbqnadnebr.space
   - DOMAIN-SUFFIX,pee.cn
   - DOMAIN-SUFFIX,peee-dash-zim-six.vercel.app
   - DOMAIN-SUFFIX,peek-ver-cria-siniestra-2022-yytyt.tt.omtrdc.net
@@ -669455,6 +669461,7 @@ payload:
   - DOMAIN-SUFFIX,zledtotceuknr.space
   - DOMAIN-SUFFIX,zleptppccidro.website
   - DOMAIN-SUFFIX,zlerebiomenrq.online
+  - DOMAIN-SUFFIX,zlfiiacommoaq.website
   - DOMAIN-SUFFIX,zlfjbr.florsheim.com
   - DOMAIN-SUFFIX,zlfrwiqfzrefk.space
   - DOMAIN-SUFFIX,zlgame.top
