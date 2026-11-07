@@ -1,0 +1,99 @@
+name: Release_ADblock_File
+
+on: 
+  schedule:
+    - cron: '*/20 * * * *' # 每20分钟运行一次
+  workflow_dispatch: # 允许手动触发工作流
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步骤0：清除之前的日志文件
+      - name: Clear previous logs
+        run: |
+          sudo rm -rf /home/runner/runners/*/_diag/*.log || true
+
+      # 步骤1：检出代码
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 步骤2：获取当前时间
+      - name: Get current time
+        id: current-time
+        run: echo "time=$(date +'%y%m%d%H%M')" >> $GITHUB_ENV # 将时间保存为环境变量
+
+      # 步骤3：更新时间戳文件
+      - name: Update timestamp file
+        run: echo "${{ env.time }}" > timestamp.txt # 将时间写入 timestamp.txt 文件
+
+      # 步骤4：拉取最新的 main 分支并合并（失败则跳过）
+      - name: Pull and merge latest main
+        run: |
+         git config --global user.name 'github-actions[bot]'
+         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+         git fetch origin main
+         git merge origin/main --no-edit || echo "Merge failed, skipping merge"
+        env: 
+         TOKEN: ${{ secrets.TOKEN }} # 使用存储在仓库密钥中的 TOKEN
+
+      # 步骤5：强制添加、提交并推送更改
+      - name: Force add and commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -f adblock_reject.yaml adblock_reject.txt adblock_reject.mrs timestamp.txt
+          git commit -m "Forced update of adblock files and timestamp" || echo "No changes to commit"
+          git push origin main --force || echo "Push failed, but continuing"
+        env: 
+          TOKEN: ${{ secrets.TOKEN }} # 使用存储在仓库密钥中的 TOKEN
+
+      # 步骤6：创建新的发布
+      - name: Get current timestamp
+        id: get_timestamp
+        run: echo "time=$(date +%s)" >> $GITHUB_ENV # 获取当前时间的 UNIX 时间戳并存储在 GITHUB_ENV 中
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env: 
+            GITHUB_TOKEN: ${{ secrets.TOKEN }} # 使用 TOKEN 进行身份验证
+        with:
+           tag_name: release-${{ env.time }} # 使用时间戳作为标签名
+           release_name: Release ${{ env.time }} # 使用时间戳作为发布名称
+           body: "Periodic release of adblock files." # 发布说明
+           draft: false # 创建正式发布，而非草稿
+
+      # 步骤7：上传 adblock_reject.yaml
+      - name: Upload adblock_reject.yaml
+        uses: actions/upload-release-asset@v1
+        env: 
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./adblock_reject.yaml
+          asset_name: adblock_reject.yaml
+          asset_content_type: application/x-yaml
+
+      # 步骤8：上传 adblock_reject.txt
+      - name: Upload adblock_reject.txt
+        uses: actions/upload-release-asset@v1
+        env: 
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./adblock_reject.txt
+          asset_name: adblock_reject.txt
+          asset_content_type: text/plain
+
+      # 步骤9：上传 adblock_reject.mrs
+      - name: Upload adblock_reject.mrs
+        uses: actions/upload-release-asset@v1
+        env: 
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./adblock_reject.mrs
+          asset_name: adblock_reject.mrs
+          asset_content_type: text/plain
