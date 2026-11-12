@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-11-12 20:11:48
-# Total Rules: 739052
+# Generated Time: 2026-11-12 20:16:28
+# Total Rules: 739054
 # DOMAIN : 69213
-# DOMAIN-SUFFIX : 669839
+# DOMAIN-SUFFIX : 669841
 # Whitelist : 908
 
 payload:
@@ -49832,6 +49832,7 @@ payload:
   - DOMAIN-SUFFIX,asisa.com.co
   - DOMAIN-SUFFIX,asist.start.page
   - DOMAIN-SUFFIX,asistente.christus.mx
+  - DOMAIN-SUFFIX,asjhcwvssgrlk.website
   - DOMAIN-SUFFIX,asjitqwjvodhr.site
   - DOMAIN-SUFFIX,ask-fm-tracker.com
   - DOMAIN-SUFFIX,ask-managementtraining.de
@@ -120596,6 +120597,7 @@ payload:
   - DOMAIN-SUFFIX,ecxmlservices-kc.tt.omtrdc.net
   - DOMAIN-SUFFIX,ecxtbj.phonehouse.es
   - DOMAIN-SUFFIX,ecxufxavldnpd.site
+  - DOMAIN-SUFFIX,ecydydzhzjcre.site
   - DOMAIN-SUFFIX,ecyklqrkcz.com
   - DOMAIN-SUFFIX,ecypazzlxorfg.online
   - DOMAIN-SUFFIX,eczane.myavlive.com
