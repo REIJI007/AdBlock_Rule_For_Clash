@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-11-13 23:57:37
-# Total Rules: 739008
+# Generated Time: 2026-11-14 00:39:30
+# Total Rules: 739016
 # DOMAIN : 69213
-# DOMAIN-SUFFIX : 669795
+# DOMAIN-SUFFIX : 669803
 # Whitelist : 908
 
 payload:
@@ -68548,6 +68548,7 @@ payload:
   - DOMAIN-SUFFIX,caringcoyote.com
   - DOMAIN-SUFFIX,caringfinch.com
   - DOMAIN-SUFFIX,caringmink.com
+  - DOMAIN-SUFFIX,caringyarn.pro
   - DOMAIN-SUFFIX,caringzinc.com
   - DOMAIN-SUFFIX,cariousjan.com
   - DOMAIN-SUFFIX,cariousphiale.com
@@ -464293,6 +464294,7 @@ payload:
   - DOMAIN-SUFFIX,ixiondartman.com
   - DOMAIN-SUFFIX,ixjnnlhp.fannur.com
   - DOMAIN-SUFFIX,ixjplbufdjnnz.website
+  - DOMAIN-SUFFIX,ixkkcgzxxcuba.online
   - DOMAIN-SUFFIX,ixlnharurbvjq.space
   - DOMAIN-SUFFIX,ixlplfpqttclo.online
   - DOMAIN-SUFFIX,ixltsrzszinaz.space
@@ -475893,6 +475895,7 @@ payload:
   - DOMAIN-SUFFIX,lby2kd27c.com
   - DOMAIN-SUFFIX,lbyarvladuyzy.space
   - DOMAIN-SUFFIX,lbyml.crocs.com.au
+  - DOMAIN-SUFFIX,lbyptggqaxshu.space
   - DOMAIN-SUFFIX,lc-cn-n1-shared.com
   - DOMAIN-SUFFIX,lc-event.pixiv.net
   - DOMAIN-SUFFIX,lc.e-lazy.jp
@@ -558350,6 +558353,7 @@ payload:
   - DOMAIN-SUFFIX,rxmld.manieredevoir.com
   - DOMAIN-SUFFIX,rxnvg.com
   - DOMAIN-SUFFIX,rxoykprwtfeph.online
+  - DOMAIN-SUFFIX,rxqgeccsz.com
   - DOMAIN-SUFFIX,rxqqaq.hollandandbarrett.com
   - DOMAIN-SUFFIX,rxqqxtyrshpkq.store
   - DOMAIN-SUFFIX,rxscledbyfgos.site
@@ -612613,6 +612617,7 @@ payload:
   - DOMAIN-SUFFIX,tempoquayx.click
   - DOMAIN-SUFFIX,temporaincreep.cyou
   - DOMAIN-SUFFIX,temporalsewingsphere.com
+  - DOMAIN-SUFFIX,tempowraps.com
   - DOMAIN-SUFFIX,tempstaff.tt.omtrdc.net
   - DOMAIN-SUFFIX,temptation.ad.nl
   - DOMAIN-SUFFIX,temptedpitta.cfd
@@ -613742,6 +613747,7 @@ payload:
   - DOMAIN-SUFFIX,theoceannetwork.inttra.com
   - DOMAIN-SUFFIX,theoeoplespension.co.uk
   - DOMAIN-SUFFIX,theofficeformen.com
+  - DOMAIN-SUFFIX,theologfirkinssamlet.cfd
   - DOMAIN-SUFFIX,theonecdn.com
   - DOMAIN-SUFFIX,theonepercentcommunity.com
   - DOMAIN-SUFFIX,theonesstoodtheirground.com
@@ -642456,6 +642462,7 @@ payload:
   - DOMAIN-SUFFIX,vlvsmfjibrzie.space
   - DOMAIN-SUFFIX,vlvuewgssegmd3m-p.adktrack30.xyz
   - DOMAIN-SUFFIX,vlwqyhgnslfad.space
+  - DOMAIN-SUFFIX,vlwzmhgxjsujo.website
   - DOMAIN-SUFFIX,vlxhvoidlnrjf.space
   - DOMAIN-SUFFIX,vlxmfvvknsxldw.com
   - DOMAIN-SUFFIX,vlxrvlvnasoys.space
@@ -663527,6 +663534,7 @@ payload:
   - DOMAIN-SUFFIX,yetherbeware.cfd
   - DOMAIN-SUFFIX,yethumiliation.com
   - DOMAIN-SUFFIX,yetiguynpwnep.online
+  - DOMAIN-SUFFIX,yetiminis.com
   - DOMAIN-SUFFIX,yetiskarristerrasgenralsi.firebaseapp.com
   - DOMAIN-SUFFIX,yetiskarristerrasgenralsi.web.app
   - DOMAIN-SUFFIX,yetisportbar.com
