@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-11-13 09:05:29
-# Total Rules: 738912
+# Generated Time: 2026-11-13 09:19:05
+# Total Rules: 738915
 # DOMAIN : 69214
-# DOMAIN-SUFFIX : 669698
+# DOMAIN-SUFFIX : 669701
 # Whitelist : 908
 
 payload:
@@ -467023,6 +467023,7 @@ payload:
   - DOMAIN-SUFFIX,jmtfxuwwylmrl.website
   - DOMAIN-SUFFIX,jmtlheaemctv.com
   - DOMAIN-SUFFIX,jmtrl.coachoutlet.com
+  - DOMAIN-SUFFIX,jmturyenepcxg.online
   - DOMAIN-SUFFIX,jmufp.yumwoof.com
   - DOMAIN-SUFFIX,jmulab.cn
   - DOMAIN-SUFFIX,jmuvidgubn.in
@@ -538039,6 +538040,7 @@ payload:
   - DOMAIN-SUFFIX,pfgbyn.24mx.pl
   - DOMAIN-SUFFIX,pfgfre.kidscoco.com
   - DOMAIN-SUFFIX,pfghc.nutriwise.com
+  - DOMAIN-SUFFIX,pfh01c50p.com
   - DOMAIN-SUFFIX,pfhnrxinmndvx.site
   - DOMAIN-SUFFIX,pfhub.petitfute.cn
   - DOMAIN-SUFFIX,pfhub.petitfute.co.uk
@@ -575599,6 +575601,7 @@ payload:
   - DOMAIN-SUFFIX,sleepandsmile.de
   - DOMAIN-SUFFIX,sleepcartoon.com
   - DOMAIN-SUFFIX,sleepcitynewyork.com
+  - DOMAIN-SUFFIX,sleepfrankly.com
   - DOMAIN-SUFFIX,sleephappens.tt.omtrdc.net
   - DOMAIN-SUFFIX,sleepoverlimitprofound.com
   - DOMAIN-SUFFIX,sleepryleakers.cyou
