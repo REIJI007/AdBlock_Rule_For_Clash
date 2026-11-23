@@ -40,8 +40,7 @@ jobs:
           Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
           Install-Module Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force
           Invoke-Pester -Path ./tests -CI
-      - name: Generate YAML and TXT
-        if: github.event_name != 'pull_request'
+      - name: Generate and validate YAML and TXT
         shell: pwsh
         run: ./adblock_rule_generator_yaml.ps1 -Format both
       - name: Commit and push generated rules
