@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-rule-generation-${{ github.ref }}-${{ github.event_name }}
+  group: adblock-rule-generation-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
