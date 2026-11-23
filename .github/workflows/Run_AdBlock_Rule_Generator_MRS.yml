@@ -1,0 +1,90 @@
+name: Run_AdBlock_Rule_Generator_MRS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'AdBlockRuleEngine.psm1'
+      - 'adblock_rule_generator_mrs.ps1'
+      - 'config/upstream-sources.json'
+      - '.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml'
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: adblock-mrs-publisher
+  cancel-in-progress: false
+
+jobs:
+  generate-mrs:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify PowerShell 7
+        run: $PSVersionTable.PSVersion.ToString()
+
+      - name: Generate MRS conversion input independently
+        run: ./adblock_rule_generator_mrs.ps1
+
+      - name: Upload MRS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adblock-mrs-diagnostics
+          path: |
+            adblock_sources_manifest_mrs.json
+            adblock_build_report_mrs.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Download latest Mihomo
+        run: |
+          $release = Invoke-RestMethod -Uri 'https://api.github.com/repos/MetaCubeX/mihomo/releases/latest' -Headers @{ 'User-Agent' = 'AdBlock_Rule_For_Clash' }
+          $asset = $release.assets | Where-Object { $_.name -match '(?i)windows' -and $_.name -match '(?i)amd64' -and $_.name -match '(?i)\.zip$' } | Select-Object -First 1
+          if (-not $asset) { throw 'Could not find the latest Mihomo Windows amd64 ZIP asset.' }
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile ./mihomo.zip
+          if ((Get-Item ./mihomo.zip).Length -lt 1024) { throw 'Downloaded Mihomo archive is unexpectedly small.' }
+          Expand-Archive ./mihomo.zip ./mihomo -Force
+          $exe = Get-ChildItem ./mihomo -Recurse -Filter mihomo.exe | Select-Object -First 1
+          if (-not $exe) { throw 'mihomo.exe was not found in the release archive.' }
+          Copy-Item $exe.FullName ./mihomo.exe -Force
+          & ./mihomo.exe -v
+          if ($LASTEXITCODE -ne 0) { throw 'Mihomo version check failed.' }
+
+      - name: Convert independent input to MRS
+        run: |
+          if (-not (Test-Path ./adblock_reject_mrs_input.yaml)) { throw 'MRS conversion input is missing.' }
+          & ./mihomo.exe convert-ruleset domain yaml ./adblock_reject_mrs_input.yaml ./adblock_reject.mrs
+          if ($LASTEXITCODE -ne 0) { throw 'Mihomo domain ruleset conversion failed.' }
+          if (-not (Test-Path ./adblock_reject.mrs)) { throw 'MRS output was not created.' }
+          if ((Get-Item ./adblock_reject.mrs).Length -lt 16) { throw 'MRS output is unexpectedly small.' }
+
+      - name: Commit MRS artifact only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- adblock_reject.mrs
+          if (git diff --cached --quiet) { Write-Host 'MRS artifact is unchanged.'; exit 0 }
+          git commit -m 'chore: update generated MRS adblock rules'
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            git fetch origin main
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to fetch main before MRS publication.' }
+            git rebase origin/main
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to rebase MRS publication onto latest main.' }
+            git push origin HEAD:refs/heads/main
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            Write-Warning "MRS publish push failed on attempt $attempt; retrying."
+          }
+          throw 'MRS publish failed after 3 attempts.'
