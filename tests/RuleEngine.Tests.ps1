@@ -416,8 +416,8 @@ Describe 'Original concise console output and source policy' {
     It 'keeps YAML and TXT console diagnostics synchronized' {
         $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
         $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
-        $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
-        $txtCore = $txt -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format '(yaml|txt)'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $txtCore = $txt -replace "Invoke-AdblockGeneration -Format '(yaml|txt)'", "Invoke-AdblockGeneration -Format 'FORMAT'"
         $yamlCore | Should -Be $txtCore
     }
 }
