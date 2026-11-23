@@ -454,11 +454,18 @@ $script:_parentCache = [System.Collections.Generic.Dictionary[string, string[]]]
 function Get-ParentDomains([string]$domain) {
     $cached = $null
     if ($script:_parentCache.TryGetValue($domain, [ref]$cached)) { return $cached }
-    $labels  = $domain -split "\."
+
+    # 域名父级通过字符串索引提取，保留缓存语义并避免数组拆分/拼接。
     $parents = [System.Collections.Generic.List[string]]::new()
-    for ($i = 1; $i -lt $labels.Length - 1; $i++) {
-        $parents.Add(($labels[$i..($labels.Length - 1)] -join "."))
+    $dot = $domain.IndexOf('.')
+    while ($dot -ge 0) {
+        $parentStart = $dot + 1
+        $nextDot = $domain.IndexOf('.', $parentStart)
+        if ($nextDot -lt 0) { break }
+        $parents.Add($domain.Substring($parentStart))
+        $dot = $nextDot
     }
+
     $result = $parents.ToArray()
     $script:_parentCache[$domain] = $result
     return $result
