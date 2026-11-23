@@ -72,7 +72,7 @@ function Get-PublicSuffix([string]$Domain) {
     return ($labels[($labels.Length - $bestLength)..($labels.Length - 1)] -join '.')
 }
 
-function Is-PublicSuffix([string]$Domain) {
+function Test-PublicSuffix([string]$Domain) {
     $suffix = Get-PublicSuffix $Domain
     return ($null -ne $suffix -and (Normalize-Domain $Domain) -eq $suffix)
 }
@@ -200,7 +200,7 @@ function Get-AdblockDomainDecision([string]$Domain, [object[]]$Rules) {
     return Get-AdblockDomainDecisionByIndex -Domain $Domain -Index $index
 }
 
-function Compile-AdblockRules {
+function Convert-AdblockRules {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)][AllowEmptyCollection()][object[]]$Rules,
@@ -356,7 +356,7 @@ function Set-AdblockPublicSuffixRules {
     return $set.Count
 }
 
-function Load-AdblockPublicSuffixList {
+function Import-AdblockPublicSuffixList {
     [CmdletBinding()]
     param([string]$Uri='https://publicsuffix.org/list/public_suffix_list.dat')
     $client=[System.Net.Http.HttpClient]::new()
@@ -640,7 +640,7 @@ function Invoke-AdblockGeneration {
         throw ("Required upstream sources failed; refusing to publish:"+[Environment]::NewLine+($downloads.FailedRequired -join [Environment]::NewLine))
     }
 
-    $null=Load-AdblockPublicSuffixList
+    $null=Import-AdblockPublicSuffixList
     $preIssues=[System.Collections.Generic.List[object]]::new()
     $preprocessorIssues=[System.Collections.Generic.List[string]]::new()
     $includeManifest=[System.Collections.Generic.List[object]]::new()
@@ -664,10 +664,6 @@ function Invoke-AdblockGeneration {
                 $sourceLines=$downloads.Contents[$subscriptionUrl] -split '\r?\n'
                 for ($lineIndex=0; $lineIndex -lt $sourceLines.Length; $lineIndex++) {
                     $lineText=([string]$sourceLines[$lineIndex]).TrimStart([char]0xFEFF)
-                    if ($lineText -match '^\s*!#') {
-                        $preprocessorIssues.Add(('unsupported-preprocessor-directive:{0}:{1}:{2}' -f $subscriptionUrl,($lineIndex+1),$text))
-                        continue
-                    }
                     $plainLines.Add([PSCustomObject]@{Text=$lineText;SourceUrl=$subscriptionUrl;SourceLine=$lineIndex+1})
                 }
                 $expanded=[PSCustomObject]@{Lines=$plainLines.ToArray();Issues=@()}
@@ -734,7 +730,7 @@ function Invoke-AdblockGeneration {
                     $action=if ($parsed.Action -eq 'EXCLUDE') {'ALLOW'} else {'BLOCK'}
                     $important=[bool]$parsed.IsImportant
                     $priority=Get-AdblockRulePriority -Action $action -MatchType $matchType -IsImportant $important
-                    if (Is-PublicSuffix $domain) { $stats.PublicSuffix++ }
+                    if (Test-PublicSuffix $domain) { $stats.PublicSuffix++ }
                     $rawRules.Add([PSCustomObject]@{
                         Domain=$domain;MatchType=$matchType;Action=$action;Priority=$priority;IsImportant=$important
                         RawRule=$rawLine;RuleIdentity=$identity;SourceUrl=$lineSourceUrl;SubscriptionUrl=$subscriptionUrl
@@ -760,7 +756,7 @@ function Invoke-AdblockGeneration {
         if (-not $dedup.ContainsKey($key)) { $dedup.Add($key,$rule) }
     }
     $rules=@($dedup.Values)
-    $compiled=Compile-AdblockRules -Rules $rules -Strict:$false -PreExistingIssues $preIssues.ToArray()
+    $compiled=Convert-AdblockRules -Rules $rules -Strict:$false -PreExistingIssues $preIssues.ToArray()
     $successfulSources=@($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' } | Sort-Object Url)
     $fingerprintParts=@($successfulSources | ForEach-Object { "$($_.Url)|$($_.Sha256)|$($_.Bytes)" })
     $fingerprintInput=$fingerprintParts -join [Environment]::NewLine
