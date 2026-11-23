@@ -463,7 +463,6 @@ function Invoke-AdblockSourceDownloads {
             $pending = [System.Collections.Generic.List[object]]::new()
             foreach ($source in $batch) {
                 $sourceIndex = $offset + $pending.Count + 1
-                Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在发起上游下载：{2}" -f $sourceIndex,$Sources.Count,$source.url)
                 $timeout = [Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
                 $cts = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeout))
                 $task = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cts.Token)
@@ -493,7 +492,6 @@ function Invoke-AdblockSourceDownloads {
                         $errorText=$_.Exception.Message
                         if ($attempt -lt [int]$source.retries) {
                             $retryDelay=[Math]::Min(2*($attempt+1),8)
-                            Write-AdblockConsole -Level WARNING -Message ("[{0}/{1}] 下载失败，将在 {2}s 后重试（{3}/{4}）：{5}；原因：{6}" -f $sourceIndex,$Sources.Count,$retryDelay,($attempt+1),([int]$source.retries+1),$source.url,$errorText)
                             Start-Sleep -Seconds $retryDelay
                         }
                     }
@@ -512,7 +510,6 @@ function Invoke-AdblockSourceDownloads {
                 }
                 $contents[[string]$source.url]=$download.Content
                 $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='OK';Attempts=$attempts;HttpStatus=$download.StatusCode;Bytes=$download.Bytes;Sha256=$download.Sha256})
-                Write-AdblockConsole -Level SUCCESS -Message ("[{0}/{1}] 下载完成：HTTP {2}，{3:N1} KB，{4} 次尝试，耗时 {5:N1}s：{6}" -f $sourceIndex,$Sources.Count,$download.StatusCode,($download.Bytes/1KB),$attempts,$sourceTimer.Elapsed.TotalSeconds,$source.url)
             }
         }
     }
@@ -653,9 +650,7 @@ function Invoke-AdblockGeneration {
     $reportPath=Join-Path $repositoryRoot ('adblock_build_report_' + $Format + '.json')
 
     Write-Host ''
-    Write-AdblockConsole -Level STAGE -Message ('========== AdBlock {0} 规则生成开始 ==========' -f $Format.ToUpperInvariant())
     Write-AdblockConsole -Level INFO -Message ("运行模式：{0}；PowerShell：{1}" -f $(if($Strict){'严格模式'}else{'允许有损模式'}),$PSVersionTable.PSVersion)
-    Write-AdblockConsole -Level STAGE -Message '阶段 1/6：读取上游规则源清单'
     Write-AdblockConsole -Level INFO -Message ("来源文件：{0}" -f $SourceListPath)
     $sources=@(Get-AdblockSourceConfig -Path $SourceListPath)
     $enabledSources=@($sources | Where-Object { $_.enabled })
@@ -681,11 +676,9 @@ function Invoke-AdblockGeneration {
         throw ("Required upstream sources failed; refusing to publish:"+[Environment]::NewLine+($downloads.FailedRequired -join [Environment]::NewLine))
     }
 
-    Write-AdblockConsole -Level STAGE -Message '阶段 3/6：加载 Public Suffix List（PSL）'
     $pslRuleCount=Import-AdblockPublicSuffixList
     Write-AdblockConsole -Level SUCCESS -Message ("PSL 加载完成，共 {0} 条规则。" -f $pslRuleCount)
 
-    Write-AdblockConsole -Level STAGE -Message '阶段 4/6：解析上游规则、展开 Hosts 和 uBO Include'
     $preIssues=[System.Collections.Generic.List[object]]::new()
     $preprocessorIssues=[System.Collections.Generic.List[string]]::new()
     $includeManifest=[System.Collections.Generic.List[object]]::new()
@@ -802,7 +795,6 @@ function Invoke-AdblockGeneration {
         Write-AdblockConsole -Level WARNING -Message ("预处理未完全解析：{0}" -f $issue)
         $preIssues.Add([PSCustomObject]@{Type='UNRESOLVED_PREPROCESSOR';Root='';Detail=[string]$issue;Message=[string]$issue})
     }
-    Write-AdblockConsole -Level STAGE -Message '阶段 5/6：应用 badfilter、规则去重、优先级裁决与无损性检查'
     Write-AdblockConsole -Level INFO -Message ("检测到 {0} 个 badfilter 撤销身份。" -f $badfilterKeys.Count)
     $activeRules=[System.Collections.Generic.List[object]]::new()
     foreach ($rule in $rawRules) {
@@ -857,7 +849,6 @@ function Invoke-AdblockGeneration {
         Write-AdblockConsole -Level ERROR -Message ("严格模式阻止生成：发现 {0} 个不可无损表达的问题；原有规则文件不会被覆盖。报告：{1}" -f $compiled.Issues.Count,$reportPath)
         throw ("Strict compilation failed: {0} unrepresentable issue(s). No generated provider files were overwritten. See {1}." -f $compiled.Issues.Count,$reportPath)
     }
-    Write-AdblockConsole -Level STAGE -Message '阶段 6/6：生成并原子写入规则文件'
     $outputs=[System.Collections.Generic.List[object]]::new()
     if ($Format -eq 'yaml') {
         $yamlRules=@($suffix | ForEach-Object {'  - DOMAIN-SUFFIX,'+$_})+@($exact | ForEach-Object {'  - DOMAIN,'+$_})
@@ -1349,7 +1340,6 @@ function Invoke-AdblockSourceDownloads {
             $pending = [System.Collections.Generic.List[object]]::new()
             foreach ($source in $batch) {
                 $sourceIndex = $offset + $pending.Count + 1
-                Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在发起上游下载：{2}" -f $sourceIndex,$Sources.Count,$source.url)
                 $timeout = [Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
                 $cts = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeout))
                 $task = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cts.Token)
@@ -1379,7 +1369,6 @@ function Invoke-AdblockSourceDownloads {
                         $errorText=$_.Exception.Message
                         if ($attempt -lt [int]$source.retries) {
                             $retryDelay=[Math]::Min(2*($attempt+1),8)
-                            Write-AdblockConsole -Level WARNING -Message ("[{0}/{1}] 下载失败，将在 {2}s 后重试（{3}/{4}）：{5}；原因：{6}" -f $sourceIndex,$Sources.Count,$retryDelay,($attempt+1),([int]$source.retries+1),$source.url,$errorText)
                             Start-Sleep -Seconds $retryDelay
                         }
                     }
@@ -1398,7 +1387,6 @@ function Invoke-AdblockSourceDownloads {
                 }
                 $contents[[string]$source.url]=$download.Content
                 $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='OK';Attempts=$attempts;HttpStatus=$download.StatusCode;Bytes=$download.Bytes;Sha256=$download.Sha256})
-                Write-AdblockConsole -Level SUCCESS -Message ("[{0}/{1}] 下载完成：HTTP {2}，{3:N1} KB，{4} 次尝试，耗时 {5:N1}s：{6}" -f $sourceIndex,$Sources.Count,$download.StatusCode,($download.Bytes/1KB),$attempts,$sourceTimer.Elapsed.TotalSeconds,$source.url)
             }
         }
     }
@@ -1539,14 +1527,11 @@ function Invoke-AdblockGeneration {
     $reportPath=Join-Path $repositoryRoot ('adblock_build_report_' + $Format + '.json')
 
     Write-Host ''
-    Write-AdblockConsole -Level STAGE -Message ('========== AdBlock {0} 规则生成开始 ==========' -f $Format.ToUpperInvariant())
     Write-AdblockConsole -Level INFO -Message ("运行模式：{0}；PowerShell：{1}" -f $(if($Strict){'严格模式'}else{'允许有损模式'}),$PSVersionTable.PSVersion)
-    Write-AdblockConsole -Level STAGE -Message '阶段 1/6：读取上游规则源清单'
     Write-AdblockConsole -Level INFO -Message ("来源文件：{0}" -f $SourceListPath)
     $sources=@(Get-AdblockSourceConfig -Path $SourceListPath)
     Write-AdblockConsole -Level SUCCESS -Message ("已加载 {0} 个上游链接，全部按规则内容自动识别语法和动作。" -f $sources.Count)
 
-    Write-AdblockConsole -Level STAGE -Message ("阶段 2/6：下载上游规则源（每批最多 12 个并发请求，共 {0} 个）" -f $sources.Count)
     $downloads=Invoke-AdblockSourceDownloads -Sources $sources
     $downloadedCount=@($downloads.Manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' }).Count
     $failedCount=@($downloads.Manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'FAILED' }).Count
@@ -1569,11 +1554,9 @@ function Invoke-AdblockGeneration {
         throw ("Required upstream sources failed; refusing to publish:"+[Environment]::NewLine+($downloads.FailedRequired -join [Environment]::NewLine))
     }
 
-    Write-AdblockConsole -Level STAGE -Message '阶段 3/6：加载 Public Suffix List（PSL）'
     $pslRuleCount=Import-AdblockPublicSuffixList
     Write-AdblockConsole -Level SUCCESS -Message ("PSL 加载完成，共 {0} 条规则。" -f $pslRuleCount)
 
-    Write-AdblockConsole -Level STAGE -Message '阶段 4/6：解析上游规则、展开 Hosts 和 uBO Include'
     $preIssues=[System.Collections.Generic.List[object]]::new()
     $preprocessorIssues=[System.Collections.Generic.List[string]]::new()
     $includeManifest=[System.Collections.Generic.List[object]]::new()
@@ -1690,7 +1673,6 @@ function Invoke-AdblockGeneration {
         Write-AdblockConsole -Level WARNING -Message ("预处理未完全解析：{0}" -f $issue)
         $preIssues.Add([PSCustomObject]@{Type='UNRESOLVED_PREPROCESSOR';Root='';Detail=[string]$issue;Message=[string]$issue})
     }
-    Write-AdblockConsole -Level STAGE -Message '阶段 5/6：应用 badfilter、规则去重、优先级裁决与无损性检查'
     Write-AdblockConsole -Level INFO -Message ("检测到 {0} 个 badfilter 撤销身份。" -f $badfilterKeys.Count)
     $activeRules=[System.Collections.Generic.List[object]]::new()
     foreach ($rule in $rawRules) {
@@ -1745,7 +1727,6 @@ function Invoke-AdblockGeneration {
         Write-AdblockConsole -Level ERROR -Message ("严格模式阻止生成：发现 {0} 个不可无损表达的问题；原有规则文件不会被覆盖。报告：{1}" -f $compiled.Issues.Count,$reportPath)
         throw ("Strict compilation failed: {0} unrepresentable issue(s). No generated provider files were overwritten. See {1}." -f $compiled.Issues.Count,$reportPath)
     }
-    Write-AdblockConsole -Level STAGE -Message '阶段 6/6：生成并原子写入规则文件'
     $outputs=[System.Collections.Generic.List[object]]::new()
     if ($Format -eq 'yaml') {
         $yamlRules=@($suffix | ForEach-Object {'  - DOMAIN-SUFFIX,'+$_})+@($exact | ForEach-Object {'  - DOMAIN,'+$_})
@@ -1774,7 +1755,6 @@ function Invoke-AdblockGeneration {
     $totalSkipped=($skipStats.Values | Measure-Object -Sum).Sum
     if ($null -eq $totalSkipped) { $totalSkipped=0 }
     Write-Host ''
-    Write-AdblockConsole -Level STAGE -Message ("========== AdBlock {0} 规则生成完成 ==========" -f $Format.ToUpperInvariant())
     Write-AdblockConsole -Level SUCCESS -Message ("总规则数：{0}（DOMAIN：{1}；DOMAIN-SUFFIX：{2}）" -f ($exact.Count+$suffix.Count),$exact.Count,$suffix.Count)
     Write-AdblockConsole -Level INFO -Message ("上游来源：{0}；下载成功：{1}；下载失败：{2}" -f $sources.Count,$successfulSources.Count,$failedCount)
     Write-AdblockConsole -Level INFO -Message ("解析行数：{0}；有效规则：{1}；ALLOW：{2}；BLOCK：{3}" -f $stats.Parsed,$rules.Count,$allowCount,$blockCount)
