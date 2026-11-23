@@ -80,6 +80,7 @@ Describe 'Strict parser accounting' {
     It 'fails closed for unknown or unparseable rule syntax' {
         Test-AdblockStrictParseIssue 'no-pattern-match' | Should -BeTrue
         Test-AdblockStrictParseIssue 'whitelist-unparseable' | Should -BeTrue
+        Test-AdblockStrictParseIssue 'unresolvable-wildcard' | Should -BeTrue
     }
 
     It 'allows explicitly classified non-DNS rules to be counted as skipped' {

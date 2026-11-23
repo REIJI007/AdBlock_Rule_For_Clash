@@ -478,7 +478,7 @@ function Invoke-AdblockGeneration {
 
             # uBlock directives alter the effective source before parsing. Do not
             # mistake them for comments: without an evaluator they are unresolved.
-            if ($sourceLine -match '^!#(?:include|if|elif|else|endif|ifdef|ifndef)\b') {
+            if ($sourceLine -match '^!#') {
                 $stats.Preprocessor++
                 $preIssues.Add([PSCustomObject]@{
                     Type = 'UNPROCESSED_PREPROCESSOR'
@@ -709,7 +709,7 @@ function Get-WhitelistImportantFlag([string]$modStr) {
 function Test-AdblockStrictParseIssue([string]$SkipReason) {
     # Explicitly understood non-DNS rules may be skipped and counted. Unknown
     # syntax must stop strict compilation rather than silently lose a rule.
-    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable'))
+    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable','unresolvable-wildcard'))
 }
 
 function Is-WhitelistSource([string]$url) {
