@@ -1,12 +1,11 @@
-name: Test Independent Rule Generation
+name: Test Embedded Rule Generators
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'AdBlockRuleEngine.psm1'
       - 'adblock_rule_generator_*.ps1'
-      - 'config/upstream-sources.json'
+      - 'upstream-sources.json'
       - 'tests/**'
       - '.github/workflows/**'
   push:
@@ -36,29 +35,16 @@ jobs:
           Install-Module Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force
           Invoke-Pester -Path ./tests -CI
 
-      - name: Validate upstream manifest contract
+      - name: Validate root upstream URL list
         shell: pwsh
         run: |
-          $sources = @(Get-Content ./config/upstream-sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
-          if ($sources.Count -ne 317) { throw "Expected 317 configured sources, found $($sources.Count)." }
-          if (@($sources | Where-Object enabled).Count -ne 316) { throw 'Expected 316 enabled source records.' }
-          if (@($sources | Where-Object { $_.enabled -and $_.required }).Count -ne 315) { throw 'Expected 315 enabled required sources.' }
+          $urls = @(Get-Content ./upstream-sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
+          if ($urls.Count -ne 315) { throw "Expected 315 active required upstream URLs, found $($urls.Count)." }
 
           $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-          foreach ($source in $sources) {
-            if (-not $source.url -or $source.defaultAction -notin @('BLOCK','ALLOW')) { throw "Invalid source URL/defaultAction: $($source.url)" }
-            if ($source.syntax -notin @('AUTO','ADBLOCK','HOSTS','DNSMASQ')) { throw "Invalid syntax family: $($source.url)" }
-            if ($source.preprocessor -notin @('NONE','UBO')) { throw "Invalid preprocessor mode: $($source.url)" }
-            if ($source.plainDomainMatchType -notin @('EXACT','SUFFIX') -or $source.hostsMatchType -notin @('EXACT','SUFFIX')) {
-              throw "Invalid per-source match semantics: $($source.url)"
-            }
-            if ($source.required -isnot [bool] -or $source.enabled -isnot [bool]) { throw "required/enabled must be explicit booleans: $($source.url)" }
-            if ([long]$source.maxBytes -lt 1 -or [int]$source.retries -lt 0 -or [int]$source.retries -gt 5) {
-              throw "Invalid download limits: $($source.url)"
-            }
-            if ([int]$source.timeoutSeconds -lt 1 -or [int]$source.timeoutSeconds -gt 300) { throw "Invalid timeout: $($source.url)" }
-            if ($source.sha256 -and [string]$source.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid pinned SHA-256: $($source.url)" }
-            if (-not $seen.Add([string]$source.url)) { throw "Duplicate upstream URL: $($source.url)" }
-            $uri = [Uri]::new([string]$source.url)
-            if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Upstream URL must be absolute HTTPS: $($source.url)" }
+          foreach ($url in $urls) {
+            if ($url -isnot [string] -or [string]::IsNullOrWhiteSpace($url)) { throw 'Upstream source list must contain URL strings only.' }
+            if (-not $seen.Add([string]$url)) { throw "Duplicate upstream URL: $url" }
+            $uri = [Uri]::new([string]$url)
+            if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Upstream URL must be absolute HTTPS: $url" }
           }

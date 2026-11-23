@@ -4,9 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'AdBlockRuleEngine.psm1'
       - 'adblock_rule_generator_yaml.ps1'
-      - 'config/upstream-sources.json'
+      - 'upstream-sources.json'
       - '.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml'
   schedule:
     - cron: '*/20 * * * *'
