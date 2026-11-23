@@ -71,7 +71,7 @@ Describe 'Lossless positive-rule compilation' {
         $result.IsLossless | Should -BeTrue
     }
     It 'keeps a child suffix block below a parent allow and prunes exact duplicates' {
-        $rules = @((New-Rule 'example.com' SUFFIX ALLOW 2),(New-Rule 'ads.example.com' SUFFIX BLOCK 4),(New-Rule 'api.ads.example.com' EXACT BLOCK 3))
+        $rules = @((New-Rule 'example.com' SUFFIX ALLOW 2),(New-Rule 'ads.example.com' SUFFIX BLOCK 1),(New-Rule 'api.ads.example.com' EXACT BLOCK 3))
         $result = Compile-AdblockRules -Rules $rules -Strict $true
         $result.Suffix | Should -Contain 'ads.example.com'
         $result.Exact.Count | Should -Be 0
