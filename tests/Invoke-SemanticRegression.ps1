@@ -210,19 +210,19 @@ foreach ($domain in $uniqueExactRules) {
 
 # 锁定生产优先级解析器的继承边界，防止字符串扫描优化改变语义。
 $effectiveStatusCases = @(
-    @("ads.example.test", "BLACKLIST_P4"),
-    @("safe.ads.example.test", "WHITELIST_P2"),
-    @("blocked.safe.ads.example.test", "BLACKLIST_P4"),
-    @("tracker.example.test", "BLACKLIST_P3"),
-    @("sub.tracker.example.test", "UNKNOWN"),
-    @("priority.example.test", "BLACKLIST_P1"),
-    @("important-exception.priority.example.test", "WHITELIST_P0"),
-    @("exact-safe.important-parent.example.test", "WHITELIST_P0"),
-    @("child.exact-safe.important-parent.example.test", "BLACKLIST_P1"),
-    @("badfilter.example.test", "BLACKLIST_P4")
+    [PSCustomObject]@{ Domain = "ads.example.test"; Expected = "BLACKLIST_P4" },
+    [PSCustomObject]@{ Domain = "safe.ads.example.test"; Expected = "WHITELIST_P2" },
+    [PSCustomObject]@{ Domain = "blocked.safe.ads.example.test"; Expected = "BLACKLIST_P4" },
+    [PSCustomObject]@{ Domain = "tracker.example.test"; Expected = "BLACKLIST_P3" },
+    [PSCustomObject]@{ Domain = "sub.tracker.example.test"; Expected = "UNKNOWN" },
+    [PSCustomObject]@{ Domain = "priority.example.test"; Expected = "BLACKLIST_P1" },
+    [PSCustomObject]@{ Domain = "important-exception.priority.example.test"; Expected = "WHITELIST_P0" },
+    [PSCustomObject]@{ Domain = "exact-safe.important-parent.example.test"; Expected = "WHITELIST_P0" },
+    [PSCustomObject]@{ Domain = "child.exact-safe.important-parent.example.test"; Expected = "BLACKLIST_P1" },
+    [PSCustomObject]@{ Domain = "badfilter.example.test"; Expected = "BLACKLIST_P4" }
 )
 foreach ($statusCase in $effectiveStatusCases) {
-    Assert-Equal $statusCase[1] (Get-EffectiveStatus $statusCase[0]) "域名 [$($statusCase[0])] 的有效优先级"
+    Assert-Equal $statusCase.Expected (Get-EffectiveStatus $statusCase.Domain) "域名 [$($statusCase.Domain)] 的有效优先级"
 }
 
 # 执行生产脚本中的真实方案 A 投影代码，而非在测试中另写替代实现。
