@@ -3,10 +3,10 @@
 # Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # LICENSE1: GPL-3.0
 # LICENSE2: CC-BY-NC-SA 4.0
-# Generated Time: 2026-11-23 13:10:28
-# Total Rules: 656862
+# Generated Time: 2026-11-23 13:24:10
+# Total Rules: 656867
 # DOMAIN : 2478
-# DOMAIN-SUFFIX : 654384
+# DOMAIN-SUFFIX : 654389
 # Whitelist : 906
 # Projection Mode : Scheme A - current upstream explicit domain-rule projection
 # Semantic Warning : 133 parent suffix candidates narrowed to DOMAIN due to effective descendant exceptions
@@ -40171,6 +40171,7 @@ payload:
   - DOMAIN-SUFFIX,amovedleese.cfd
   - DOMAIN-SUFFIX,amoviemedia.com
   - DOMAIN-SUFFIX,amovsodwrogxp.online
+  - DOMAIN-SUFFIX,amoyprecary.cyou
   - DOMAIN-SUFFIX,amp-error-reporting.appspot.com
   - DOMAIN-SUFFIX,amp.diningcode.com
   - DOMAIN-SUFFIX,amp.psiamandamota.com.br
@@ -55690,6 +55691,7 @@ payload:
   - DOMAIN-SUFFIX,birdshome.top
   - DOMAIN-SUFFIX,biribatwinkle.cfd
   - DOMAIN-SUFFIX,birkuqpprfemv.site
+  - DOMAIN-SUFFIX,birledjuices.rest
   - DOMAIN-SUFFIX,birnbaum.net.anwalt.de
   - DOMAIN-SUFFIX,birotacours.click
   - DOMAIN-SUFFIX,birrusstunty.qpon
@@ -57296,6 +57298,7 @@ payload:
   - DOMAIN-SUFFIX,bnxjyxap.leia.ua
   - DOMAIN-SUFFIX,bnxuskszzoijr.site
   - DOMAIN-SUFFIX,bny.tt.omtrdc.net
+  - DOMAIN-SUFFIX,bnyjqywgofrdu.site
   - DOMAIN-SUFFIX,bnymellon.com.d2.sc.tt.omtrdc.net
   - DOMAIN-SUFFIX,bnymellon.com.ssl.d2.sc.tt.omtrdc.net
   - DOMAIN-SUFFIX,bnynihjbciywe.online
@@ -104605,6 +104608,7 @@ payload:
   - DOMAIN-SUFFIX,diary-link.getcubo.com
   - DOMAIN-SUFFIX,dias2o0.cn
   - DOMAIN-SUFFIX,diasp.9.tt.omtrdc.net
+  - DOMAIN-SUFFIX,diatomacranes.cyou
   - DOMAIN-SUFFIX,diaxialseguingeyrant.cyou
   - DOMAIN-SUFFIX,diaz1.tt.omtrdc.net
   - DOMAIN-SUFFIX,diazidehematid.com
@@ -443089,6 +443093,7 @@ payload:
   - DOMAIN-SUFFIX,ihqhl.hammitt.com
   - DOMAIN-SUFFIX,ihqho.denvermodern.com
   - DOMAIN-SUFFIX,ihqrcecwdfjjw.online
+  - DOMAIN-SUFFIX,ihramjoust.click
   - DOMAIN-SUFFIX,ihrdf.steelecanvas.com
   - DOMAIN-SUFFIX,ihs-my.tt.omtrdc.net
   - DOMAIN-SUFFIX,ihs.tt.omtrdc.net
@@ -468108,6 +468113,7 @@ payload:
   - DOMAIN-SUFFIX,lectormangaas.com
   - DOMAIN-SUFFIX,lectureolympics.com
   - DOMAIN-SUFFIX,lecuiwangluo.com
+  - DOMAIN-SUFFIX,lecythicurransahmedi.cyou
   - DOMAIN-SUFFIX,led.duet.so
   - DOMAIN-SUFFIX,ledcorinc.tt.omtrdc.net
   - DOMAIN-SUFFIX,leddgrestart.wixstudio.com
@@ -508910,6 +508916,7 @@ payload:
   - DOMAIN-SUFFIX,nachodusking.com
   - DOMAIN-SUFFIX,nachophobiaunengaged.com
   - DOMAIN-SUFFIX,nacional1.webcindario.com
+  - DOMAIN-SUFFIX,nacjywjvwj.com
   - DOMAIN-SUFFIX,nacketsaharic.cyou
   - DOMAIN-SUFFIX,naclinpgs.pearson.com
   - DOMAIN-SUFFIX,nacqigmtaxssr.online
@@ -586471,7 +586478,6 @@ payload:
   - DOMAIN-SUFFIX,startetrzer.wixstudio.com
   - DOMAIN-SUFFIX,startgifts.com
   - DOMAIN-SUFFIX,starthub.framer.website
-  - DOMAIN-SUFFIX,starti.pl
   - DOMAIN-SUFFIX,startin-appsettoro.wixstudio.com
   - DOMAIN-SUFFIX,startingcars.com
   - DOMAIN-SUFFIX,startio-ledgrecdn.wixstudio.com
@@ -590774,7 +590780,6 @@ payload:
   - DOMAIN-SUFFIX,studioid.industrydive.com
   - DOMAIN-SUFFIX,studioomovie.com
   - DOMAIN-SUFFIX,studios.aboutamazon.com
-  - DOMAIN-SUFFIX,studiotrackmusic.com
   - DOMAIN-SUFFIX,studious-make.com
   - DOMAIN-SUFFIX,studiousenragereclaim.com
   - DOMAIN-SUFFIX,studsbaniva.cfd
