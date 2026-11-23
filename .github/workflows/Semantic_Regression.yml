@@ -29,10 +29,17 @@ jobs:
         shell: pwsh
         run: ./tests/Invoke-SemanticRegression.ps1 -TargetFormat clash
 
+      - name: 基于完整上游源计算产物语义一致率
+        shell: pwsh
+        timeout-minutes: 30
+        run: ./tests/Invoke-UpstreamSemanticAudit.ps1 -TargetFormat clash
+
       - name: 上传机器可读指标
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semantic-regression-clash
-          path: tests/TestResults/semantic-metrics.json
+          path: |
+            tests/TestResults/semantic-metrics.json
+            tests/TestResults/upstream-semantic-metrics.json
           if-no-files-found: warn
