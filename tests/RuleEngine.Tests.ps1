@@ -372,6 +372,8 @@ Describe 'Independent YAML, TXT and MRS generation contracts' {
     }
 
     It 'runs MRS as a third independent scheduled and dispatched workflow' {
+        $yamlWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml') -Raw
+        $txtWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_TXT.yml') -Raw
         $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml') -Raw
         $mrsWorkflow | Should -Match 'schedule:'
         $mrsWorkflow | Should -Match 'workflow_dispatch:'
