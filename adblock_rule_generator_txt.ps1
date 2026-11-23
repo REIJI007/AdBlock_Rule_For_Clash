@@ -326,40 +326,88 @@ $urlList = @(
 )
 
 
-# 凡携带以下修饰符的规则均在 HTTP/浏览器/应用层生效，DNS 层无法实施，直接跳过整条规则
-$modSkipSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@(
-    # — 变换 / 重定向 / 安全策略 相关
-    'redirect','redirect-rule','csp','replace',
-    # — 参数与请求剪裁、Cookie、Header、权限 相关
-    'removeparam','queryprune','cookie','header','permissions',
-    # — 内联资源 / 媒体 / 内容 相关
-    'inline-script','inline-font','empty','mp4','urltransform','jsonprune','hls','referrerpolicy','content',
-    # — 屏蔽/隐藏/过滤 相关（通用或特定选择器）
-    'genericblock','generichide','specifichide','elemhide','urlblock',
-    # — 应用/客户端/标签/方向/来源 标识 相关
-    'app','client','ctag','to','from',
-    # — 第三方/第一方 标识（及其变体）相关
-    'third-party','3p','first-party','1p','~third-party','~3p',
-    # — 严格一方/三方 模式及其反向标记
-    'strict1p','~strict1p','strict3p','~strict3p','extension',
-    # — 弹窗/网络/方法/协议/隐私功能 等行为或信号相关
-    'popup','popunder','ping','webrtc','network','method','dnstype','protectedaudience','privacysandbox'
-) | ForEach-Object { $modSkipSet.Add($_) | Out-Null }
+# 只接受能够投影为域名级拦截的修饰符；未知或带上下文条件的修饰符一律保守跳过。
+# badfilter 使用规则身份而非域名撤销，避免误删同域的其他规则。
+function Get-RuleIdentity([string]$pattern, [string]$modifierString) {
+    if ([string]::IsNullOrWhiteSpace($pattern)) { return $null }
 
-# ── 加载公共后缀列表（PSL） ───────────────────────────────────────────────────
-$pslSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-Write-Host "正在加载 PSL 公共后缀列表..."
-$wc = New-Object System.Net.WebClient
-$wc.Headers.Add("User-Agent", "Mozilla/5.0")
-$pslContent = $wc.DownloadString("https://publicsuffix.org/list/public_suffix_list.dat")
-foreach ($pslLine in ($pslContent -split "`n")) {
-    $pslLine = $pslLine.Trim()
-    if ($pslLine.StartsWith("//") -or [string]::IsNullOrWhiteSpace($pslLine)) { continue }
-    if ($pslLine.StartsWith("!") -or $pslLine.StartsWith("*")) { continue }
-    $pslSet.Add($pslLine) | Out-Null
+    $normalized = [System.Collections.Generic.List[string]]::new()
+    if (-not [string]::IsNullOrWhiteSpace($modifierString)) {
+        foreach ($token in ($modifierString -split ',')) {
+            $item = $token.Trim().ToLowerInvariant()
+            if (-not [string]::IsNullOrWhiteSpace($item) -and $item -ne 'badfilter') {
+                $normalized.Add($item)
+            }
+        }
+    }
+
+    $items = $normalized.ToArray()
+    [System.Array]::Sort($items, [System.StringComparer]::Ordinal)
+    return ($pattern.Trim().ToLowerInvariant() + '$' + ($items -join ','))
 }
-Write-Host "PSL 加载完成，共 $($pslSet.Count) 条"
+
+function Resolve-Modifiers([string]$modStr) {
+    $ret = [PSCustomObject]@{
+        Decision    = "CONTINUE"
+        SkipReason  = $null
+        IsImportant = $false
+    }
+    if ([string]::IsNullOrWhiteSpace($modStr)) { return $ret }
+
+    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLowerInvariant() })) {
+        if ([string]::IsNullOrWhiteSpace($mod)) { continue }
+
+        $parts = $mod -split '=', 2
+        $modName = $parts[0]
+
+        if ($modName -eq 'important') {
+            $ret.IsImportant = $true
+            continue
+        }
+
+        if ($modName -eq 'dnsrewrite') {
+            $rv = if ($parts.Count -gt 1) { $parts[1].Trim().ToLowerInvariant() } else { '' }
+            # 仅将明确的 DNS 黑洞响应视为拦截；真实地址、CNAME 和其他响应不能变成 REJECT。
+            $isDnsBlock = (
+                $rv -eq 'nxdomain' -or
+                $rv -match '^noerror;a;(0\.0\.0\.0|127\.0\.0\.1)$' -or
+                $rv -match '^noerror;aaaa;(::|::1|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$'
+            )
+            if ($isDnsBlock) { continue }
+            $ret.Decision = "SKIP"
+            $ret.SkipReason = "dnsrewrite-non-block:$rv"
+            return $ret
+        }
+
+        $ret.Decision = "SKIP"
+        $ret.SkipReason = "unsupported-modifier:$modName"
+        return $ret
+    }
+
+    if ($ret.IsImportant) { $ret.Decision = "IMPORTANT_CONTINUE" }
+    return $ret
+}
+
+function Is-ContextConstrainedWhitelist([string]$modStr) {
+    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
+    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLowerInvariant() })) {
+        $name = ($mod -split '=', 2)[0]
+        if ($name -ne 'important') { return $true }
+    }
+    return $false
+}
+
+function Get-WhitelistImportantFlag([string]$modStr) {
+    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
+    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLowerInvariant() })) {
+        if ($mod -eq 'important') { return $true }
+    }
+    return $false
+}
+
+function Is-WhitelistSource([string]$url) {
+    return $url -match "(?i)allowlist|exclusions|exceptions|whitelist"
+}
 
 # ── 工具函数 ───────────────────────────────────────────────
 function Normalize-Domain([string]$domain) {
@@ -389,18 +437,9 @@ function Is-ValidDNSDomain([string]$domain) {
     return $true
 }
 
-function Is-PublicSuffix([string]$domain) {
-    return $pslSet.Contains($domain)
-}
 
-function Resolve-WildcardDomain([string]$raw) {
-    if ([string]::IsNullOrWhiteSpace($raw)) { return $null }
-    if ($raw -match '^\*+\.(.+)$') {
-        $candidate = Normalize-Domain $Matches[1]
-        if (Is-ValidDNSDomain $candidate) { return $candidate }
-    }
-    return $null
-}
+
+
 
 $script:_parentCache = [System.Collections.Generic.Dictionary[string, string[]]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
@@ -467,12 +506,14 @@ function Parse-Rule {
     param([string]$line, [bool]$isWhitelistSource = $false)
 
     $result = [PSCustomObject]@{
-        Action      = "SKIP"
-        Domain      = $null
-        SkipReason  = "unmatched"
+        Action       = "SKIP"
+        Domain       = $null
+        SkipReason   = "unmatched"
         SourceFormat = "unknown"
-        IsImportant = $false
-        IsWildcard  = $false
+        IsImportant  = $false
+        IsWildcard   = $false
+        RuleKey      = $null
+        IsFilterRule = $false
     }
 
     if (
@@ -490,67 +531,107 @@ function Parse-Rule {
         $result.SkipReason = "regex-rule"
         return $result
     }
-
     if ($line -match '^\|https?://') {
         $result.SkipReason = "exact-url-rule"
         return $result
     }
 
-    # Adblock 白名单规则
+    # Adblock 例外规则：分离 EXACT 与 SUFFIX。
     if ($line.StartsWith("@@")) {
-        $extractDomain = $null
-        $modPartRaw = $null
-
         if (
             $line -match '^@@\|\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)(.*)$'
         ) {
-            $extractDomain = $Matches[1].ToLower()
+            $extractDomain = $Matches[1]
             $afterDomain = $Matches[5]
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            $modPartRaw = if ($dollarIdx -ge 0) { $afterDomain.Substring($dollarIdx + 1) } else { $null }
 
             if ($afterDomain -match '^[\^]?[/?]') {
                 $result.SkipReason = "whitelist-path-or-query-specific"
                 return $result
             }
-            $dollarIdx = $afterDomain.IndexOf('$')
-            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
             if ($beforeMods -notmatch '^\^?\|?$') {
                 $result.SkipReason = "whitelist-pattern-after-domain"
                 return $result
             }
 
-            if ($dollarIdx -ge 0) {
-                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            $patternText = if ($line.Contains('$')) { $line.Substring(0, $line.IndexOf('$')) } else { $line }
+            if ($null -ne $modPartRaw -and $modPartRaw -match '(?i)(^|,)badfilter(,|$)') {
+                $result.Action = "BADFILTER"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist-badfilter"
+                $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw
+                $result.IsFilterRule = $true
+                return $result
             }
-        }
-        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
-            $extractDomain = $Matches[1].ToLower()
-        }
-
-        if ($null -ne $extractDomain) {
             if (Is-ContextConstrainedWhitelist $modPartRaw) {
                 $result.SkipReason = "whitelist-context-constrained"
+                return $result
             }
-            else {
-                $result.Action = "EXCLUDE"
-                $result.Domain = $extractDomain
-                $result.SourceFormat = "adblock-whitelist"
-                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
-            }
+
+            $result.Action = "EXCLUDE"
+            $result.Domain = $extractDomain
+            $result.SourceFormat = if ($beforeMods -match '\|') { "whitelist-exact" } else { "whitelist-suffix" }
+            $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw
+            $result.IsFilterRule = $true
+            return $result
         }
-        else {
-            $result.SkipReason = "whitelist-unparseable"
+        elseif ($line -match '^@@\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)\|(\$(.+))?$') {
+            $candidate = $Matches[1]
+            $modStr = $Matches[6]
+            $patternText = "@@|$candidate|"
+
+            if ($null -ne $modStr -and $modStr -match '(?i)(^|,)badfilter(,|$)') {
+                $result.Action = "BADFILTER"
+                $result.Domain = $candidate
+                $result.SourceFormat = "adblock-whitelist-badfilter"
+                $result.RuleKey = Get-RuleIdentity $patternText $modStr
+                $result.IsFilterRule = $true
+                return $result
+            }
+            if (Is-ContextConstrainedWhitelist $modStr) {
+                $result.SkipReason = "whitelist-context-constrained"
+                return $result
+            }
+
+            $result.Action = "EXCLUDE"
+            $result.Domain = $candidate
+            $result.SourceFormat = "whitelist-exact"
+            $result.IsImportant = Get-WhitelistImportantFlag $modStr
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.IsFilterRule = $true
+            return $result
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $result.Action = "EXCLUDE"
+            $result.Domain = $Matches[1]
+            $result.SourceFormat = "whitelist-plain"
+            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $Matches[1]) ""
+            return $result
         }
 
+        $result.SkipReason = "whitelist-unparseable"
         return $result
     }
 
-    # 精确 URL / AdGuard 精确域名规则
+    # Adblock 精确主机锚定规则：|domain|
     if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
-        $candidate = $Matches[1].ToLower()
+        $candidate = $Matches[1]
         $modStr = $Matches[3]
+        $patternText = "|$candidate|"
+
+        if ($null -ne $modStr -and $modStr -match '(?i)(^|,)badfilter(,|$)') {
+            $result.Action = "BADFILTER"
+            $result.Domain = $candidate
+            $result.SourceFormat = "adblock-exact-badfilter"
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.IsFilterRule = $true
+            return $result
+        }
 
         $modResult = Resolve-Modifiers $modStr
-
         if ($modResult.Decision -eq "SKIP") {
             $result.SkipReason = $modResult.SkipReason
             return $result
@@ -567,82 +648,44 @@ function Parse-Rule {
 
         $result.Domain = $candidate
         $result.IsImportant = $modResult.IsImportant
-
+        $result.RuleKey = Get-RuleIdentity $patternText $modStr
+        $result.IsFilterRule = $true
         return $result
     }
 
-    # Adblock || 域名规则
+    # 域名锚定规则：路径、查询和通配符不能降级成普通后缀。
     if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
-        $raw = $Matches[1].ToLower()
+        $raw = $Matches[1]
         $rest = $Matches[2]
         $dollarIndex = $rest.IndexOf('$')
-
-        $restBeforeDollar = if ($dollarIndex -ge 0) {
-            $rest.Substring(0, $dollarIndex)
-        }
-        else {
-            $rest
-        }
+        $restBeforeDollar = if ($dollarIndex -ge 0) { $rest.Substring(0, $dollarIndex) } else { $rest }
+        $modStr = if ($dollarIndex -ge 0) { $rest.Substring($dollarIndex + 1) } else { $null }
+        $patternText = "||$raw$restBeforeDollar"
 
         if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
             $result.SkipReason = "path-or-query-specific-rule"
             return $result
         }
-
-        # 处理 $badfilter 撤销规则
-        if ($rest -match '^\^?\$(.+)$') {
-            $modList = (
-                $Matches[1] -split ',' |
-                ForEach-Object {
-                    ($_ -split '=')[0].Trim().ToLower()
-                }
-            )
-
-            if ($modList -contains 'badfilter') {
-                $domain = $raw
-
-                if (
-                    $domain -notmatch '\*' -and
-                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
-                ) {
-                    $result.Action = "BADFILTER"
-                    $result.Domain = $domain
-                    return $result
-                }
-            }
-        }
-
-        # 处理其他修饰符
-        if ($rest -match '^\^?\$(.+)$') {
-            $modResult = Resolve-Modifiers $Matches[1]
-
-            if ($modResult.Decision -eq "SKIP") {
-                $result.SkipReason = $modResult.SkipReason
-                return $result
-            }
-
-            $result.IsImportant = $modResult.IsImportant
-        }
-
-        # 解析通配域名
-        $domain = $null
-
         if ($raw -match '\*') {
-            $domain = Resolve-WildcardDomain $raw
-
-            if ($null -eq $domain) {
-                $result.SkipReason = "unresolvable-wildcard"
-                return $result
-            }
-
-            $result.IsWildcard = $true
-        }
-        else {
-            $domain = $raw
+            $result.SkipReason = "unrepresentable-wildcard-domain"
+            return $result
         }
 
-        # 不将 IP 地址作为域名后缀规则
-        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+        if ($null -ne $modStr -and $modStr -match '(?i)(^|,)badfilter(,|$)') {
+            $result.Action = "BADFILTER"
+            $result.Domain = $raw
+            $result.SourceFormat = "adblock-suffix-badfilter"
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.IsFilterRule = $true
+            return $result
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+        if ($raw -match '^\d{1,3}(\.\d{1,3}){3}$') {
             $result.SkipReason = "ip-address"
             return $result
         }
@@ -656,17 +699,18 @@ function Parse-Rule {
             $result.SourceFormat = "adblock-suffix"
         }
 
-        $result.Domain = $domain
-
+        $result.Domain = $raw
+        $result.IsImportant = $modResult.IsImportant
+        $result.RuleKey = Get-RuleIdentity $patternText $modStr
+        $result.IsFilterRule = $true
         return $result
     }
 
-    # Hosts 文件规则
+    # Hosts 条目按精确主机处理。
     if (
         $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
     ) {
-        $domain = $Matches[2].ToLower()
-
+        $domain = $Matches[2]
         if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
             $result.SkipReason = "localhost-entry"
             return $result
@@ -680,40 +724,23 @@ function Parse-Rule {
             $result.Action = "EXACT"
             $result.SourceFormat = "hosts"
         }
-
         $result.Domain = $domain
-
+        $result.RuleKey = Get-RuleIdentity ("hosts:" + $domain) ""
         return $result
     }
 
-    # dnsmasq address 规则
+    # dnsmasq address 只在明确返回黑洞地址时视为后缀拦截。
     if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
-        $domain = $Matches[1].ToLower()
+        $domain = $Matches[1]
         $target = $Matches[2].Trim()
         $isBlock = $false
 
         switch -Regex ($target) {
-            '^$' {
-                $isBlock = $true
-            }
-            '^0\.0\.0\.0$' {
-                $isBlock = $true
-            }
-            '^127\.0\.0\.1$' {
-                $isBlock = $true
-            }
-            '^::$' {
-                $isBlock = $true
-            }
-            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
-                $isBlock = $true
-            }
-            '^#$' {
-                $isBlock = $false
-            }
-            default {
-                $isBlock = $false
-            }
+            '^$' { $isBlock = $true }
+            '^0\.0\.0\.0$' { $isBlock = $true }
+            '^127\.0\.0\.1$' { $isBlock = $true }
+            '^(::|::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' { $isBlock = $true }
+            default { $isBlock = $false }
         }
 
         if (-not $isBlock) {
@@ -729,78 +756,53 @@ function Parse-Rule {
             $result.Action = "SUFFIX"
             $result.SourceFormat = "dnsmasq-address"
         }
-
         $result.Domain = $domain
-
+        $result.RuleKey = Get-RuleIdentity ("dnsmasq-address:" + $domain) ""
         return $result
     }
 
-    # dnsmasq server 路由规则不作为屏蔽规则
-    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
-        $result.SkipReason = "dnsmasq-server-routing"
+    # dnsmasq server/local 是 DNS 路由或本地权威行为，不等价于拒绝访问。
+    if ($line -match '^(server|local)=/') {
+        $result.SkipReason = "dnsmasq-routing-not-block"
         return $result
     }
 
-    # dnsmasq local 规则
-    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq-local"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-local"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    # 纯域名规则
+    # 裸域名沿用项目原有约定：EXACT；具体来源的其他语义需由其文件格式定义。
     if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        $domain = $Matches[1]
         if ($isWhitelistSource) {
             $result.Action = "EXCLUDE"
             $result.SourceFormat = "whitelist-plain"
+            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $domain) ""
         }
         else {
             $result.Action = "EXACT"
             $result.SourceFormat = "plain-domain"
+            $result.RuleKey = Get-RuleIdentity ("plain-domain:" + $domain) ""
         }
-
-        $result.Domain = $Matches[1].ToLower()
-
+        $result.Domain = $domain
         return $result
     }
 
     $result.SkipReason = "no-pattern-match"
-
     return $result
 }
-# ── 主采集循环 ───────────────────────────────────────────────
+
 $logFilePath = "$PSScriptRoot/adblock_log.txt"
-$badfilterCancelDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$uniqueSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$uniqueExactRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$excludedDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$importantDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$importantWhitelistDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$wildcardSourceDoms = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$badfilterCancelKeys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$parsedRulesByKey = [System.Collections.Generic.Dictionary[string, object]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $skipStats = [System.Collections.Generic.Dictionary[string,int]]::new()
 $formatStats = [System.Collections.Generic.Dictionary[string,int]]::new()
 
-# 并行下载阶段：所有请求同时飞出，利用 HttpClient 异步任务实现真正的 I/O 并发
+# 并行下载阶段：保持 URL 顺序，逐项收集下载结果。
 $httpClient = [System.Net.Http.HttpClient]::new()
 $httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
-# 批量发起异步下载任务（此处仅启动，不阻塞）
 $downloadTasks = $urlList | ForEach-Object {
     [PSCustomObject]@{ Url = $_; Task = $httpClient.GetStringAsync($_) }
 }
-
-# 等待全部任务完成并收集结果（顺序与 $urlList 保持一致）
 $urlContents = $downloadTasks | ForEach-Object {
-    $currentUrl  = $_.Url   # 提前捕获，防止 catch 块内 $_ 被异常覆盖
+    $currentUrl = $_.Url
     $currentTask = $_.Task
     $content = $null
     try { $content = $currentTask.GetAwaiter().GetResult() }
@@ -812,52 +814,40 @@ $urlContents = $downloadTasks | ForEach-Object {
 }
 $httpClient.Dispose()
 
+# 第一遍只解析并收集规则身份；badfilter 可以出现在原规则之前或之后。
 foreach ($item in $urlContents) {
     $url = $item.Url
     Write-Host "正在处理: $url"
     Add-Content -Path $logFilePath -Value "正在处理: $url"
     $isWhitelistSrc = Is-WhitelistSource $url
+
     try {
         if ($null -eq $item.Content) { throw "下载失败，已跳过" }
-        $content = $item.Content
-        foreach ($line in ($content -split "`n")) {
-            $parsed = Parse-Rule $line.Trim() -isWhitelistSource $isWhitelistSrc
+        foreach ($line in ($item.Content -split "\r?\n")) {
+            $normalizedLine = $line.Trim().Trim([char]0xFEFF)
+            $parsed = Parse-Rule $normalizedLine -isWhitelistSource $isWhitelistSrc
+
             switch ($parsed.Action) {
-                "EXCLUDE" {
-                    if (Is-ValidDNSDomain $parsed.Domain) {
-                        $excludedDomains.Add($parsed.Domain) | Out-Null
-                        if ($parsed.IsImportant) { $importantWhitelistDomains.Add($parsed.Domain) | Out-Null }
+                "BADFILTER" {
+                    if (-not [string]::IsNullOrWhiteSpace($parsed.RuleKey)) {
+                        $badfilterCancelKeys.Add($parsed.RuleKey) | Out-Null
                     }
-                    if (-not $formatStats.ContainsKey($parsed.SourceFormat)) { $formatStats[$parsed.SourceFormat] = 0 }
-                    $formatStats[$parsed.SourceFormat]++
-                }
-                "SUFFIX" {
-                    if ((Is-ValidDNSDomain $parsed.Domain) -and -not (Is-PublicSuffix $parsed.Domain) -and -not ($parsed.Domain -match '^\d{1,3}(\.\d{1,3}){3}$')) {
-                        $uniqueSuffixRules.Add($parsed.Domain) | Out-Null
-                        if ($parsed.IsImportant) { $importantDomains.Add($parsed.Domain) | Out-Null }
-                        if ($parsed.IsWildcard) { $wildcardSourceDoms.Add($parsed.Domain) | Out-Null }
+                    else {
+                        if (-not $skipStats.ContainsKey("badfilter-unparseable")) { $skipStats["badfilter-unparseable"] = 0 }
+                        $skipStats["badfilter-unparseable"]++
                     }
-                    if (-not $formatStats.ContainsKey($parsed.SourceFormat)) { $formatStats[$parsed.SourceFormat] = 0 }
-                    $formatStats[$parsed.SourceFormat]++
                 }
-                "EXACT" {
-                    if ((Is-ValidDNSDomain $parsed.Domain) -and -not (Is-PublicSuffix $parsed.Domain)) {
-                        $uniqueExactRules.Add($parsed.Domain) | Out-Null
-                        if ($parsed.IsImportant) { $importantDomains.Add($parsed.Domain) | Out-Null }
-                    }
-                    if (-not $formatStats.ContainsKey($parsed.SourceFormat)) { $formatStats[$parsed.SourceFormat] = 0 }
-                    $formatStats[$parsed.SourceFormat]++
-                }
-				"BADFILTER" {
-					if (Is-ValidDNSDomain $parsed.Domain) {
-						$badfilterCancelDomains.Add($parsed.Domain) | Out-Null
-					}
-					if (-not $formatStats.ContainsKey("badfilter-cancel")) { $formatStats["badfilter-cancel"] = 0 }
-					$formatStats["badfilter-cancel"]++
-				}
                 "SKIP" {
                     if (-not $skipStats.ContainsKey($parsed.SkipReason)) { $skipStats[$parsed.SkipReason] = 0 }
                     $skipStats[$parsed.SkipReason]++
+                }
+                default {
+                    if ($parsed.Action -in @("EXCLUDE", "SUFFIX", "EXACT")) {
+                        $storeKey = "$($parsed.Action)|$($parsed.RuleKey)"
+                        if (-not $parsedRulesByKey.ContainsKey($storeKey)) {
+                            $parsedRulesByKey[$storeKey] = $parsed
+                        }
+                    }
                 }
             }
         }
@@ -868,81 +858,102 @@ foreach ($item in $urlContents) {
     }
 }
 
+# 第二遍应用 badfilter，再构建彼此独立的精确/后缀黑白名单集合。
+$uniqueSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$uniqueExactRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$excludedExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$excludedSuffixDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$importantExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$importantSuffixDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$importantWhitelistExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$importantWhitelistSuffixDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
+foreach ($parsed in $parsedRulesByKey.Values) {
+    if ($parsed.IsFilterRule -and $parsed.RuleKey -and $badfilterCancelKeys.Contains($parsed.RuleKey)) {
+        if (-not $skipStats.ContainsKey("badfilter-cancelled")) { $skipStats["badfilter-cancelled"] = 0 }
+        $skipStats["badfilter-cancelled"]++
+        continue
+    }
+
+    $domain = Normalize-Domain $parsed.Domain
+    if (-not (Is-ValidDNSDomain $domain)) {
+        if (-not $skipStats.ContainsKey("invalid-domain")) { $skipStats["invalid-domain"] = 0 }
+        $skipStats["invalid-domain"]++
+        continue
+    }
+    if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+        if (-not $skipStats.ContainsKey("ip-address")) { $skipStats["ip-address"] = 0 }
+        $skipStats["ip-address"]++
+        continue
+    }
+
+    switch ($parsed.Action) {
+        "EXCLUDE" {
+            $isSuffixException = $parsed.SourceFormat -in @("whitelist-suffix", "whitelist-dnsmasq")
+            if ($isSuffixException) {
+                $excludedSuffixDomains.Add($domain) | Out-Null
+                if ($parsed.IsImportant) { $importantWhitelistSuffixDomains.Add($domain) | Out-Null }
+            }
+            else {
+                $excludedExactDomains.Add($domain) | Out-Null
+                if ($parsed.IsImportant) { $importantWhitelistExactDomains.Add($domain) | Out-Null }
+            }
+        }
+        "SUFFIX" {
+            $uniqueSuffixRules.Add($domain) | Out-Null
+            if ($parsed.IsImportant) { $importantSuffixDomains.Add($domain) | Out-Null }
+        }
+        "EXACT" {
+            $uniqueExactRules.Add($domain) | Out-Null
+            if ($parsed.IsImportant) { $importantExactDomains.Add($domain) | Out-Null }
+        }
+    }
+
+    if (-not $formatStats.ContainsKey($parsed.SourceFormat)) { $formatStats[$parsed.SourceFormat] = 0 }
+    $formatStats[$parsed.SourceFormat]++
+}
+
 # ── 过滤阶段 + 白名单抑制 + 冲突索引 + 父域剪枝 ─────────────
 $validSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $validExactRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$validExcludedDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$validPslRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
+# 匹配粒度由上游规则决定；不能因为域名属于 PSL 就把 SUFFIX 改写成 EXACT。
 foreach ($d in $uniqueSuffixRules) {
-    if ((Is-ValidDNSDomain $d) -and -not ($d -match '^\d{1,3}(\.\d{1,3}){3}$')) {
-        if (Is-PublicSuffix $d) {
-            $validPslRules.Add($d) | Out-Null
-        } else {
-            $validSuffixRules.Add($d) | Out-Null
-        }
-    }
+    if (Is-ValidDNSDomain $d) { $validSuffixRules.Add($d) | Out-Null }
 }
 foreach ($d in $uniqueExactRules) {
-    if (Is-ValidDNSDomain $d) {
-        if (Is-PublicSuffix $d) {
-            $validPslRules.Add($d) | Out-Null
-        } else {
-            $validExactRules.Add($d) | Out-Null
-        }
-    }
-}
-# ── 强化：PSL whitelist（普通+important）移除过滤限制（修复潜在误杀/漏杀） ─────────────
-foreach ($d in $excludedDomains) {
-    if (Is-ValidDNSDomain $d) {   # 移除 -not (Is-PublicSuffix)：允许PSL apex白名单生效
-        $validExcludedDomains.Add($d) | Out-Null
-    }
+    if (Is-ValidDNSDomain $d) { $validExactRules.Add($d) | Out-Null }
 }
 
-$filteredImportantWhitelist = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-foreach ($d in $importantWhitelistDomains) {
-    if (Is-ValidDNSDomain $d) {   # 移除 -not (Is-PublicSuffix)：P0重要白名单支持PSL apex
-        $filteredImportantWhitelist.Add($d) | Out-Null
-    }
-}
-$importantWhitelistDomains = $filteredImportantWhitelist
-
-$validExactRules.UnionWith($validPslRules)
-
-Write-Host "正在执行 `$badfilter 撤销规则，共 $($badfilterCancelDomains.Count) 条撤销目标..."
-$validSuffixRules.ExceptWith($badfilterCancelDomains)
-$validExactRules.ExceptWith($badfilterCancelDomains)
-
-# ==========================================
-# 核心逻辑：五级优先级判定矩阵与最近邻原则
-# ==========================================
+# 保留项目现有的优先级策略，同时严格区分 EXACT 与 SUFFIX 的继承范围。
 function Get-EffectiveStatus([string]$domain) {
+    $domain = Normalize-Domain $domain
+    if ([string]::IsNullOrWhiteSpace($domain)) { return "UNKNOWN" }
     $labels = $domain -split '\.'
-    # ── 绝对控制层 (Global Override) ──
-    # P0 (最高): $important 白名单 (跨级覆盖一切)
+
+    # P0：重要白名单。精确例外不向子域继承，后缀例外向子域继承。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
-        if ($importantWhitelistDomains.Contains($current)) { return "WHITELIST_P0" }
+        if ($i -eq 0 -and $importantWhitelistExactDomains.Contains($current)) { return "WHITELIST_P0" }
+        if ($importantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST_P0" }
     }
 
-    # P1: $important 黑名单 (覆盖所有普通白名单)
+    # P1：重要黑名单。重要精确规则只匹配当前主机，重要后缀规则向下继承。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
-        if ($importantDomains.Contains($current)) { return "BLACKLIST_P1" }
+        if ($i -eq 0 -and $importantExactDomains.Contains($current)) { return "BLACKLIST_P1" }
+        if ($importantSuffixDomains.Contains($current)) { return "BLACKLIST_P1" }
     }
 
-    # ── 结构解析层 (Nearest-Neighbor Win) ──
-    # 自底向上遍历：最具体的子域优先级高于宽泛的父域
+    # P2-P4：最近层级优先，同一层级先判断例外，再判断拦截。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
-        # P2: 精确匹配白名单 (赦免特定子域)
-        if ($validExcludedDomains.Contains($current)) { return "WHITELIST_P2" }
-        # P3: 精确匹配黑名单 (仅在当层匹配时生效，不沿继承链向上扩散)
+        if ($i -eq 0 -and $excludedExactDomains.Contains($current)) { return "WHITELIST_P2" }
+        if ($excludedSuffixDomains.Contains($current)) { return "WHITELIST_P2" }
         if ($i -eq 0 -and $validExactRules.Contains($current)) { return "BLACKLIST_P3" }
-        # P4 (最低): 广义后缀/父域黑名单
         if ($validSuffixRules.Contains($current)) { return "BLACKLIST_P4" }
     }
     return "UNKNOWN"
@@ -951,104 +962,74 @@ function Get-EffectiveStatus([string]$domain) {
 Write-Host "正在执行自动降级机制与冲突检测..."
 $suffixConflictExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $allWhitelists = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$allWhitelists.UnionWith($importantWhitelistDomains)
-$allWhitelists.UnionWith($validExcludedDomains)
+$allWhitelists.UnionWith($excludedExactDomains)
+$allWhitelists.UnionWith($excludedSuffixDomains)
+$allWhitelists.UnionWith($importantWhitelistExactDomains)
+$allWhitelists.UnionWith($importantWhitelistSuffixDomains)
 
-# 识别有效被赦免的子域，标记其父域的 SUFFIX 规则以执行强制降级
+# 后缀黑名单内部存在有效例外时，纯正向域名规则无法完整表达该排除区域。
+# 父后缀降级为 DOMAIN 只保留父域本身；其他明确有效的子域规则仍按自身类型输出。
 foreach ($w in $allWhitelists) {
-    if ((Get-EffectiveStatus $w) -like "WHITELIST*") {
-        foreach ($parent in (Get-ParentDomains $w)) {
-            if ($validSuffixRules.Contains($parent)) {
-                $suffixConflictExactDomains.Add($parent) | Out-Null
-            }
+    if ((Get-EffectiveStatus $w) -notlike "WHITELIST*") { continue }
+
+    # 同域 EXACT 白名单只豁免 Apex，但后缀黑名单仍可能覆盖其子域。
+    if (
+        $validSuffixRules.Contains($w) -and
+        ($excludedExactDomains.Contains($w) -or $importantWhitelistExactDomains.Contains($w))
+    ) {
+        $suffixConflictExactDomains.Add($w) | Out-Null
+    }
+
+    foreach ($parent in (Get-ParentDomains $w)) {
+        if ($validSuffixRules.Contains($parent) -and (Get-EffectiveStatus $parent) -like "BLACKLIST*") {
+            $suffixConflictExactDomains.Add($parent) | Out-Null
         }
     }
 }
-Write-Host "冲突检测完成，共有 $($suffixConflictExactDomains.Count) 个 SUFFIX 规则需降级为 DOMAIN"
+Write-Host "冲突检测完成，共有 $($suffixConflictExactDomains.Count) 个 SUFFIX 规则无法无损表达，将按 DOMAIN 近似保留"
 
 $rawSuffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $rawExactSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-
 $allBlacklists = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $allBlacklists.UnionWith($validSuffixRules)
 $allBlacklists.UnionWith($validExactRules)
-$allBlacklists.UnionWith($importantDomains)
 
-# 评估所有黑名单候选者的最终生效状态与输出形式
 foreach ($d in $allBlacklists) {
     if ((Get-EffectiveStatus $d) -notlike "BLACKLIST*") { continue }
-    $isSuffix = $false
-    # 若被判定为黑名单，且原属性为 P4(Suffix)，且未被下属白名单「株连」，才维持 SUFFIX；否则降级为 EXACT
     if ($validSuffixRules.Contains($d) -and -not $suffixConflictExactDomains.Contains($d)) {
-        $isSuffix = $true
-    }
-    if ($isSuffix) {
         $rawSuffixSet.Add($d) | Out-Null
-    } else {
+    }
+    else {
         $rawExactSet.Add($d) | Out-Null
     }
 }
 
-# ── 三类域名分类与冗余剪枝 ─────────────
-Write-Host "正在构建三类域名集合与执行冗余剪枝..."
+# 只删除被有效父后缀完全覆盖的规则；不跨越存在例外冲突的父域做剪枝。
+Write-Host "正在执行语义安全的冗余剪枝..."
 $classSuffixBlocks = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($d in $rawSuffixSet) {
     $covered = $false
-    # 如果父域已被包含在最终的 Suffix 列表中，则当前子后缀为冗余
     foreach ($parent in (Get-ParentDomains $d)) {
-        if ($rawSuffixSet.Contains($parent)) {
-            $covered = $true
-            break
-        }
+        if ($rawSuffixSet.Contains($parent)) { $covered = $true; break }
     }
-    if (-not $covered) {
-        $classSuffixBlocks.Add($d) | Out-Null
-    }
+    if (-not $covered) { $classSuffixBlocks.Add($d) | Out-Null }
 }
 
 $classExactBlocks = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($d in $rawExactSet) {
     $covered = $false
-    # 如果父域存在于最终的 Suffix 列表中，则当前精确匹配为冗余
     foreach ($parent in (Get-ParentDomains $d)) {
-        if ($classSuffixBlocks.Contains($parent)) {
-            $covered = $true
-            break
-        }
+        if ($classSuffixBlocks.Contains($parent)) { $covered = $true; break }
     }
-    if (-not $covered) {
-        $classExactBlocks.Add($d) | Out-Null
-    }
+    if (-not $covered) { $classExactBlocks.Add($d) | Out-Null }
 }
 
 $classWhitelist = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($w in $allWhitelists) {
-    if ((Get-EffectiveStatus $w) -like "WHITELIST*") {
-        $classWhitelist.Add($w) | Out-Null
-    }
+    if ((Get-EffectiveStatus $w) -like "WHITELIST*") { $classWhitelist.Add($w) | Out-Null }
 }
 
 Write-Host "三类集合构建完成：Whitelist $($classWhitelist.Count) | DOMAIN $($classExactBlocks.Count) | DOMAIN-SUFFIX $($classSuffixBlocks.Count)"
-
-Write-Host "正在执行冲突父域子域精确补全（封堵降级导致的漏网之鱼）..."
-
-$extraExactBlocks = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-
-foreach ($black in $allBlacklists) {
-    if ($classWhitelist.Contains($black)) { continue }
-    foreach ($parent in (Get-ParentDomains $black)) {
-        if ($suffixConflictExactDomains.Contains($parent)) {
-            $extraExactBlocks.Add($black) | Out-Null
-            break
-        }
-    }
-}
-
-foreach ($e in $extraExactBlocks) {
-    $classExactBlocks.Add($e) | Out-Null
-}
-
-Write-Host "冲突补全完成：新增 $($extraExactBlocks.Count) 条精确规则（封堵漏杀）"
 
 # ── 输出 YAML 规则集 ───────────────────────────────
 $ruleCount    = $classExactBlocks.Count + $classSuffixBlocks.Count
@@ -1065,18 +1046,18 @@ $allLines.Add("# Total Rules: $ruleCount")
 $allLines.Add("# DOMAIN : $($classExactBlocks.Count)")
 $allLines.Add("# DOMAIN-SUFFIX : $($classSuffixBlocks.Count)")
 $allLines.Add("# Whitelist : $($classWhitelist.Count)")
+$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) suffix rules narrowed to DOMAIN; positive domain rules cannot encode descendant exceptions")
 $allLines.Add("")
 
 $allLines.Add("payload:")
 $allLines.Add("")
 
 foreach ($d in ($classSuffixBlocks | Sort-Object)) {
-    if ($wildcardSourceDoms.Contains($d)) { $allLines.Add("  # [APEX-WARN] $d 由通配符规则提升") }
     $allLines.Add("  - DOMAIN-SUFFIX,$d")
 }
 
 foreach ($d in ($classExactBlocks | Sort-Object)) {
-    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # $d 因白名单子域冲突降级") }
+    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [SEMANTIC-LOSS] $d: suffix scope narrowed to exact due to an exception") }
     $allLines.Add("  - DOMAIN,$d")
 }
 
@@ -1089,12 +1070,12 @@ Write-Host "===== 生成完成 ====="
 Write-Host "生成时间: $generateTime"
 Write-Host "总规则数: $ruleCount (DOMAIN: $($classExactBlocks.Count) | DOMAIN-SUFFIX: $($classSuffixBlocks.Count))"
 Write-Host "白名单放行: $($classWhitelist.Count)"
-Write-Host "PSL Apex DOMAIN (黑): $($validPslRules.Count)"
-Write-Host "PSL Apex Whitelist (白) 已全支持"
+Write-Host "后缀例外冲突降级数: $($suffixConflictExactDomains.Count)（仅保留可表达的精确范围）"
+Write-Host "提示: DOMAIN / DOMAIN-SUFFIX 只能表达正向域名集合，无法完整表示父后缀内的子域例外"
 Write-Host "文件路径: $outputPath"
 Write-Host "=== 文件前 20 行预览 ==="
 Get-Content -Path $outputPath -TotalCount 20 | ForEach-Object { Write-Host $_ }
 
 $totalSkipped = ($skipStats.Values | Measure-Object -Sum).Sum
-Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | Skipped: $totalSkipped"
+Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | SuffixConflicts: $($suffixConflictExactDomains.Count) | Skipped: $totalSkipped"
 Pause
