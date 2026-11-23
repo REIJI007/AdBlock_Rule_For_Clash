@@ -425,3 +425,27 @@ Describe 'Original upstream list preservation' {
         $digest | Should -Be '8684e12ff1a44c987cc33f4e4daa7395ada5a85fc615a576e302cc87df37a8e4'
     }
 }
+
+
+Describe 'Declared source syntax handling' {
+    It 'enforces explicit HOSTS and DNSMASQ declarations while AUTO detects formats' {
+        InModuleScope AdBlockRuleEngine {
+            $hosts = Parse-Rule -line '0.0.0.0 ads.example.com' -SourceSyntax HOSTS
+            $hosts.Action | Should -Be 'EXACT'
+            $wrongHosts = Parse-Rule -line '||ads.example.com^' -SourceSyntax HOSTS
+            $wrongHosts.SkipReason | Should -Be 'syntax-mismatch'
+
+            $dnsmasq = Parse-Rule -line 'address=/ads.example.com/0.0.0.0' -SourceSyntax DNSMASQ
+            $dnsmasq.Action | Should -Be 'SUFFIX'
+            $wrongDnsmasq = Parse-Rule -line 'ads.example.com' -SourceSyntax DNSMASQ
+            $wrongDnsmasq.SkipReason | Should -Be 'syntax-mismatch'
+
+            $adblock = Parse-Rule -line '||ads.example.com^' -SourceSyntax ADBLOCK
+            $adblock.Action | Should -Be 'SUFFIX'
+            $wrongAdblock = Parse-Rule -line '0.0.0.0 ads.example.com' -SourceSyntax ADBLOCK
+            $wrongAdblock.SkipReason | Should -Be 'syntax-mismatch'
+            (Parse-Rule -line '||ads.example.com^' -SourceSyntax AUTO).Action | Should -Be 'SUFFIX'
+            Test-AdblockStrictParseIssue 'syntax-mismatch' | Should -BeTrue
+        }
+    }
+}
