@@ -1,0 +1,399 @@
+{
+  "corpusVersion": "1.0.0",
+  "description": "固定语义样本。预期阻断状态由人工标注，不代表全量实时上游的覆盖率。",
+  "rules": [
+    {
+      "id": "父域后缀黑名单",
+      "source": "filter",
+      "line": "||ads.example.test^",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "ads.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "精确域名黑名单",
+      "source": "filter",
+      "line": "|tracker.example.test|",
+      "expectedAction": "EXACT",
+      "expectedDomain": "tracker.example.test",
+      "expectedSourceFormat": "adguard-exact",
+      "expectedImportant": false
+    },
+    {
+      "id": "子域后缀白名单",
+      "source": "allowlist",
+      "line": "@@||safe.ads.example.test^",
+      "expectedAction": "EXCLUDE",
+      "expectedDomain": "safe.ads.example.test",
+      "expectedSourceFormat": "whitelist-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "子域精确白名单",
+      "source": "allowlist",
+      "line": "@@|only.safe.ads.example.test|",
+      "expectedAction": "EXCLUDE",
+      "expectedDomain": "only.safe.ads.example.test",
+      "expectedSourceFormat": "whitelist-exact",
+      "expectedImportant": false
+    },
+    {
+      "id": "白名单下的显式子域黑名单",
+      "source": "filter",
+      "line": "||blocked.safe.ads.example.test^",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "blocked.safe.ads.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "重要后缀黑名单",
+      "source": "filter",
+      "line": "||priority.example.test^$important",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "priority.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": true
+    },
+    {
+      "id": "普通后缀白名单",
+      "source": "allowlist",
+      "line": "@@||priority.example.test^",
+      "expectedAction": "EXCLUDE",
+      "expectedDomain": "priority.example.test",
+      "expectedSourceFormat": "whitelist-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "重要后缀白名单",
+      "source": "allowlist",
+      "line": "@@||important-exception.priority.example.test^$important",
+      "expectedAction": "EXCLUDE",
+      "expectedDomain": "important-exception.priority.example.test",
+      "expectedSourceFormat": "whitelist-suffix",
+      "expectedImportant": true
+    },
+    {
+      "id": "普通后缀规则与重要规则同域共存",
+      "source": "filter",
+      "line": "||badfilter.example.test^",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "badfilter.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "将被撤销的重要后缀规则",
+      "source": "filter",
+      "line": "||badfilter.example.test^$important",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "badfilter.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": true
+    },
+    {
+      "id": "仅撤销重要规则的 badfilter",
+      "source": "filter",
+      "line": "||badfilter.example.test^$important,badfilter",
+      "expectedAction": "BADFILTER",
+      "expectedDomain": "badfilter.example.test",
+      "expectedSourceFormat": "adblock-suffix-badfilter",
+      "expectedImportant": false
+    },
+    {
+      "id": "NXDOMAIN DNS 黑洞",
+      "source": "filter",
+      "line": "||dns-nxdomain.example.test^$dnsrewrite=NXDOMAIN",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "dns-nxdomain.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "零地址 DNS 黑洞",
+      "source": "filter",
+      "line": "||dns-blackhole.example.test^$dnsrewrite=NOERROR;A;0.0.0.0",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "dns-blackhole.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": false
+    },
+    {
+      "id": "真实 IP DNS 重写不属于黑洞",
+      "source": "filter",
+      "line": "||dns-real-ip.example.test^$dnsrewrite=NOERROR;A;203.0.113.10",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "CNAME DNS 重写不属于黑洞",
+      "source": "filter",
+      "line": "||dns-cname.example.test^$dnsrewrite=NOERROR;CNAME;alias.example.net",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "资源类型限定规则不能扩大为域名拦截",
+      "source": "filter",
+      "line": "||script-only.example.test^$script",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "无法表达的通配域名",
+      "source": "filter",
+      "line": "||wild*.example.test^",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "路径限定规则不能扩大为域名拦截",
+      "source": "filter",
+      "line": "||path.example.test^/ads",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "dnsmasq 黑洞地址",
+      "source": "filter",
+      "line": "address=/dnsmasq.example.test/0.0.0.0",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "dnsmasq.example.test",
+      "expectedSourceFormat": "dnsmasq-address",
+      "expectedImportant": false
+    },
+    {
+      "id": "dnsmasq server 仅为转发",
+      "source": "filter",
+      "line": "server=/dnsserver.example.test/1.1.1.1",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "dnsmasq local 不代表拒绝",
+      "source": "filter",
+      "line": "local=/dnslocal.example.test/",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "裸域名按项目约定解析为精确规则",
+      "source": "filter",
+      "line": "plain-domain.example.test",
+      "expectedAction": "EXACT",
+      "expectedDomain": "plain-domain.example.test",
+      "expectedSourceFormat": "plain-domain",
+      "expectedImportant": false
+    },
+    {
+      "id": "重要父域黑名单",
+      "source": "filter",
+      "line": "||important-parent.example.test^$important",
+      "expectedAction": "SUFFIX",
+      "expectedDomain": "important-parent.example.test",
+      "expectedSourceFormat": "adblock-suffix",
+      "expectedImportant": true
+    },
+    {
+      "id": "重要精确白名单",
+      "source": "allowlist",
+      "line": "@@|exact-safe.important-parent.example.test|$important",
+      "expectedAction": "EXCLUDE",
+      "expectedDomain": "exact-safe.important-parent.example.test",
+      "expectedSourceFormat": "whitelist-exact",
+      "expectedImportant": true
+    },
+    {
+      "id": "上下文限定白名单不能扩大为域名例外",
+      "source": "allowlist",
+      "line": "@@||context-safe.example.test^$document",
+      "expectedAction": "SKIP"
+    },
+    {
+      "id": "上下文限定黑名单不能扩大为域名拦截",
+      "source": "filter",
+      "line": "||context-block.example.test^$domain=example.net",
+      "expectedAction": "SKIP"
+    }
+  ],
+  "hostsLines": [
+    "0.0.0.0 host-a.example.test host-b.example.test # 多主机名 Hosts 回归样本"
+  ],
+  "probes": [
+    {
+      "domain": "ads.example.test",
+      "expectedBlocked": true,
+      "reason": "上游父域后缀黑名单本身"
+    },
+    {
+      "domain": "sub.ads.example.test",
+      "expectedBlocked": true,
+      "reason": "父域后缀黑名单应继承到子域"
+    },
+    {
+      "domain": "other.ads.example.test",
+      "expectedBlocked": true,
+      "reason": "父域后缀黑名单覆盖未被例外排除的其他子域"
+    },
+    {
+      "domain": "safe.ads.example.test",
+      "expectedBlocked": false,
+      "reason": "后缀白名单应放行自身"
+    },
+    {
+      "domain": "sub.safe.ads.example.test",
+      "expectedBlocked": false,
+      "reason": "后缀白名单应向子域继承"
+    },
+    {
+      "domain": "blocked.safe.ads.example.test",
+      "expectedBlocked": true,
+      "reason": "更具体的子域黑名单覆盖父级白名单"
+    },
+    {
+      "domain": "only.safe.ads.example.test",
+      "expectedBlocked": false,
+      "reason": "精确白名单放行自身"
+    },
+    {
+      "domain": "sub.only.safe.ads.example.test",
+      "expectedBlocked": true,
+      "reason": "精确白名单不向子域继承；计入方案 A 投影损失"
+    },
+    {
+      "domain": "tracker.example.test",
+      "expectedBlocked": true,
+      "reason": "精确域名黑名单命中自身"
+    },
+    {
+      "domain": "sub.tracker.example.test",
+      "expectedBlocked": false,
+      "reason": "精确域名黑名单不得向子域继承"
+    },
+    {
+      "domain": "priority.example.test",
+      "expectedBlocked": true,
+      "reason": "重要黑名单优先于普通白名单"
+    },
+    {
+      "domain": "sub.priority.example.test",
+      "expectedBlocked": true,
+      "reason": "重要后缀黑名单向子域继承"
+    },
+    {
+      "domain": "other.priority.example.test",
+      "expectedBlocked": true,
+      "reason": "重要父域规则覆盖未获例外的子域"
+    },
+    {
+      "domain": "important-exception.priority.example.test",
+      "expectedBlocked": false,
+      "reason": "重要白名单优先于重要黑名单"
+    },
+    {
+      "domain": "sub.important-exception.priority.example.test",
+      "expectedBlocked": false,
+      "reason": "重要后缀白名单向子域继承"
+    },
+    {
+      "domain": "badfilter.example.test",
+      "expectedBlocked": true,
+      "reason": "撤销重要规则后，同域普通后缀规则仍然有效"
+    },
+    {
+      "domain": "sub.badfilter.example.test",
+      "expectedBlocked": true,
+      "reason": "保留的普通后缀规则继续向子域继承"
+    },
+    {
+      "domain": "dns-nxdomain.example.test",
+      "expectedBlocked": true,
+      "reason": "NXDOMAIN DNS 重写属于黑洞拦截"
+    },
+    {
+      "domain": "sub.dns-nxdomain.example.test",
+      "expectedBlocked": true,
+      "reason": "NXDOMAIN 域名后缀拦截向子域继承"
+    },
+    {
+      "domain": "dns-blackhole.example.test",
+      "expectedBlocked": true,
+      "reason": "A 记录 0.0.0.0 属于明确 DNS 黑洞"
+    },
+    {
+      "domain": "sub.dns-blackhole.example.test",
+      "expectedBlocked": true,
+      "reason": "DNS 黑洞后缀拦截向子域继承"
+    },
+    {
+      "domain": "dnsmasq.example.test",
+      "expectedBlocked": true,
+      "reason": "dnsmasq 黑洞 address 指令应阻断"
+    },
+    {
+      "domain": "sub.dnsmasq.example.test",
+      "expectedBlocked": true,
+      "reason": "dnsmasq address 后缀规则向子域继承"
+    },
+    {
+      "domain": "dnsserver.example.test",
+      "expectedBlocked": false,
+      "reason": "dnsmasq server 只是 DNS 转发"
+    },
+    {
+      "domain": "dnslocal.example.test",
+      "expectedBlocked": false,
+      "reason": "dnsmasq local 不是访问拒绝"
+    },
+    {
+      "domain": "plain-domain.example.test",
+      "expectedBlocked": true,
+      "reason": "裸域名按项目约定精确匹配"
+    },
+    {
+      "domain": "sub.plain-domain.example.test",
+      "expectedBlocked": false,
+      "reason": "裸域名精确规则不得向子域继承"
+    },
+    {
+      "domain": "host-a.example.test",
+      "expectedBlocked": true,
+      "reason": "Hosts 多主机名行中的第一个主机名"
+    },
+    {
+      "domain": "sub.host-a.example.test",
+      "expectedBlocked": false,
+      "reason": "Hosts 主机名按精确域名处理"
+    },
+    {
+      "domain": "host-b.example.test",
+      "expectedBlocked": true,
+      "reason": "Hosts 多主机名行中的第二个主机名"
+    },
+    {
+      "domain": "sub.host-b.example.test",
+      "expectedBlocked": false,
+      "reason": "第二个 Hosts 主机名同样不继承"
+    },
+    {
+      "domain": "exact-safe.important-parent.example.test",
+      "expectedBlocked": false,
+      "reason": "重要精确白名单放行自身"
+    },
+    {
+      "domain": "sub.exact-safe.important-parent.example.test",
+      "expectedBlocked": true,
+      "reason": "重要精确白名单不豁免其子域；计入方案 A 投影损失"
+    },
+    {
+      "domain": "sub.important-parent.example.test",
+      "expectedBlocked": true,
+      "reason": "重要父域后缀黑名单原本应覆盖子域"
+    }
+  ],
+  "minimums": {
+    "semanticAgreementPercent": 75,
+    "precisionPercent": 95,
+    "recallPercent": 65
+  },
+  "notes": [
+    "探针期望值是固定的人工标注语义，不由被测编译器自身推导。",
+    "本语料有意包含父后缀与子域例外冲突；方案 A 会将父候选降级为精确域名，因此未显式列出的兄弟/后代域名可能漏拦截，这些情况计入 FN。",
+    "SKIP 规则用于验证解析器不会把资源类型、路径、上下文约束、通配符或非黑洞 DNS 响应扩大成域名级规则；它们不混入域名探针的二分类分母。",
+    "本语料是有限的语义回归集合，不代表当前数百个实时上游过滤源的完整命中率。实时上游比例需要固定抓取快照并建立独立的全量评估基准。"
+  ]
+}
