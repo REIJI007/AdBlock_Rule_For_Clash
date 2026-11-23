@@ -288,85 +288,54 @@ foreach ($domain in $state.ExcludedSuffixDomains) { $upstreamRuleDomains.Add((No
 if ($upstreamRuleDomains.Count -le 0) {
     throw "完整上游源没有产生可评估的有效域名级规则"
 }
-
-$evaluationBoundaries = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-foreach ($domain in $upstreamRuleDomains) {
-    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
-}
-# 将产物独有条目及其父域也纳入，以识别没有上游依据的额外拦截。
-foreach ($domain in $artifactExactDomains) {
-    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
-}
-foreach ($domain in $artifactSuffixDomains) {
-    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
-}
-
-# 所有显式域名及其父域均构成规则树边界；每个边界使用根域和一个未占用的代表子域。
-$evaluationDomainList = [System.Collections.Generic.List[string]]::new()
-foreach ($domain in $evaluationBoundaries) { $evaluationDomainList.Add($domain) }
-$evaluationDomainList.Sort([System.StringComparer]::OrdinalIgnoreCase)
 $boundaryBuildStopwatch.Stop()
-$boundaryBuildDurationSeconds = [math]::Round($boundaryBuildStopwatch.Elapsed.TotalSeconds, 2)
-Write-Host "规则边界语料构造耗时：$boundaryBuildDurationSeconds 秒；边界节点数：$($evaluationDomainList.Count)"
+$upstreamDomainBuildDurationSeconds = $boundaryBuildStopwatch.Elapsed.TotalSeconds
 
+# 将数百万次逐点优先级判定交给编译后的 .NET 循环，避免 PowerShell 函数调用和无界缓存的开销。
+$enginePath = Join-Path $PSScriptRoot "SemanticAuditEngine.cs"
+if (-not (Test-Path -LiteralPath $enginePath)) {
+    throw "找不到编译后的语义审计引擎源文件：$enginePath"
+}
+if (-not ("SemanticAuditEngine" -as [type])) {
+    Add-Type -Path $enginePath -ErrorAction Stop
+}
+
+$semanticEvaluationResult = [SemanticAuditEngine]::Evaluate(
+    $upstreamRuleDomains,
+    $artifactExactSet,
+    $artifactSuffixSet,
+    $state.ImportantWhitelistExactDomains,
+    $state.ImportantWhitelistSuffixDomains,
+    $state.ImportantExactDomains,
+    $state.ImportantSuffixDomains,
+    $state.ExcludedExactDomains,
+    $state.ExcludedSuffixDomains,
+    $state.ValidExactRules,
+    $state.ValidSuffixRules,
+    [int]$maxMismatchExamples
+)
+
+$boundaryBuildDurationSeconds = [math]::Round(
+    $upstreamDomainBuildDurationSeconds + $semanticEvaluationResult.BoundaryBuildDurationSeconds,
+    2
+)
+$semanticEvaluationDurationSeconds = [math]::Round($semanticEvaluationResult.SemanticEvaluationDurationSeconds, 2)
+Write-Host "规则边界语料构造耗时：$boundaryBuildDurationSeconds 秒；边界节点数：$($semanticEvaluationResult.BoundaryCount)"
+Write-Host "语义边界逐点评估耗时：$semanticEvaluationDurationSeconds 秒；评估点数：$($semanticEvaluationResult.EvaluationPointCount)"
+
+$evaluationBoundaryCount = [int64]$semanticEvaluationResult.BoundaryCount
+$representativeSubdomainCount = [int64]$semanticEvaluationResult.RepresentativeSubdomainCount
+$unrepresentableSubdomainBoundaryCount = [int64]$semanticEvaluationResult.UnrepresentableSubdomainBoundaryCount
+$evaluationPointCount = [int64]$semanticEvaluationResult.EvaluationPointCount
 $auditCounts = [PSCustomObject]@{
-    TP = [int64]0
-    FP = [int64]0
-    TN = [int64]0
-    FN = [int64]0
+    TP = [int64]$semanticEvaluationResult.TP
+    FP = [int64]$semanticEvaluationResult.FP
+    TN = [int64]$semanticEvaluationResult.TN
+    FN = [int64]$semanticEvaluationResult.FN
 }
-$falsePositiveExamples = [System.Collections.Generic.List[object]]::new()
-$falseNegativeExamples = [System.Collections.Generic.List[object]]::new()
-$maxMismatchExamples = 100
-$representativeSubdomainCount = [int64]0
-$unrepresentableSubdomainBoundaryCount = [int64]0
-$processedBoundaryCount = [int64]0
-$semanticEvaluationStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$falsePositiveExamples = $semanticEvaluationResult.FalsePositiveExamples
+$falseNegativeExamples = $semanticEvaluationResult.FalseNegativeExamples
 
-foreach ($domain in $evaluationDomainList) {
-    Add-AuditProbeResult -Domain $domain
-
-    # 域名最长为 253 字符；若无法再添加子域标签，只评估根域并明确计数。
-    if ($domain.Length -le 251) {
-        $probeLabel = "q"
-        $probeDomain = "$probeLabel.$domain"
-        $probeIndex = 0
-        while ($evaluationBoundaries.Contains($probeDomain)) {
-            $probeIndex++
-            $probeLabel = "q$probeIndex"
-            if ($probeLabel.Length -gt 63) {
-                $probeDomain = $null
-                break
-            }
-            $probeDomain = "$probeLabel.$domain"
-            if ($probeDomain.Length -gt 253) {
-                $probeDomain = $null
-                break
-            }
-        }
-
-        if ($null -ne $probeDomain) {
-            Add-AuditProbeResult -Domain $probeDomain
-            $representativeSubdomainCount++
-        }
-        else {
-            $unrepresentableSubdomainBoundaryCount++
-        }
-    }
-    else {
-        $unrepresentableSubdomainBoundaryCount++
-    }
-
-    $processedBoundaryCount++
-    if (($processedBoundaryCount % 50000) -eq 0) {
-        Write-Host "已评估 $processedBoundaryCount / $($evaluationDomainList.Count) 个域名边界..."
-    }
-}
-$semanticEvaluationStopwatch.Stop()
-$semanticEvaluationDurationSeconds = [math]::Round($semanticEvaluationStopwatch.Elapsed.TotalSeconds, 2)
-Write-Host "语义边界逐点评估耗时：$semanticEvaluationDurationSeconds 秒；评估点数：$($auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN)"
-
-$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN
 if ($evaluationPointCount -le 0) {
     throw "全量上游语义评估没有生成任何有效评估点"
 }
@@ -381,6 +350,7 @@ $precisionPercent = if (($auditCounts.TP + $auditCounts.FP) -gt 0) {
 $recallPercent = if (($auditCounts.TP + $auditCounts.FN) -gt 0) {
     [math]::Round(100.0 * $auditCounts.TP / ($auditCounts.TP + $auditCounts.FN), 6)
 } else { $null }
+
 $f1Percent = if (
     $null -ne $precisionPercent -and
     $null -ne $recallPercent -and
@@ -421,7 +391,7 @@ $metrics = [ordered]@{
     activeExactWhitelistDomainCount = $state.ExcludedExactDomains.Count
     activeSuffixWhitelistDomainCount = $state.ExcludedSuffixDomains.Count
     uniqueUpstreamDomainRuleDomainCount = $upstreamRuleDomains.Count
-    evaluationBoundaryDomainCount = $evaluationBoundaries.Count
+    evaluationBoundaryDomainCount = $evaluationBoundaryCount
     representativeSubdomainCount = $representativeSubdomainCount
     unrepresentableSubdomainBoundaryCount = $unrepresentableSubdomainBoundaryCount
     evaluationPointCount = $evaluationPointCount
@@ -468,7 +438,7 @@ $summary = @(
     "| 上游源成功数 | $($sourceDigestLines.Count) / $($state.UrlList.Count) |",
     "| 成功但为空的源 | $($emptySourceUrls.Count) |",
     "| 唯一上游域名规则域名 | $($upstreamRuleDomains.Count) |",
-    "| 语义边界域名节点 | $($evaluationBoundaries.Count) |",
+    "| 语义边界域名节点 | $evaluationBoundaryCount |",
     "| 评估点（根域 + 代表子域） | $evaluationPointCount |",
     "| TP / FP / TN / FN | $($auditCounts.TP) / $($auditCounts.FP) / $($auditCounts.TN) / $($auditCounts.FN) |",
     "| 语义一致率 | $agreementPercent% |",
