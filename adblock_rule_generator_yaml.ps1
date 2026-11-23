@@ -997,7 +997,10 @@ function Get-EffectiveStatus([string]$domain) {
         }
     }
 
-    $script:_effectiveStatusCache[$domain] = $status
+    # 规则解析中的父域会重复命中；缓存设上限，避免大语料审计为每个测试子域长期保留字符串。
+    if ($script:_effectiveStatusCache.Count -lt 100000) {
+        $script:_effectiveStatusCache[$domain] = $status
+    }
     return $status
 }
 
