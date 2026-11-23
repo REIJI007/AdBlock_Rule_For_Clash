@@ -179,3 +179,120 @@ Describe 'Trie and reference evaluator consistency' {
         }
     }
 }
+
+
+Describe 'Explicit source semantics and ingestion safeguards' {
+    It 'uses per-source plain-domain and hosts matching metadata' {
+        InModuleScope AdBlockRuleEngine {
+            $plainBlock = Parse-Rule -line 'ads.example.com'
+            (Get-AdblockMatchType -Parsed $plainBlock -RawRule 'ads.example.com' -PlainDomainMatchType EXACT -HostsMatchType EXACT) | Should -Be 'EXACT'
+            (Get-AdblockMatchType -Parsed $plainBlock -RawRule 'ads.example.com' -PlainDomainMatchType SUFFIX -HostsMatchType EXACT) | Should -Be 'SUFFIX'
+
+            $plainAllow = Parse-Rule -line 'safe.example.com' -isWhitelistSource $true
+            (Get-AdblockMatchType -Parsed $plainAllow -RawRule 'safe.example.com' -PlainDomainMatchType SUFFIX -HostsMatchType EXACT) | Should -Be 'SUFFIX'
+
+            $hosts = Parse-Rule -line '0.0.0.0 tracker.example.com'
+            (Get-AdblockMatchType -Parsed $hosts -RawRule '0.0.0.0 tracker.example.com' -PlainDomainMatchType EXACT -HostsMatchType SUFFIX) | Should -Be 'SUFFIX'
+        }
+    }
+
+    It 'does not widen an unbounded domain anchor into a suffix rule' {
+        InModuleScope AdBlockRuleEngine {
+            $block = Parse-Rule -line '||example.com'
+            $block.Action | Should -Be 'SKIP'
+            $block.SkipReason | Should -Be 'unbounded-domain-anchor'
+
+            $allow = Parse-Rule -line '@@||example.com'
+            $allow.Action | Should -Be 'SKIP'
+            $allow.SkipReason | Should -Be 'unbounded-domain-anchor'
+        }
+    }
+
+    It 'reads bounded HTTP responses and computes the hash from original bytes' {
+        InModuleScope AdBlockRuleEngine {
+            $response = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::OK)
+            try {
+                $body = '||example.com^' + [Environment]::NewLine
+                $response.Content = [System.Net.Http.StringContent]::new($body,[System.Text.Encoding]::UTF8,'text/plain')
+                $result = Read-AdblockHttpResponse -Response $response -MaxBytes 1024
+                $result.Content | Should -Be $body
+                $result.Bytes | Should -Be ([System.Text.Encoding]::UTF8.GetByteCount($body))
+                $result.Sha256 | Should -Match '^[0-9a-f]{64}$'
+                $result.StatusCode | Should -Be 200
+            }
+            finally {
+                $response.Dispose()
+            }
+        }
+    }
+
+    It 'rejects oversized and HTML error responses' {
+        InModuleScope AdBlockRuleEngine {
+            $oversized = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::OK)
+            try {
+                $oversized.Content = [System.Net.Http.StringContent]::new(('x' * 100))
+                { Read-AdblockHttpResponse -Response $oversized -MaxBytes 10 } | Should -Throw '*maxBytes*'
+            }
+            finally {
+                $oversized.Dispose()
+            }
+
+            $html = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::OK)
+            try {
+                $html.Content = [System.Net.Http.StringContent]::new('<!doctype html><html>upstream error</html>')
+                { Read-AdblockHttpResponse -Response $html -MaxBytes 1024 } | Should -Throw '*HTML*'
+            }
+            finally {
+                $html.Dispose()
+            }
+        }
+    }
+
+    It 'expands known-safe lines while failing closed on conditional uBO directives' {
+        InModuleScope AdBlockRuleEngine {
+            $client = [System.Net.Http.HttpClient]::new()
+            $visited = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+            $manifest = [System.Collections.Generic.List[object]]::new()
+            try {
+                $content = @'
+||before.example^
+!#if env_chromium
+||conditional.example^
+!#endif
+||after.example^
+'@
+                $expanded = Expand-AdblockIncludes -Content $content -SourceUrl 'https://example.test/list.txt' -Client $client -Visited $visited -IncludeManifest $manifest
+                $expanded.Lines.Count | Should -Be 2
+                $expanded.Lines[0].Text | Should -Be '||before.example^'
+                $expanded.Lines[1].Text | Should -Be '||after.example^'
+                $expanded.Issues.Count | Should -Be 1
+                $expanded.Issues[0] | Should -Match 'conditional-preprocessor-not-evaluated'
+            }
+            finally {
+                $client.Dispose()
+            }
+        }
+    }
+
+    It 'keeps the 317-source manifest complete and validates all operational metadata' {
+        $manifestPath = Join-Path $PSScriptRoot '../sources.json'
+        $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $sources.Count | Should -Be 317
+        (@($sources | Select-Object -ExpandProperty url -Unique)).Count | Should -Be 317
+        (@($sources | Where-Object defaultAction -eq 'ALLOW')).Count | Should -Be 36
+        (@($sources | Where-Object preprocessor -eq 'UBO')).Count | Should -Be 33
+
+        foreach ($source in $sources) {
+            $source.syntax | Should -BeIn @('AUTO','ADBLOCK','HOSTS','DNSMASQ')
+            $source.preprocessor | Should -BeIn @('NONE','UBO')
+            $source.plainDomainMatchType | Should -BeIn @('EXACT','SUFFIX')
+            $source.hostsMatchType | Should -BeIn @('EXACT','SUFFIX')
+            $source.required | Should -BeOfType ([bool])
+            $source.enabled | Should -BeOfType ([bool])
+            $source.maxBytes | Should -BeGreaterThan 0
+            $source.retries | Should -BeIn @(0,1,2,3,4,5)
+            $source.timeoutSeconds | Should -BeIn @(30,45,60,75,90,120,180,240,300)
+            ([Uri]$source.url).Scheme | Should -Be 'https'
+        }
+    }
+}
