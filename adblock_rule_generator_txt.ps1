@@ -539,7 +539,7 @@ function Parse-Rule {
         }
         elseif ($line -match '^@@\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)\|(\$(.+))?$') {
             $candidate = $Matches[1]
-            $modStr = $Matches[5]
+            $modStr = $Matches[6]
             $patternText = "@@|$candidate|"
 
             if ($null -ne $modStr -and $modStr -match '(?i)(^|,)badfilter(,|$)') {
