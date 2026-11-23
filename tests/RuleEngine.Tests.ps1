@@ -372,27 +372,44 @@ Describe 'Independent embedded YAML and TXT generators with YAML-dependent MRS c
 }
 
 
-Describe 'Console progress and build diagnostics' {
-    It 'prints timestamped console messages with severity labels' {
+Describe 'Original concise console output and source policy' {
+    It 'prints source processing messages in the original Write-Host style' {
         InModuleScope AdBlockRuleEngineTestHarness {
-            $consoleOutput = Write-AdblockConsole -Level INFO -Message '正在下载上游规则源' 6>&1
-            ($consoleOutput | Out-String).Contains('[INFO') | Should -BeTrue
-            ($consoleOutput | Out-String) | Should -Match '正在下载上游规则源'
+            $consoleOutput = Write-AdblockConsole -Level INFO -Message '[1/316] 正在解析上游规则：https://example.com/list.txt' 6>&1
+            ($consoleOutput | Out-String) | Should -Match '正在处理: https://example.com/list.txt'
+            ($consoleOutput | Out-String) | Should -Not -Match '\[INFO'
+            ($consoleOutput | Out-String) | Should -Not -Match '\[\d{2}:\d{2}:\d{2}\]'
         }
     }
 
-    It 'reports each source, each build stage and final rule counts' {
+    It 'keeps the console summary close to the original generator output' {
         $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
         $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
         foreach ($scriptText in @($yaml,$txt)) {
-            $scriptText | Should -Match '正在发起上游下载'
-            $scriptText | Should -Match '下载完成'
-            $scriptText | Should -Match '正在解析上游规则'
-            $scriptText | Should -Match '阶段 1/6'
-            $scriptText | Should -Match '阶段 6/6'
-            $scriptText | Should -Match '总规则数'
-            $scriptText | Should -Match 'DOMAIN-SUFFIX'
-            $scriptText | Should -Match '总耗时'
+            $scriptText | Should -Match '正在处理:'
+            $scriptText | Should -Match '===== 生成完成 ====='
+            $scriptText | Should -Match '生成时间:'
+            $scriptText | Should -Match '总规则数:'
+            $scriptText | Should -Match '白名单放行:'
+            $scriptText | Should -Match 'PSL Apex DOMAIN'
+            $scriptText | Should -Match '文件前 20 行预览'
+            $scriptText | Should -Not -Match '正在发起上游下载'
+            $scriptText | Should -Not -Match '阶段 1/6'
+            $scriptText | Should -Not -Match '总耗时'
+        }
+    }
+
+    It 'keeps optional and disabled upstream source semantics' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
+            $sources = @(Get-AdblockSourceConfig -Path $manifestPath)
+            $anti = $sources | Where-Object { $_.url -eq 'https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt' }
+            $sdns = $sources | Where-Object { $_.url -eq 'https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exclusions.txt' }
+            $anti.enabled | Should -BeTrue
+            $anti.required | Should -BeFalse
+            $sdns.enabled | Should -BeFalse
+            $sdns.required | Should -BeFalse
+            $sources.Count | Should -Be 317
         }
     }
 
@@ -401,6 +418,8 @@ Describe 'Console progress and build diagnostics' {
         $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
         $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
         $txtCore = $txt -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore = $yamlCore -replace "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath", "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath"
+        $txtCore = $txtCore -replace "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath", "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath"
         $yamlCore | Should -Be $txtCore
     }
 }
