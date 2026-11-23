@@ -92,6 +92,17 @@ Describe 'Lossless positive-rule compilation' {
         $result.Suffix.Count | Should -Be 0
         $result.IsLossless | Should -BeTrue
     }
+    It 'prunes nested blocked suffix rules using trie ancestry' {
+        $rules = @(
+            (New-Rule 'example.com' SUFFIX BLOCK 4),
+            (New-Rule 'ads.example.com' SUFFIX BLOCK 4),
+            (New-Rule 'tracker.ads.example.com' EXACT BLOCK 3)
+        )
+        $result = Compile-AdblockRules -Rules $rules -Strict $true
+        $result.Suffix.Count | Should -Be 1
+        $result.Suffix | Should -Contain 'example.com'
+        $result.Exact.Count | Should -Be 0
+    }
     It 'keeps a child suffix block below a parent allow and prunes exact duplicates' {
         $rules = @((New-Rule 'example.com' SUFFIX ALLOW 2),(New-Rule 'ads.example.com' SUFFIX BLOCK 1),(New-Rule 'api.ads.example.com' EXACT BLOCK 3))
         $result = Compile-AdblockRules -Rules $rules -Strict $true

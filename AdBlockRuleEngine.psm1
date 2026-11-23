@@ -195,78 +195,138 @@ function Compile-AdblockRules {
         [bool]$Strict = $true,
         [object[]]$PreExistingIssues = @()
     )
+
     $index = New-AdblockRuleIndex -Rules $Rules
     $suffixDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     $exactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
     foreach ($rule in $Rules) {
-        if ($rule.MatchType -eq 'SUFFIX') { [void]$suffixDomains.Add([string]$rule.Domain) }
-        elseif ($rule.MatchType -eq 'EXACT') { [void]$exactDomains.Add([string]$rule.Domain) }
+        if ($rule.MatchType -eq 'SUFFIX') {
+            [void]$suffixDomains.Add([string]$rule.Domain)
+        }
+        elseif ($rule.MatchType -eq 'EXACT') {
+            [void]$exactDomains.Add([string]$rule.Domain)
+        }
     }
+
+    # Evaluate the suffix-only state once per rule node. Queries walk the
+    # reverse-label trie, so work scales with domain depth, not RuleCount^2.
     $suffixStates = @{}
-    foreach ($domain in $suffixDomains) { $suffixStates[$domain] = (Get-AdblockSuffixDecisionByIndex -Domain $domain -Index $index).Decision }
+    foreach ($domain in $suffixDomains) {
+        $suffixStates[$domain] = (Get-AdblockSuffixDecisionByIndex -Domain $domain -Index $index).Decision
+    }
+
     $issues = [System.Collections.Generic.List[object]]::new()
     foreach ($issue in $PreExistingIssues) { $issues.Add($issue) }
+
     $rootsWithHoles = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $holeDetails = @{}
 
-    foreach ($root in $suffixDomains) {
-        if ($suffixStates[$root] -ne 'BLOCK') { continue }
-        $holes = [System.Collections.Generic.List[string]]::new()
-        foreach ($candidate in $suffixDomains) {
-            if ($candidate -eq $root -or -not (Test-AdblockDomainWithin -Domain $candidate -Root $root)) { continue }
-            if ($suffixStates[$candidate] -eq 'ALLOW') { $holes.Add("suffix:$candidate") }
-        }
-        foreach ($candidate in $exactDomains) {
-            if (-not (Test-AdblockDomainWithin -Domain $candidate -Root $root)) { continue }
-            $decision = Get-AdblockDomainDecisionByIndex -Domain $candidate -Index $index
-            if ($decision.Decision -eq 'ALLOW') { $holes.Add("exact:$candidate") }
-        }
-        if ($holes.Count -gt 0) {
+    # A suffix ALLOW node creates a hole in every blocked suffix ancestor.
+    foreach ($candidate in $suffixDomains) {
+        if ($suffixStates[$candidate] -ne 'ALLOW') { continue }
+
+        foreach ($ancestorRule in (Get-AdblockSuffixMatches -Domain $candidate -Index $index)) {
+            $root = [string]$ancestorRule.Domain
+            if ($root -eq $candidate) { continue }
+            if (-not $suffixStates.ContainsKey($root) -or $suffixStates[$root] -ne 'BLOCK') { continue }
+
             [void]$rootsWithHoles.Add($root)
-            $issues.Add([PSCustomObject]@{
-                Type = 'PARTIAL_OVERLAP'; Root = $root; Detail = ($holes -join '; ')
-                Message = "Blocked suffix '$root' contains allowed exception(s): $($holes -join ', ')"
-            })
+            if (-not $holeDetails.ContainsKey($root)) {
+                $holeDetails[$root] = [System.Collections.Generic.List[string]]::new()
+            }
+            $detail = "suffix allow '$candidate'"
+            if (-not $holeDetails[$root].Contains($detail)) { $holeDetails[$root].Add($detail) }
         }
     }
 
-    $eligibleSuffixes = [System.Collections.Generic.List[string]]::new()
-    foreach ($domain in $suffixDomains) {
-        if ($suffixStates[$domain] -eq 'BLOCK' -and -not $rootsWithHoles.Contains($domain)) { $eligibleSuffixes.Add($domain) }
+    # An exact ALLOW node is also a single-host hole in every blocked suffix
+    # ancestor, including a suffix rule at the exact same hostname.
+    foreach ($candidate in $exactDomains) {
+        $decision = Get-AdblockDomainDecisionByIndex -Domain $candidate -Index $index
+        if ($decision.Decision -ne 'ALLOW') { continue }
+
+        foreach ($ancestorRule in (Get-AdblockSuffixMatches -Domain $candidate -Index $index)) {
+            $root = [string]$ancestorRule.Domain
+            if (-not $suffixStates.ContainsKey($root) -or $suffixStates[$root] -ne 'BLOCK') { continue }
+
+            [void]$rootsWithHoles.Add($root)
+            if (-not $holeDetails.ContainsKey($root)) {
+                $holeDetails[$root] = [System.Collections.Generic.List[string]]::new()
+            }
+            $detail = "exact allow '$candidate'"
+            if (-not $holeDetails[$root].Contains($detail)) { $holeDetails[$root].Add($detail) }
+        }
     }
-    $outputSuffix = [System.Collections.Generic.List[string]]::new()
+
+    foreach ($root in $rootsWithHoles) {
+        $detailText = $holeDetails[$root] -join ', '
+        $issues.Add([PSCustomObject]@{
+            Type = 'PARTIAL_OVERLAP'
+            Root = $root
+            Detail = $detailText
+            Message = "Blocked suffix '$root' contains allowed exception(s): $detailText"
+        })
+    }
+
+    # Candidate suffix rules are those whose effective suffix-only state is
+    # BLOCK and whose subtree has no allowed hole.
+    $eligibleSuffixes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($domain in $suffixDomains) {
+        if ($suffixStates[$domain] -eq 'BLOCK' -and -not $rootsWithHoles.Contains($domain)) {
+            [void]$eligibleSuffixes.Add($domain)
+        }
+    }
+
+    # Remove a suffix rule when an eligible ancestor suffix already covers it.
+    $outputSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($domain in $eligibleSuffixes) {
         $coveredByAncestor = $false
-        foreach ($parent in $eligibleSuffixes) {
-            if ($parent -ne $domain -and (Test-AdblockDomainWithin -Domain $domain -Root $parent)) { $coveredByAncestor = $true; break }
+        foreach ($ancestorRule in (Get-AdblockSuffixMatches -Domain $domain -Index $index)) {
+            $ancestor = [string]$ancestorRule.Domain
+            if ($ancestor -ne $domain -and $eligibleSuffixes.Contains($ancestor)) {
+                $coveredByAncestor = $true
+                break
+            }
         }
-        if (-not $coveredByAncestor) { $outputSuffix.Add($domain) }
+        if (-not $coveredByAncestor) { [void]$outputSuffix.Add($domain) }
     }
 
+    # Exact rules only remain when they block at their own hostname and no
+    # emitted suffix ancestor already covers that hostname.
     $outputExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($domain in $exactDomains) {
         $decision = Get-AdblockDomainDecisionByIndex -Domain $domain -Index $index
         if ($decision.Decision -ne 'BLOCK') { continue }
-        $covered = $false
-        foreach ($suffix in $outputSuffix) {
-            if (Test-AdblockDomainWithin -Domain $domain -Root $suffix) { $covered = $true; break }
+
+        $coveredBySuffix = $false
+        foreach ($ancestorRule in (Get-AdblockSuffixMatches -Domain $domain -Index $index)) {
+            if ($outputSuffix.Contains([string]$ancestorRule.Domain)) {
+                $coveredBySuffix = $true
+                break
+            }
         }
-        if (-not $covered) { [void]$outputExact.Add($domain) }
+        if (-not $coveredBySuffix) { [void]$outputExact.Add($domain) }
     }
 
     $exactArray = @($outputExact)
     $suffixArray = @($outputSuffix)
     [array]::Sort($exactArray, [System.StringComparer]::OrdinalIgnoreCase)
     [array]::Sort($suffixArray, [System.StringComparer]::OrdinalIgnoreCase)
+
     if ($Strict -and $issues.Count -gt 0) {
         $summary = ($issues | ForEach-Object { "$($_.Type): $($_.Message)" }) -join [Environment]::NewLine
         throw "Strict compilation failed: $($issues.Count) unrepresentable conflict(s). No output was written. $summary"
     }
+
     return [PSCustomObject]@{
-        Exact = $exactArray; Suffix = $suffixArray; Issues = $issues.ToArray()
-        IsLossless = ($issues.Count -eq 0); TotalRules = $exactArray.Count + $suffixArray.Count
+        Exact = $exactArray
+        Suffix = $suffixArray
+        Issues = $issues.ToArray()
+        IsLossless = ($issues.Count -eq 0)
+        TotalRules = $exactArray.Count + $suffixArray.Count
     }
 }
-
 function Set-AdblockPublicSuffixRules {
     [CmdletBinding()]
     param([string[]]$Rules)
