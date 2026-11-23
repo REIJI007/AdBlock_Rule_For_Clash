@@ -418,8 +418,6 @@ Describe 'Original concise console output and source policy' {
         $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
         $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
         $txtCore = $txt -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
-        $yamlCore = $yamlCore -replace "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath", "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath"
-        $txtCore = $txtCore -replace "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath", "Invoke-AdblockGeneration -Format 'FORMAT' -SourceListPath"
         $yamlCore | Should -Be $txtCore
     }
 }
