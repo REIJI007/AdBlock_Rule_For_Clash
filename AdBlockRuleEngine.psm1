@@ -181,7 +181,7 @@ function Parse-AdblockRuleLine {
     $modifierText = ''
 
     if ($raw -match '^(?<allow>@@)?\|\|(?<host>[^/?^|$\s]+)(?<tail>.*)$') {
-        if ($Matches.allow) { $action='ALLOW' }
+        if ($raw.StartsWith('@@')) { $action='ALLOW' }
         $domain=$Matches.host
         $matchType='SUFFIX'
         $tail=$Matches.tail
@@ -194,10 +194,10 @@ function Parse-AdblockRuleLine {
         }
     }
     elseif ($raw -match '^(?<allow>@@)?\|(?<host>[^|$]+)\|(?:\$(?<mods>.*))?$') {
-        if ($Matches.allow) { $action='ALLOW' }
+        if ($raw.StartsWith('@@')) { $action='ALLOW' }
         $domain=$Matches.host
         $matchType='EXACT'
-        $modifierText=[string]$Matches.mods
+        $modifierText=if ($Matches.ContainsKey('mods')) { [string]$Matches.mods } else { '' }
     }
     elseif ($raw -match '^@@(?<host>[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
         $action='ALLOW'

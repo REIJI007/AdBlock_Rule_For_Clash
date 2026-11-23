@@ -42,6 +42,10 @@ Assert-Equal (Get-AdblockDecision -Trie $trie -Domain 'x.important.example.com')
 Assert-Equal (Get-AdblockDecision -Trie $trie -Domain 'vip.important.example.com') 'ALLOW' 'P0 exact allow outranks P1 suffix block'
 Assert-Equal (Get-AdblockDecision -Trie $trie -Domain 'notexample.com') 'UNKNOWN' 'suffix boundary must include a dot'
 
+$plainExact = Parse-AdblockRuleLine -Line '|exact.example.com|' -DefaultAction BLOCK
+Assert-Equal $plainExact.MatchType 'EXACT' 'exact-domain pattern without modifiers parses safely'
+Assert-Equal $plainExact.IsImportant $false 'optional modifier group defaults to false'
+
 $exactOnly = New-AdblockRuleTrie -Rules @(
     (New-AdblockRule -Domain 'ads.example.com' -MatchType EXACT -Action BLOCK)
 )
