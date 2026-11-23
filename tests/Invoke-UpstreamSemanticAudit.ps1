@@ -92,10 +92,20 @@ $snapshotPayload = [System.Text.Encoding]::UTF8.GetBytes(($sourceDigestLines -jo
 $snapshotHash = [BitConverter]::ToString($sha256.ComputeHash($snapshotPayload)).Replace("-", "").ToLowerInvariant()
 $sha256.Dispose()
 
+$skippedRuleCount = [int64]0
+$skipReasonCounts = [ordered]@{}
+foreach ($reason in $state.SkipStats.Keys) {
+    $reasonCount = [int64]$state.SkipStats[$reason]
+    $skipReasonCounts[[string]$reason] = $reasonCount
+    $skippedRuleCount += $reasonCount
+}
+
+
 if ($failedUrls.Count -gt 0 -or $state.UrlContents.Count -ne $state.UrlList.Count) {
     $incompleteReport = [ordered]@{
-        schemaVersion = "1.0.0"
+        schemaVersion = "2.0.0"
         status = "incomplete"
+        evaluationMethod = "all-upstream-domain-rule-boundaries"
         targetFormat = $TargetFormat
         sourceUrlCount = $state.UrlList.Count
         sourceResponseCount = $state.UrlContents.Count
@@ -105,8 +115,17 @@ if ($failedUrls.Count -gt 0 -or $state.UrlContents.Count -ne $state.UrlList.Coun
         sourceBytes = $sourceBytes
         sourceLineCount = $sourceLineCount
         partialSnapshotSha256 = $snapshotHash
-        semanticAgreementPercent = $null
-        note = "未能完整获取全部上游源，禁止将部分抓取数据计算为全量语义一致率。"
+        uniqueParsedRuleIdentityCount = $state.ParsedRuleCount
+        skippedOrCancelledRuleCount = $skippedRuleCount
+        skipReasonCounts = $skipReasonCounts
+        confusionMatrix = $null
+        metricsPercent = [ordered]@{
+            semanticAgreement = $null
+            precision = $null
+            recall = $null
+            f1 = $null
+        }
+        note = "至少一个上游源下载失败或返回空内容；禁止基于部分上游数据计算总体语义指标。"
     }
     $incompleteReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $reportPath -Encoding utf8
     Write-Host "全量上游审计未完成：$($failedUrls.Count) 个源下载失败；不输出百分比。"
@@ -344,11 +363,6 @@ $f1Percent = if (
     )
 } else { $null }
 
-$skippedRuleCount = [int64]0
-if ($state.SkipStats.Count -gt 0) {
-    $skippedRuleCount = [int64](($state.SkipStats.Values | Measure-Object -Sum).Sum)
-}
-
 $metrics = [ordered]@{
     schemaVersion = "2.0.0"
     status = "complete"
@@ -374,7 +388,8 @@ $metrics = [ordered]@{
     representativeSubdomainCount = $representativeSubdomainCount
     unrepresentableSubdomainBoundaryCount = $unrepresentableSubdomainBoundaryCount
     evaluationPointCount = $evaluationPointCount
-    skippedNonDomainOrUnsupportedRuleCount = $skippedRuleCount
+    skippedOrCancelledRuleCount = $skippedRuleCount
+    skipReasonCounts = $skipReasonCounts
     artifactExactEntryCount = $artifactExactDomains.Count
     artifactSuffixEntryCount = $artifactSuffixDomains.Count
     artifactEntryTotal = $artifactExactDomains.Count + $artifactSuffixDomains.Count
@@ -418,7 +433,7 @@ $summary = @(
     "| Precision | $precisionText |",
     "| Recall | $recallText |",
     "| F1 | $f1Text |",
-    "| 非域名级 / 不支持规则跳过数 | $skippedRuleCount |",
+    "| 跳过或撤销的上游规则数 | $skippedRuleCount |",
     "",
     "评估语料由全部有效上游域名规则及其规则边界构造；固定 34 个探针不参与总体指标计算。",
     "上游快照 SHA-256：$snapshotHash",
