@@ -3,10 +3,10 @@
 # 项目主页：https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # 开源协议 1：GPL-3.0
 # 开源协议 2：CC-BY-NC-SA 4.0
-# 生成时间：2026-11-23 19:28:49
-# 规则总数：656203
+# 生成时间：2026-11-23 19:44:48
+# 规则总数：656205
 # 精确域名规则（DOMAIN）：2305
-# 后缀域名规则（DOMAIN-SUFFIX）：653898
+# 后缀域名规则（DOMAIN-SUFFIX）：653900
 # 白名单规则数：906
 # 后缀规则保守降级为 DOMAIN：66
 # 同域精确白名单抑制后缀候选：158
@@ -467262,6 +467262,7 @@ payload:
   - DOMAIN-SUFFIX,lcmed2.verdantpathfinder.com
   - DOMAIN-SUFFIX,lcmed3.verdantpathfinder.com
   - DOMAIN-SUFFIX,lcmkrp.spitishop.gr
+  - DOMAIN-SUFFIX,lcnvwinyavuha.site
   - DOMAIN-SUFFIX,lcnyfgoizvmnp.website
   - DOMAIN-SUFFIX,lcoafpimtnkss.site
   - DOMAIN-SUFFIX,lcodff.uta-net.com
@@ -634447,6 +634448,7 @@ payload:
   - DOMAIN-SUFFIX,wnlyjhb.com
   - DOMAIN-SUFFIX,wnmejreldlzcu.online
   - DOMAIN-SUFFIX,wnmtwgjtoozaq.space
+  - DOMAIN-SUFFIX,wnnbzlovhfhhm.site
   - DOMAIN-SUFFIX,wnnsrb.sister-ann.com
   - DOMAIN-SUFFIX,wnny7lzqzn7r1v0k.mboxedge31-alb.tt.omtrdc.net
   - DOMAIN-SUFFIX,wnnzn9uvyfbrqcxjb5bmyv.cfd
