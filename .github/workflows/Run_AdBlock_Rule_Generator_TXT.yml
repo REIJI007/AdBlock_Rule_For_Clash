@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-main-artifact-publisher
+  group: adblock-txt-publisher
   cancel-in-progress: false
 
 jobs:
@@ -58,4 +58,13 @@ jobs:
             exit 0
           fi
           git commit -m "chore: update generated TXT adblock rules"
-          git push origin HEAD:refs/heads/main
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:refs/heads/main; then
+              exit 0
+            fi
+            echo "TXT publish push failed on attempt $attempt; retrying after fetching main."
+          done
+          echo "TXT publish failed after 3 attempts."
+          exit 1
