@@ -1,58 +1,70 @@
-name: Generate AdBlock rules
+name: Build AdBlock Rule Providers
 
 on:
-  schedule:
-    - cron: '*/20 * * * *'
-  workflow_dispatch:
-  pull_request:
+  push:
+    branches: [main]
     paths:
       - 'AdBlockRuleEngine.psm1'
       - 'adblock_rule_generator_*.ps1'
       - 'sources.json'
       - 'tests/**'
       - '.github/workflows/**'
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+# All artifact publishers (providers and MRS) share one lock.
 concurrency:
-  group: adblock-rule-generation-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: adblock-artifact-publishing
+  cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install PowerShell 7
+        with:
+          fetch-depth: 0
+
+      - name: Guard publication branch
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
-          sudo dpkg -i packages-microsoft-prod.deb
-          sudo apt-get update
-          sudo apt-get install -y powershell
-      - name: Install Pester and run tests
-        shell: pwsh
-        run: |
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force
-          Invoke-Pester -Path ./tests -CI
-      - name: Generate and validate YAML and TXT
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Provider publication is restricted to main."
+            exit 1
+          fi
+
+      - name: Verify PowerShell
+        run: pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+
+      - name: Generate YAML, TXT and Mihomo domain input
         shell: pwsh
         run: ./adblock_rule_generator_yaml.ps1 -Format both
-      - name: Commit and push generated rules
-        if: github.event_name != 'pull_request'
+
+      - name: Upload source manifest and build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adblock-build-diagnostics
+          path: |
+            adblock_sources_manifest.json
+            adblock_build_report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Commit generated providers and diagnostics
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add adblock_reject.yaml adblock_reject.txt
+          git add adblock_reject.yaml adblock_reject.txt adblock_reject_domain.yaml adblock_sources_manifest.json adblock_build_report.json
           if git diff --cached --quiet; then
-            echo "Generated rules are unchanged."
+            echo "Generated providers and diagnostics are unchanged."
             exit 0
           fi
-          git commit -m "chore: update generated adblock rules"
-          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          git commit -m "chore: update generated adblock providers"
+          git push origin HEAD:refs/heads/main
