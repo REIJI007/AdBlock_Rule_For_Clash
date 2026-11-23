@@ -1080,7 +1080,7 @@ if ($domainTreeRoots.Count -gt 0) {
     }
 
     # 键为父域，值为其直接子域节点；例如 example.com -> cdn.example.com。
-    $domainTreeChildren = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $domainTreeChildren = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($domain in $domainTreeNodes) {
         $firstDot = $domain.IndexOf('.')
         if ($firstDot -lt 1) { continue }
@@ -1136,7 +1136,7 @@ if ($domainTreeRoots.Count -gt 0) {
         Expand-DomainTreeBlacklist $root
     }
     Remove-Item Function:\Expand-DomainTreeBlacklist -ErrorAction SilentlyContinue
-    Remove-Variable domainTreeChildren, domainTreeKnownDomains, domainTreeNodes, domainTreeRoots, domainTreeAllBlacklists, domainTreeValidSuffixRules, domainTreeRawSuffixSet, domainTreeRawExactSet, domainTreeCompletedDomains, domainTreeSuffixDowngradedDomains -Scope Script -ErrorAction SilentlyContinue
+    Remove-Variable domainTreeChildren, domainTreeKnownDomains, domainTreeNodes, domainTreeRoots, domainTreeAllBlacklists, domainTreeValidSuffixRules, domainTreeRawSuffixSet, domainTreeRawExactSet, domainTreeSuffixDowngradedDomains -Scope Script -ErrorAction SilentlyContinue
 }
 
 Write-Host "域名树补全完成：新增/收窄 $($domainTreeCompletedDomains.Count) 条精确 DOMAIN 规则"
