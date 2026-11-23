@@ -1044,6 +1044,103 @@ foreach ($d in $allBlacklists) {
     }
 }
 
+# ── 冲突子树域名树补全 ───────────────────────────────────────────────────────
+# DOMAIN-SUFFIX 无法表达“父域拦截、特定子域放行”的负向例外。
+# 对发生白名单冲突的后缀根建立域名树，只遍历上游已知的黑名单/白名单节点。
+# 冲突子树内仍有效的黑名单候选统一收窄为 DOMAIN；白名单节点和仅用于连接树的中间节点绝不输出。
+$domainTreeRoots = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+foreach ($candidate in $suffixConflictExactDomains) {
+    if (-not $validSuffixRules.Contains($candidate)) { continue }
+
+    # 只从最上层冲突后缀开始遍历，避免嵌套冲突根重复扫描。
+    $hasConflictAncestor = $false
+    foreach ($parent in (Get-ParentDomains $candidate)) {
+        if ($validSuffixRules.Contains($parent) -and $suffixConflictExactDomains.Contains($parent)) {
+            $hasConflictAncestor = $true
+            break
+        }
+    }
+    if (-not $hasConflictAncestor) { $domainTreeRoots.Add($candidate) | Out-Null }
+}
+
+$domainTreeCompletedDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+if ($domainTreeRoots.Count -gt 0) {
+    # 规则域名与白名单域名均进入索引；所有父域节点补齐树路径，但中间节点不是输出候选。
+    $domainTreeKnownDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $domainTreeKnownDomains.UnionWith($allBlacklists)
+    $domainTreeKnownDomains.UnionWith($excludedExactDomains)
+    $domainTreeKnownDomains.UnionWith($excludedSuffixDomains)
+
+    $domainTreeNodes = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($domain in $domainTreeKnownDomains) {
+        $domainTreeNodes.Add($domain) | Out-Null
+        foreach ($parent in (Get-ParentDomains $domain)) {
+            $domainTreeNodes.Add($parent) | Out-Null
+        }
+    }
+
+    # 键为父域，值为其直接子域节点；例如 example.com -> cdn.example.com。
+    $domainTreeChildren = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($domain in $domainTreeNodes) {
+        $firstDot = $domain.IndexOf('.')
+        if ($firstDot -lt 1) { continue }
+        $parent = $domain.Substring($firstDot + 1)
+
+        $children = $null
+        if (-not $domainTreeChildren.TryGetValue($parent, [ref]$children)) {
+            $children = [System.Collections.Generic.List[string]]::new()
+            $domainTreeChildren[$parent] = $children
+        }
+        $children.Add($domain)
+    }
+
+    $script:domainTreeChildren = $domainTreeChildren
+    $script:domainTreeAllBlacklists = $allBlacklists
+    $script:domainTreeValidSuffixRules = $validSuffixRules
+    $script:domainTreeRawSuffixSet = $rawSuffixSet
+    $script:domainTreeRawExactSet = $rawExactSet
+    $script:domainTreeCompletedDomains = $domainTreeCompletedDomains
+    $script:domainTreeSuffixDowngradedDomains = $suffixDowngradedDomains
+
+    function Expand-DomainTreeBlacklist([string]$domain) {
+        # 仅处理上游显式黑名单候选，且必须通过与主流程相同的优先级判定。
+        if ($script:domainTreeAllBlacklists.Contains($domain) -and
+            (Get-EffectiveStatus $domain) -like "BLACKLIST*") {
+
+            if ($script:domainTreeValidSuffixRules.Contains($domain)) {
+                # 冲突子树中的 SUFFIX 不再向未知后代扩张，改为精确 DOMAIN。
+                $wasSuffix = $script:domainTreeRawSuffixSet.Remove($domain)
+                $wasExact = $script:domainTreeRawExactSet.Add($domain)
+                $script:domainTreeSuffixDowngradedDomains.Add($domain) | Out-Null
+                if ($wasSuffix -or $wasExact) {
+                    $script:domainTreeCompletedDomains.Add($domain) | Out-Null
+                }
+            }
+            else {
+                # 上游原本就是 EXACT：确保其保留为 DOMAIN。
+                if ($script:domainTreeRawExactSet.Add($domain)) {
+                    $script:domainTreeCompletedDomains.Add($domain) | Out-Null
+                }
+            }
+        }
+
+        $children = $null
+        if ($script:domainTreeChildren.TryGetValue($domain, [ref]$children)) {
+            foreach ($childDomain in $children) {
+                Expand-DomainTreeBlacklist $childDomain
+            }
+        }
+    }
+
+    foreach ($root in ($domainTreeRoots | Sort-Object)) {
+        Expand-DomainTreeBlacklist $root
+    }
+    Remove-Item Function:\Expand-DomainTreeBlacklist -ErrorAction SilentlyContinue
+    Remove-Variable domainTreeChildren, domainTreeKnownDomains, domainTreeNodes, domainTreeRoots, domainTreeAllBlacklists, domainTreeValidSuffixRules, domainTreeRawSuffixSet, domainTreeRawExactSet, domainTreeCompletedDomains, domainTreeSuffixDowngradedDomains -Scope Script -ErrorAction SilentlyContinue
+}
+
+Write-Host "域名树补全完成：新增/收窄 $($domainTreeCompletedDomains.Count) 条精确 DOMAIN 规则"
+
 # 仅删除已被有效父级后缀规则完全覆盖的规则；存在例外冲突的父域不参与跨层级剪枝。
 Write-Host "正在执行语义安全的冗余剪枝..."
 $classSuffixBlocks = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -1074,7 +1171,7 @@ foreach ($w in $excludedSuffixDomains) {
 }
 
 Write-Host "规则集合构建完成：Whitelist $($classWhitelist.Count) | DOMAIN $($classExactBlocks.Count) | DOMAIN-SUFFIX $($classSuffixBlocks.Count)"
-Write-Host "后缀规则保守降级为 DOMAIN：$($suffixDowngradedDomains.Count) | 同域精确白名单抑制后缀候选：$($sameDomainSuffixWhitelistConflicts.Count)"
+Write-Host "冲突子树内收窄为 DOMAIN：$($suffixDowngradedDomains.Count) | 域名树新增/收窄：$($domainTreeCompletedDomains.Count) | 同域精确白名单抑制后缀候选：$($sameDomainSuffixWhitelistConflicts.Count)"
 
 # ── 输出 YAML 规则集 ───────────────────────────────
 $ruleCount    = $classExactBlocks.Count + $classSuffixBlocks.Count
@@ -1093,6 +1190,7 @@ $allLines.Add("# 后缀域名规则（DOMAIN-SUFFIX）：$($classSuffixBlocks.Co
 $allLines.Add("# 白名单规则数：$($classWhitelist.Count)")
 $allLines.Add("# 后缀规则保守降级为 DOMAIN：$($suffixDowngradedDomains.Count)")
 $allLines.Add("# 同域精确白名单抑制后缀候选：$($sameDomainSuffixWhitelistConflicts.Count)")
+$allLines.Add("# 域名树新增/收窄的精确 DOMAIN 规则数：$($domainTreeCompletedDomains.Count)")
 $allLines.Add("")
 
 $allLines.Add("payload:")
@@ -1103,7 +1201,7 @@ foreach ($d in ($classSuffixBlocks | Sort-Object)) {
 }
 
 foreach ($d in ($classExactBlocks | Sort-Object)) {
-    if ($suffixDowngradedDomains.Contains($d)) { $allLines.Add("  # [保守降级/FN] $($d)：上游存在有效白名单，后缀匹配收窄为精确域名；未单独列出的子域不再拦截") }
+    if ($suffixDowngradedDomains.Contains($d)) { $allLines.Add("  # [域名树保守补全] $($d)：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名") }
     $allLines.Add("  - DOMAIN,$d")
 }
 
@@ -1121,5 +1219,5 @@ Write-Host "=== 文件前 20 行预览 ==="
 Get-Content -Path $outputPath -TotalCount 20 | ForEach-Object { Write-Host $_ }
 
 $totalSkipped = ($skipStats.Values | Measure-Object -Sum).Sum
-Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | SuffixDowngraded: $($suffixDowngradedDomains.Count) | SameDomainWhitelistConflicts: $($sameDomainSuffixWhitelistConflicts.Count) | Skipped: $totalSkipped"
+Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | SuffixDowngraded: $($suffixDowngradedDomains.Count) | SameDomainWhitelistConflicts: $($sameDomainSuffixWhitelistConflicts.Count) | TreeCompleted: $($domainTreeCompletedDomains.Count) | Skipped: $totalSkipped"
 Pause
