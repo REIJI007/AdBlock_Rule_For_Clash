@@ -35,7 +35,7 @@ jobs:
           Install-Module Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force
           Invoke-Pester -Path ./tests -CI
 
-      - name: Validate upstream manifest contract
+      - name: Validate root upstream URL list
         shell: pwsh
         run: |
           $urls = @(Get-Content ./upstream-sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
@@ -47,14 +47,4 @@ jobs:
             if (-not $seen.Add([string]$url)) { throw "Duplicate upstream URL: $url" }
             $uri = [Uri]::new([string]$url)
             if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Upstream URL must be absolute HTTPS: $url" }
-          }
-            if ($source.required -isnot [bool] -or $source.enabled -isnot [bool]) { throw "required/enabled must be explicit booleans: $($source.url)" }
-            if ([long]$source.maxBytes -lt 1 -or [int]$source.retries -lt 0 -or [int]$source.retries -gt 5) {
-              throw "Invalid download limits: $($source.url)"
-            }
-            if ([int]$source.timeoutSeconds -lt 1 -or [int]$source.timeoutSeconds -gt 300) { throw "Invalid timeout: $($source.url)" }
-            if ($source.sha256 -and [string]$source.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid pinned SHA-256: $($source.url)" }
-            if (-not $seen.Add([string]$source.url)) { throw "Duplicate upstream URL: $($source.url)" }
-            $uri = [Uri]::new([string]$source.url)
-            if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Upstream URL must be absolute HTTPS: $($source.url)" }
           }
