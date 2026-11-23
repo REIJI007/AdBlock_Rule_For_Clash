@@ -433,11 +433,6 @@ Describe 'Automatic rule syntax detection' {
         }
     }
 }
- }).Count | Should -Be 1
-        $urls | Should -Contain 'https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt'
-    }
-
-}
 
 
 Describe 'Independent embedded YAML and TXT generators with YAML-dependent MRS conversion' {
