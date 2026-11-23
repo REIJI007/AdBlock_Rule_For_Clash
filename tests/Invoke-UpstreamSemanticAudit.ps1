@@ -35,7 +35,7 @@ $generatorSource = [System.IO.File]::ReadAllText($generatorPath)
 $generatorSource = $generatorSource.Replace('$PSScriptRoot', $tempRoot.Replace("'", "''"))
 $generatorSource = [regex]::Replace($generatorSource, '(?im)^\s*Pause\s*$', '')
 
-$generatorSource += @'
+$stateExport = @'
 
 $__upstreamAuditState = [PSCustomObject]@{
     UrlList = @($urlList)
@@ -51,10 +51,16 @@ $__upstreamAuditState = [PSCustomObject]@{
     ImportantWhitelistExactDomains = $importantWhitelistExactDomains
     ImportantWhitelistSuffixDomains = $importantWhitelistSuffixDomains
     SuffixConflictExactDomains = $suffixConflictExactDomains
-    ClassExactBlocks = $classExactBlocks
-    ClassSuffixBlocks = $classSuffixBlocks
 }
 '@
+
+# 仅运行到生产生成器完成白名单冲突分析的位置；后续全量产物排序和写盘与本次语义审计无关。
+$projectionMarker = '$rawSuffixSet = [System.Collections.Generic.HashSet[string]]::new'
+$projectionIndex = $generatorSource.IndexOf($projectionMarker, [System.StringComparison]::Ordinal)
+if ($projectionIndex -lt 0) {
+    throw "无法定位生产生成器的规则投影边界；拒绝使用不完整的审计状态"
+}
+$generatorSource = $generatorSource.Substring(0, $projectionIndex) + $stateExport
 
 . ([scriptblock]::Create($generatorSource))
 $state = $__upstreamAuditState
