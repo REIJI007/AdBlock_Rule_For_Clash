@@ -1,0 +1,67 @@
+name: Run_AdBlock_Rule_Generator_YAML
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'adblock_rule_generator_yaml.ps1'
+      - 'upstream-sources.json'
+      - '.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml'
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: adblock-yaml-publisher
+  cancel-in-progress: false
+
+jobs:
+  generate-yaml:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify PowerShell 7
+        run: pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+
+      - name: Generate YAML only
+        shell: pwsh
+        run: ./adblock_rule_generator_yaml.ps1
+
+      - name: Upload YAML diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adblock-yaml-diagnostics
+          path: |
+            adblock_sources_manifest_yaml.json
+            adblock_build_report_yaml.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Commit YAML artifact and YAML diagnostics only
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- adblock_reject.yaml adblock_sources_manifest_yaml.json adblock_build_report_yaml.json
+          if git diff --cached --quiet; then
+            echo 'YAML artifacts are unchanged.'
+            exit 0
+          fi
+          git commit -m 'chore: update generated YAML adblock rules'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:refs/heads/main; then exit 0; fi
+            echo "YAML publish push failed on attempt ${attempt}; retrying."
+          done
+          echo 'YAML publish failed after 3 attempts.'
+          exit 1
