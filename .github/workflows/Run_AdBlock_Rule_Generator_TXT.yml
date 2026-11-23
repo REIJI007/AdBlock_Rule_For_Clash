@@ -7,36 +7,50 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-rule-generation-${{ github.ref }}
+  group: adblock-artifact-publishing
   cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install PowerShell 7
+        with:
+          fetch-depth: 0
+
+      - name: Guard publication branch
         shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
-          sudo dpkg -i packages-microsoft-prod.deb
-          sudo apt-get update
-          sudo apt-get install -y powershell
-      - name: Generate TXT
+          if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "Provider publication is restricted to main."
+            exit 1
+          fi
+
+      - name: Generate TXT and Mihomo domain input
         shell: pwsh
         run: ./adblock_rule_generator_txt.ps1
-      - name: Commit and push generated TXT
+
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: adblock-txt-build-diagnostics
+          path: |
+            adblock_sources_manifest.json
+            adblock_build_report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Commit generated TXT and diagnostics
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add adblock_reject.txt
+          git add adblock_reject.txt adblock_reject_domain.yaml adblock_sources_manifest.json adblock_build_report.json
           if git diff --cached --quiet; then
-            echo "Generated TXT is unchanged."
+            echo "Generated TXT and diagnostics are unchanged."
             exit 0
           fi
           git commit -m "chore: update generated adblock TXT rules"
-          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          git push origin HEAD:refs/heads/main
