@@ -141,7 +141,7 @@ if ($failedUrls.Count -gt 0 -or $state.UrlContents.Count -ne $state.UrlList.Coun
 function Add-AuditBoundaryAndParents {
     param(
         [Parameter(Mandatory)][string]$Domain,
-        [Parameter(Mandatory)][System.Collections.Generic.HashSet[string]]$Boundaries
+        [Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.HashSet[string]]$Boundaries
     )
 
     $normalized = Normalize-Domain $Domain
