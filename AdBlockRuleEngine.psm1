@@ -498,7 +498,7 @@ function Expand-AdblockIncludes {
         [Parameter(Mandatory)][string]$SourceUrl,
         [Parameter(Mandatory)][System.Net.Http.HttpClient]$Client,
         [Parameter(Mandatory)]$Visited,
-        [Parameter(Mandatory)][System.Collections.Generic.List[object]]$IncludeManifest,
+        [Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.List[object]]$IncludeManifest,
         [long]$MaxBytes=25000000,
         [int]$Depth=0,
         [int]$MaxDepth=8
