@@ -8,6 +8,8 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$auditStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$sourcePreparationStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 switch ($TargetFormat) {
     "clash" {
         $generatorPath = Join-Path $repoRoot "adblock_rule_generator_yaml.ps1"
@@ -65,6 +67,9 @@ $generatorSource = $generatorSource.Substring(0, $projectionIndex) + $stateExpor
 
 . ([scriptblock]::Create($generatorSource))
 $state = $__upstreamAuditState
+$sourcePreparationStopwatch.Stop()
+$sourcePreparationDurationSeconds = [math]::Round($sourcePreparationStopwatch.Elapsed.TotalSeconds, 2)
+Write-Host "上游抓取、生产解析及优先级准备耗时：$sourcePreparationDurationSeconds 秒"
 if ($null -eq $state) {
     throw "生产生成器未导出完整上游解析状态，无法计算语义一致率"
 }
@@ -273,6 +278,7 @@ if ($artifactExactSet.Count + $artifactSuffixSet.Count -le 0) {
 }
 
 # 评估语料由所有成功抓取、经生产解析器解析、badfilter 撤销及优先级处理后的域名级规则构成。
+$boundaryBuildStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 $upstreamRuleDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($domain in $state.ValidExactRules) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
 foreach ($domain in $state.ValidSuffixRules) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
@@ -299,6 +305,9 @@ foreach ($domain in $artifactSuffixDomains) {
 $evaluationDomainList = [System.Collections.Generic.List[string]]::new()
 foreach ($domain in $evaluationBoundaries) { $evaluationDomainList.Add($domain) }
 $evaluationDomainList.Sort([System.StringComparer]::OrdinalIgnoreCase)
+$boundaryBuildStopwatch.Stop()
+$boundaryBuildDurationSeconds = [math]::Round($boundaryBuildStopwatch.Elapsed.TotalSeconds, 2)
+Write-Host "规则边界语料构造耗时：$boundaryBuildDurationSeconds 秒；边界节点数：$($evaluationDomainList.Count)"
 
 $auditCounts = [PSCustomObject]@{
     TP = [int64]0
@@ -312,6 +321,7 @@ $maxMismatchExamples = 100
 $representativeSubdomainCount = [int64]0
 $unrepresentableSubdomainBoundaryCount = [int64]0
 $processedBoundaryCount = [int64]0
+$semanticEvaluationStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 foreach ($domain in $evaluationDomainList) {
     Add-AuditProbeResult -Domain $domain
@@ -352,8 +362,11 @@ foreach ($domain in $evaluationDomainList) {
         Write-Host "已评估 $processedBoundaryCount / $($evaluationDomainList.Count) 个域名边界..."
     }
 }
+$semanticEvaluationStopwatch.Stop()
+$semanticEvaluationDurationSeconds = [math]::Round($semanticEvaluationStopwatch.Elapsed.TotalSeconds, 2)
+Write-Host "语义边界逐点评估耗时：$semanticEvaluationDurationSeconds 秒；评估点数：$($auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN)"
 
-$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN
+$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FP + $auditCounts.FN
 if ($evaluationPointCount -le 0) {
     throw "全量上游语义评估没有生成任何有效评估点"
 }
@@ -379,8 +392,14 @@ $f1Percent = if (
     )
 } else { $null }
 
+$auditStopwatch.Stop()
+$totalDurationSeconds = [math]::Round($auditStopwatch.Elapsed.TotalSeconds, 2)
 $metrics = [ordered]@{
     schemaVersion = "2.0.0"
+    sourcePreparationDurationSeconds = $sourcePreparationDurationSeconds
+    boundaryBuildDurationSeconds = $boundaryBuildDurationSeconds
+    semanticEvaluationDurationSeconds = $semanticEvaluationDurationSeconds
+    totalDurationSeconds = $totalDurationSeconds
     status = "complete"
     generatedAtUtc = [DateTime]::UtcNow.ToString("o")
     targetFormat = $TargetFormat
@@ -442,6 +461,10 @@ $summary = @(
     "",
     "| 指标 | 结果 |",
     "|---|---:|",
+    "| 上游抓取/解析/优先级准备 | $sourcePreparationDurationSeconds 秒 |",
+    "| 边界语料构造 | $boundaryBuildDurationSeconds 秒 |",
+    "| 逐点评估 | $semanticEvaluationDurationSeconds 秒 |",
+    "| 总耗时 | $totalDurationSeconds 秒 |",
     "| 上游源成功数 | $($sourceDigestLines.Count) / $($state.UrlList.Count) |",
     "| 成功但为空的源 | $($emptySourceUrls.Count) |",
     "| 唯一上游域名规则域名 | $($upstreamRuleDomains.Count) |",
