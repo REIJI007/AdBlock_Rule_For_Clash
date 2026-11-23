@@ -870,12 +870,12 @@ foreach ($parsed in $parsedRulesByKey.Values) {
         "EXCLUDE" {
             $isSuffixException = $parsed.SourceFormat -in @("whitelist-suffix", "whitelist-dnsmasq")
             if ($isSuffixException) {
-                $excludedSuffixDomains.Add($domain) | Out-Null
                 if ($parsed.IsImportant) { $importantWhitelistSuffixDomains.Add($domain) | Out-Null }
+                else { $excludedSuffixDomains.Add($domain) | Out-Null }
             }
             else {
-                $excludedExactDomains.Add($domain) | Out-Null
                 if ($parsed.IsImportant) { $importantWhitelistExactDomains.Add($domain) | Out-Null }
+                else { $excludedExactDomains.Add($domain) | Out-Null }
             }
         }
         "SUFFIX" {
@@ -891,6 +891,14 @@ foreach ($parsed in $parsedRulesByKey.Values) {
     if (-not $formatStats.ContainsKey($parsed.SourceFormat)) { $formatStats[$parsed.SourceFormat] = 0 }
     $formatStats[$parsed.SourceFormat]++
 }
+
+# 显式合并普通与重要白名单，供冲突检测和输出统计使用；匹配优先级仍由 Get-EffectiveStatus 分层处理。
+$allExactWhitelists = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$allExactWhitelists.UnionWith($excludedExactDomains)
+$allExactWhitelists.UnionWith($importantWhitelistExactDomains)
+$allSuffixWhitelists = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$allSuffixWhitelists.UnionWith($excludedSuffixDomains)
+$allSuffixWhitelists.UnionWith($importantWhitelistSuffixDomains)
 
 # ── 过滤阶段 + 白名单抑制 + 冲突索引 + 父域冗余剪枝 ─────────────
 $validSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -990,7 +998,7 @@ $suffixDowngradedDomains = [System.Collections.Generic.HashSet[string]]::new([Sy
 
 # 方案 A：优先保证不误杀。精确白名单与后缀白名单分别判断，不能用根域的 EXACT 冲突结果推断其所有子域。
 # 精确白名单只有在根域请求本身有效时，才使覆盖它的父级 SUFFIX 候选降级。
-foreach ($w in $excludedExactDomains) {
+foreach ($w in $allExactWhitelists) {
     if ((Get-EffectiveStatus $w) -notlike "WHITELIST*") { continue }
 
     # 同域精确白名单只豁免根域；无法用 DOMAIN / DOMAIN-SUFFIX 表达“根域放行、全部子域继续拦截”。
@@ -1008,7 +1016,7 @@ foreach ($w in $excludedExactDomains) {
 
 # 后缀白名单的根域可能被 EXACT 黑名单覆盖，但它仍可能对其他子域有效。
 # 因此只用 suffix 规则判断其一般子域范围，忽略不继承的 EXACT 黑/白名单。
-foreach ($w in $excludedSuffixDomains) {
+foreach ($w in $allSuffixWhitelists) {
     if ((Get-SuffixEffectiveStatus $w) -notlike "WHITELIST*") { continue }
 
     # 同域后缀白名单与后缀黑名单冲突时，禁止保留同域 SUFFIX；若根域另有更高优先级 EXACT 黑名单，最终仍可单独输出 DOMAIN。
@@ -1066,10 +1074,10 @@ foreach ($d in $rawExactSet) {
 
 $classWhitelist = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 # EXACT 白名单按根域实际状态统计；SUFFIX 白名单按一般子域作用范围统计，避免被根域 EXACT 冲突误判为无效。
-foreach ($w in $excludedExactDomains) {
+foreach ($w in $allExactWhitelists) {
     if ((Get-EffectiveStatus $w) -like "WHITELIST*") { $classWhitelist.Add($w) | Out-Null }
 }
-foreach ($w in $excludedSuffixDomains) {
+foreach ($w in $allSuffixWhitelists) {
     if ((Get-SuffixEffectiveStatus $w) -like "WHITELIST*") { $classWhitelist.Add($w) | Out-Null }
 }
 
