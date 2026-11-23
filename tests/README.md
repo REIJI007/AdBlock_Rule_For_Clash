@@ -12,7 +12,7 @@ pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat clash
 pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat sing-box
 ```
 
-测试不执行生产脚本的网络下载流程。它从被测生成器的 PowerShell AST 中载入真实解析函数，准备固定输入样本，然后执行生产脚本中的真实方案 A 投影区段和真实产物输出区段。这样测试不会另写一套并行解析器，也不会覆盖正式产物。
+固定样本回归测试不执行生产脚本的网络下载流程。它从被测生成器的 PowerShell AST 中载入真实解析函数，准备固定输入样本，然后执行生产脚本中的真实方案 A 投影区段和真实产物输出区段。另一个全量审计会直接执行完整生产生成器，抓取全部上游源并在临时目录生成待审计产物；不会覆盖仓库中的正式产物。
 
 ## 测试覆盖
 
@@ -27,6 +27,28 @@ pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat sing-b
 - 实际生成的 Clash YAML 或 sing-box JSON 结构与域名匹配行为
 
 ## 指标口径
+
+本项目将两种不同问题分开报告，避免把固定探针准确度误当作产物条目遵循上游语义的比例。
+
+### 全量上游语义一致率（本次需求指标）
+
+- **语义一致率** = 产物中遵循上游规则语义的条数 / 产物域名条目总数 × 100%
+- 每条唯一的 `DOMAIN` / `DOMAIN-SUFFIX` 产物规则计为一个条目。
+- `DOMAIN` 只有在完整上游规则经优先级与白名单处理后，对应的有效规则类型仍为精确匹配时才计入分子；若上游后缀规则因子域例外被收窄为精确域名，则不计入分子。
+- `DOMAIN-SUFFIX` 只有在上游存在对应后缀规则、该规则有效，且其覆盖范围内没有有效白名单例外时才计入分子。
+- 不可证明与上游匹配范围一致的条目计入分母但不计入分子；分母为实际产物中的唯一规则条目，不是上游源规则数或探针数。
+- 审计直接使用生成器内的完整 `urlList`（当前为 317 个 URL），执行生产解析、优先级、白名单冲突与投影代码；所有上游源必须成功下载，否则报告状态为 `incomplete` 且不计算百分比。
+- 报告记录每个上游源内容的 SHA-256，并生成聚合快照 SHA-256，便于区分不同时间的上游数据快照。
+
+执行：
+
+```powershell
+pwsh -NoProfile -File ./tests/Invoke-UpstreamSemanticAudit.ps1 -TargetFormat clash
+```
+
+机器可读报告为 `tests/TestResults/upstream-semantic-metrics.json`，由 GitHub Actions 上传。
+
+### 固定探针回归指标
 
 对固定探针域名集计算混淆矩阵：
 
@@ -43,4 +65,4 @@ pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat sing-b
 
 ## 重要边界
 
-当前样本集是**可重复的语义回归基准**，不是数百个实时上游过滤源的全量命中率。要得到真实上游比例，还需下一阶段固定下载上游源快照、保留源文件与抓取时间，并建立更大规模且经人工审查的域名探针集合。单凭生成器产出的黑名单集合无法恢复所有规则的上下文和例外语义，因此不能把规则条数或域名去重数量当成语义遵循比例。
+固定样本探针仍只是有限回归基准，不代表互联网域名总体上的误拦截率或漏拦截率。全量上游语义一致率衡量的是**产物条目本身是否保留上游规则的匹配范围**，不等同于对所有潜在域名执行混淆矩阵所得的 Recall / Precision。两类指标回答不同问题，应分别解读。
