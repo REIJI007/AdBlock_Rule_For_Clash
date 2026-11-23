@@ -320,13 +320,13 @@ Describe 'AdGuard SDNS internal exclusion scope' {
 }
 
 
-Describe 'Independent YAML and TXT generation contracts' {
+Describe 'Independent YAML, TXT and MRS generation contracts' {
     It 'pins the YAML wrapper to YAML-only output' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'yaml'"
-        $scriptText | Should -Not -Match 'Format both'
         $scriptText | Should -Not -Match "Format 'txt'"
+        $scriptText | Should -Not -Match "Format 'mrs'"
     }
 
     It 'pins the TXT wrapper to TXT-only output' {
@@ -334,10 +334,22 @@ Describe 'Independent YAML and TXT generation contracts' {
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'txt'"
         $scriptText | Should -Not -Match "Format 'yaml'"
-        $scriptText | Should -Not -Match 'Format both'
+        $scriptText | Should -Not -Match "Format 'mrs'"
     }
 
-    It 'keeps the YAML and TXT workflows independently scheduled and dispatched' {
+    It 'pins the MRS wrapper to MRS-only compilation' {
+        $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_mrs.ps1'
+        $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+        $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'mrs'"
+        $scriptText | Should -Not -Match "Format 'yaml'"
+        $scriptText | Should -Not -Match "Format 'txt'"
+        $moduleText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../AdBlockRuleEngine.psm1') -Raw
+        $moduleText | Should -Match "ValidateSet\('yaml','txt','mrs'\)"
+        $moduleText | Should -Match "Format -eq 'mrs'"
+        $moduleText | Should -Match 'adblock_reject_mrs_input\.yaml'
+    }
+
+    It 'keeps YAML and TXT workflows independently scheduled and dispatched' {
         $yamlWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml') -Raw
         $txtWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_TXT.yml') -Raw
 
@@ -345,19 +357,49 @@ Describe 'Independent YAML and TXT generation contracts' {
         $yamlWorkflow | Should -Match 'workflow_dispatch:'
         $yamlWorkflow | Should -Match 'adblock_rule_generator_yaml\.ps1'
         $yamlWorkflow | Should -Not -Match 'adblock_rule_generator_txt\.ps1'
+        $yamlWorkflow | Should -Not -Match 'adblock_rule_generator_mrs\.ps1'
         $yamlWorkflow | Should -Not -Match 'adblock_reject\.txt'
+        $yamlWorkflow | Should -Not -Match 'adblock_reject\.mrs'
+        $yamlWorkflow | Should -Not -Match 'adblock_reject_domain\.yaml'
 
         $txtWorkflow | Should -Match 'schedule:'
         $txtWorkflow | Should -Match 'workflow_dispatch:'
         $txtWorkflow | Should -Match 'adblock_rule_generator_txt\.ps1'
         $txtWorkflow | Should -Not -Match 'adblock_rule_generator_yaml\.ps1'
+        $txtWorkflow | Should -Not -Match 'adblock_rule_generator_mrs\.ps1'
         $txtWorkflow | Should -Not -Match 'adblock_reject\.yaml'
+        $txtWorkflow | Should -Not -Match 'adblock_reject\.mrs'
     }
 
-    It 'triggers MRS conversion only from successful YAML generation' {
-        $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Convert_Ruleset_YAML_to_MRS.yml') -Raw
-        $mrsWorkflow | Should -Match 'Run_AdBlock_Rule_Generator_YAML'
+    It 'runs MRS as a third independent scheduled and dispatched workflow' {
+        $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml') -Raw
+        $mrsWorkflow | Should -Match 'schedule:'
+        $mrsWorkflow | Should -Match 'workflow_dispatch:'
+        $mrsWorkflow | Should -Match 'adblock_rule_generator_mrs\.ps1'
+        $mrsWorkflow | Should -Match 'adblock_reject_mrs_input\.yaml'
+        $mrsWorkflow | Should -Match 'adblock_reject\.mrs'
+        $mrsWorkflow | Should -Not -Match '(?m)^\s*workflow_run:'
+        $mrsWorkflow | Should -Not -Match 'Run_AdBlock_Rule_Generator_YAML'
         $mrsWorkflow | Should -Not -Match 'Run_AdBlock_Rule_Generator_TXT'
-        $mrsWorkflow | Should -Match 'adblock_reject_domain\.yaml'
+        $mrsWorkflow | Should -Not -Match 'adblock_reject_domain\.yaml'
+        $mrsWorkflow | Should -Match 'group: adblock-mrs-publisher'
+        $yamlWorkflow | Should -Match 'group: adblock-yaml-publisher'
+        $txtWorkflow | Should -Match 'group: adblock-txt-publisher'
+        $yamlWorkflow | Should -Not -Match 'adblock-main-artifact-publisher'
+        $txtWorkflow | Should -Not -Match 'adblock-main-artifact-publisher'
+        $mrsWorkflow | Should -Not -Match 'adblock-main-artifact-publisher'
+    }
+
+    It 'publishes only the matching artifact in each workflow' {
+        $yamlWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml') -Raw
+        $txtWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_TXT.yml') -Raw
+        $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml') -Raw
+
+        $yamlWorkflow | Should -Match 'git add -- adblock_reject\.yaml'
+        $yamlWorkflow | Should -Not -Match 'git add --.*adblock_reject\.mrs|git add --.*adblock_reject\.txt'
+        $txtWorkflow | Should -Match 'git add -- adblock_reject\.txt'
+        $txtWorkflow | Should -Not -Match 'git add --.*adblock_reject\.mrs|git add --.*adblock_reject\.yaml'
+        $mrsWorkflow | Should -Match 'git add -- adblock_reject\.mrs'
+        $mrsWorkflow | Should -Not -Match 'git add --.*adblock_reject\.yaml|git add --.*adblock_reject\.txt'
     }
 }
