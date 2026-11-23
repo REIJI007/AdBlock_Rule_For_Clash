@@ -65,7 +65,7 @@ rules:
 
 下载器使用 HTTP 状态验证、`ResponseHeadersRead` 流式读取、读取过程字节上限、超时取消、重试、严格 UTF-8 解码和 SHA-256 指纹。必需来源下载失败时不发布新规则。构建会生成 `adblock_sources_manifest.json` 与 `adblock_build_report.json`，用于追踪来源内容、失败项、预处理问题及不可表达冲突。
 
-**注意：来源匹配元数据是从旧生成器行为和来源类型迁移得到的显式配置，并不等同于对 317 个上游源逐个完成规范审计。** 36 个 ALLOW 来源的域名匹配范围、33 个标记为 UBO 的来源，以及来源是否应为 required，仍值得人工抽样/复核。来源内容及其规则语义也会随上游更新变化。
+**注意：来源匹配元数据是从旧生成器行为和来源类型迁移得到的显式配置，并不等同于对全部上游源逐个完成规范审计。** 36 个 ALLOW 来源的域名匹配范围、33 个标记为 UBO 的来源，以及来源是否应为 required，仍值得人工抽样/复核。当前 317 条记录中有 316 条启用且标记为 required；`antiadblock_chinese.txt` 因上游 Git blob 为空而设为 optional。AdGuard SDNS 的 `Filters/exclusions.txt` 被上游配置用作组成过滤源的内部 exclusion input，而非独立 allowlist；该记录保留但设为 disabled，避免错误生成全局 ALLOW。来源内容及其规则语义也会随上游更新变化。
 
 ## 订阅格式
 
