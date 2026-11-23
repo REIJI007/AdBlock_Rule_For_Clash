@@ -1,11 +1,6 @@
 name: Convert Domain YAML to MRS
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'adblock_reject_domain.yaml'
-      - '.github/workflows/Convert_Ruleset_YAML_to_MRS.yml'
   workflow_run:
     workflows: ["Build AdBlock Rule Providers"]
     types: [completed]
@@ -16,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-mrs-build
+  group: adblock-artifact-publishing
   cancel-in-progress: false
 
 jobs:

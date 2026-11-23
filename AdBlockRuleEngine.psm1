@@ -6,8 +6,9 @@ $script:PslException = [System.Collections.Generic.HashSet[string]]::new([System
 
 function ConvertTo-NormalizedDomain {
     param([Parameter(Mandatory)][AllowNull()][AllowEmptyString()][string]$Domain)
+    if ([string]::IsNullOrWhiteSpace($Domain)) { return $null }
     $value = $Domain.Trim()
-    if ([string]::IsNullOrWhiteSpace($value) -or $value.EndsWith('..')) { return $null }
+    if ($value.EndsWith('..')) { return $null }
     if ($value.EndsWith('.')) { $value = $value.Substring(0, $value.Length - 1) }
     try {
         $idn = [System.Globalization.IdnMapping]::new()
@@ -489,16 +490,20 @@ function Get-AdblockCompilation {
 }
 
 function Read-AdblockHttpResponse {
-    param([Parameter(Mandatory)]$Response,[Parameter(Mandatory)][long]$MaxBytes)
+    param(
+        [Parameter(Mandatory)]$Response,
+        [Parameter(Mandatory)][long]$MaxBytes,
+        [System.Threading.CancellationToken]$CancellationToken = [System.Threading.CancellationToken]::None
+    )
     if (-not $Response.IsSuccessStatusCode) { throw ("HTTP {0} {1}" -f [int]$Response.StatusCode,$Response.ReasonPhrase) }
     if ($null -ne $Response.Content.Headers.ContentLength -and $Response.Content.Headers.ContentLength -gt $MaxBytes) {
         throw "Response exceeds maxBytes ($MaxBytes)"
     }
-    $inputStream=$Response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
+    $inputStream=$Response.Content.ReadAsStreamAsync($CancellationToken).GetAwaiter().GetResult()
     $memoryStream=[System.IO.MemoryStream]::new()
     $buffer=[byte[]]::new(81920)
     try {
-        while (($read=$inputStream.Read($buffer,0,$buffer.Length)) -gt 0) {
+        while (($read=$inputStream.ReadAsync($buffer,0,$buffer.Length,$CancellationToken).GetAwaiter().GetResult()) -gt 0) {
             if (($memoryStream.Length + $read) -gt $MaxBytes) {
                 throw "Response exceeds maxBytes ($MaxBytes)"
             }
@@ -528,14 +533,18 @@ function Get-AdblockRemoteText {
     for ($attempt=0; $attempt -le $Retries; $attempt++) {
         $response=$null
         try {
-            $response=$Client.GetAsync($Url).GetAwaiter().GetResult()
-            return (Read-AdblockHttpResponse -Response $response -MaxBytes $MaxBytes)
+            $cancellation=[System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds(75))
+            $response=$Client.GetAsync($Url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cancellation.Token).GetAwaiter().GetResult()
+            return (Read-AdblockHttpResponse -Response $response -MaxBytes $MaxBytes -CancellationToken $cancellation.Token)
         }
         catch {
             $lastError=$_.Exception.Message
             if ($attempt -lt $Retries) { Start-Sleep -Seconds ([Math]::Min(2 * ($attempt + 1),8)) }
         }
-        finally { if ($null -ne $response) { $response.Dispose() } }
+        finally {
+            if ($null -ne $response) { $response.Dispose() }
+            if ($null -ne $cancellation) { $cancellation.Dispose() }
+        }
     }
     throw "Download failed after $($Retries + 1) attempts: $Url : $lastError"
 }
@@ -560,7 +569,7 @@ function Invoke-AdblockSourceDownloads {
                 $cancellation=[System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeoutSeconds))
                 $pending.Add([PSCustomObject]@{
                     Source=$source
-                    Task=$client.GetAsync([string]$source.url,$cancellation.Token)
+                    Task=$client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cancellation.Token)
                     Cancellation=$cancellation
                 })
             }
@@ -579,9 +588,10 @@ function Invoke-AdblockSourceDownloads {
                             $retryCancellation=[System.Threading.CancellationTokenSource]::new(
                                 [TimeSpan]::FromSeconds([Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds)))
                             )
-                            $response=$client.GetAsync([string]$source.url,$retryCancellation.Token).GetAwaiter().GetResult()
+                            $response=$client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$retryCancellation.Token).GetAwaiter().GetResult()
                         }
-                        $download=Read-AdblockHttpResponse -Response $response -MaxBytes ([long]$source.maxBytes)
+                        $activeToken=if ($attempt -eq 0) { $item.Cancellation.Token } else { $retryCancellation.Token }
+                        $download=Read-AdblockHttpResponse -Response $response -MaxBytes ([long]$source.maxBytes) -CancellationToken $activeToken
                         break
                     }
                     catch {
