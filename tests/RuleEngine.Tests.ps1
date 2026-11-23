@@ -45,6 +45,13 @@ Describe 'Five-tier priority evaluation' {
         Test-AdblockSuffixMatch 'a.example.com' 'example.com' | Should -BeTrue
         Test-AdblockSuffixMatch 'example.com' 'example.com' | Should -BeTrue
     }
+    It 'normalizes Unicode IDN domain rules to Punycode' {
+        InModuleScope AdBlockRuleEngine {
+            $parsed = Parse-Rule -line '||例子.测试^'
+            $parsed.Action | Should -Be 'SUFFIX'
+            (Normalize-Domain $parsed.Domain) | Should -Be 'xn--fsqu00a.xn--0zwm56d'
+        }
+    }
     It 'priority numbers are stable' {
         (Get-AdblockRulePriority ALLOW SUFFIX $true) | Should -Be 0
         (Get-AdblockRulePriority BLOCK EXACT $true) | Should -Be 1

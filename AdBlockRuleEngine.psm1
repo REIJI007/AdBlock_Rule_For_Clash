@@ -685,7 +685,16452 @@ function Parse-Rule {
         $modPartRaw = $null
 
         if (
-            $line -match '^@@\|\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)(.*)$'
+            $line -match '^@@\|\|([\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?)+)(.*)
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[2]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})\|(\$(.+))?) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([\p{L}\p{N}*][\p{L}\p{N}*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/([^/]*)) {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([\p{L}\p{N}.-]+\.[\p{L}]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/) {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})) {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
+        ) {
+            $extractDomain = $Matches[1].ToLower()
+            $afterDomain = $Matches[5]
+
+            if ($afterDomain -match '^[\^]?[/?]') {
+                $result.SkipReason = "whitelist-path-or-query-specific"
+                return $result
+            }
+            $dollarIdx = $afterDomain.IndexOf('$')
+            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
+            if ($beforeMods -notmatch '^\^?\|?$') {
+                $result.SkipReason = "whitelist-pattern-after-domain"
+                return $result
+            }
+
+            if ($dollarIdx -ge 0) {
+                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
+            }
+        }
+        elseif ($line -match '^@@([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+) {
+            $extractDomain = $Matches[1].ToLower()
+        }
+
+        if ($null -ne $extractDomain) {
+            if (Is-ContextConstrainedWhitelist $modPartRaw) {
+                $result.SkipReason = "whitelist-context-constrained"
+            }
+            else {
+                $result.Action = "EXCLUDE"
+                $result.Domain = $extractDomain
+                $result.SourceFormat = "adblock-whitelist"
+                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
+            }
+        }
+        else {
+            $result.SkipReason = "whitelist-unparseable"
+        }
+
+        return $result
+    }
+
+    # 精确 URL / AdGuard 精确域名规则
+    if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
+        $candidate = $Matches[1].ToLower()
+        $modStr = $Matches[3]
+
+        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
+            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
+            if ($exactMods -contains 'badfilter') {
+                $result.Action = 'BADFILTER'
+                $result.Domain = $candidate
+                return $result
+            }
+        }
+
+        $modResult = Resolve-Modifiers $modStr
+
+        if ($modResult.Decision -eq "SKIP") {
+            $result.SkipReason = $modResult.SkipReason
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-exact"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "adguard-exact"
+        }
+
+        $result.Domain = $candidate
+        $result.IsImportant = $modResult.IsImportant
+
+        return $result
+    }
+
+    # Adblock || 域名规则
+    if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
+        $raw = $Matches[1].ToLower()
+        $rest = $Matches[2]
+        $dollarIndex = $rest.IndexOf('$')
+
+        $restBeforeDollar = if ($dollarIndex -ge 0) {
+            $rest.Substring(0, $dollarIndex)
+        }
+        else {
+            $rest
+        }
+
+        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
+            $result.SkipReason = "path-or-query-specific-rule"
+            return $result
+        }
+
+        # 处理 $badfilter 撤销规则
+        if ($rest -match '^\^?\$(.+)$') {
+            $modList = (
+                $Matches[1] -split ',' |
+                ForEach-Object {
+                    ($_ -split '=')[0].Trim().ToLower()
+                }
+            )
+
+            if ($modList -contains 'badfilter') {
+                $domain = $raw
+
+                if (
+                    $domain -notmatch '\*' -and
+                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
+                ) {
+                    $result.Action = "BADFILTER"
+                    $result.Domain = $domain
+                    return $result
+                }
+            }
+        }
+
+        # 处理其他修饰符
+        if ($rest -match '^\^?\$(.+)$') {
+            $modResult = Resolve-Modifiers $Matches[1]
+
+            if ($modResult.Decision -eq "SKIP") {
+                $result.SkipReason = $modResult.SkipReason
+                return $result
+            }
+
+            $result.IsImportant = $modResult.IsImportant
+        }
+
+        # 解析通配域名
+        $domain = $null
+
+        if ($raw -match '\*') {
+            $domain = Resolve-WildcardDomain $raw
+
+            if ($null -eq $domain) {
+                $result.SkipReason = "unresolvable-wildcard"
+                return $result
+            }
+
+            $result.IsWildcard = $true
+        }
+        else {
+            $domain = $raw
+        }
+
+        # 不将 IP 地址作为域名后缀规则
+        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
+            $result.SkipReason = "ip-address"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-suffix"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "adblock-suffix"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # Hosts 文件规则
+    if (
+        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
+    ) {
+        $domain = $Matches[2].ToLower()
+
+        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
+            $result.SkipReason = "localhost-entry"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-hosts"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "hosts"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq address 规则
+    if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
+        $domain = $Matches[1].ToLower()
+        $target = $Matches[2].Trim()
+        $isBlock = $false
+
+        switch -Regex ($target) {
+            '^$' {
+                $isBlock = $true
+            }
+            '^0\.0\.0\.0$' {
+                $isBlock = $true
+            }
+            '^127\.0\.0\.1$' {
+                $isBlock = $true
+            }
+            '^::$' {
+                $isBlock = $true
+            }
+            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
+                $isBlock = $true
+            }
+            '^#$' {
+                $isBlock = $false
+            }
+            default {
+                $isBlock = $false
+            }
+        }
+
+        if (-not $isBlock) {
+            $result.SkipReason = "dnsmasq-dns-forward:$target"
+            return $result
+        }
+
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-address"
+        }
+
+        $result.Domain = $domain
+
+        return $result
+    }
+
+    # dnsmasq server 路由规则不作为屏蔽规则
+    if ($line -match '^server=/([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/') {
+        $result.SkipReason = "dnsmasq-server-routing"
+        return $result
+    }
+
+    # dnsmasq local 规则
+    if ($line -match '^local=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-dnsmasq-local"
+        }
+        else {
+            $result.Action = "SUFFIX"
+            $result.SourceFormat = "dnsmasq-local"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    # 纯域名规则
+    if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
+        if ($isWhitelistSource) {
+            $result.Action = "EXCLUDE"
+            $result.SourceFormat = "whitelist-plain"
+        }
+        else {
+            $result.Action = "EXACT"
+            $result.SourceFormat = "plain-domain"
+        }
+
+        $result.Domain = $Matches[1].ToLower()
+
+        return $result
+    }
+
+    $result.SkipReason = "no-pattern-match"
+
+    return $result
+}
+Export-ModuleMember -Function @(
+    'Get-AdblockRuleIdentity',
+    'Get-AdblockRulePriority',
+    'Test-AdblockSuffixMatch',
+    'Get-AdblockDomainDecision',
+    'Compile-AdblockRules',
+    'Get-PublicSuffix',
+    'Is-PublicSuffix',
+    'Set-AdblockPublicSuffixRules',
+    'Load-AdblockPublicSuffixList',
+    'Invoke-AdblockGeneration'
+)
+
         ) {
             $extractDomain = $Matches[1].ToLower()
             $afterDomain = $Matches[5]
