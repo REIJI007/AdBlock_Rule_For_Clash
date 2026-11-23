@@ -225,6 +225,15 @@ foreach ($statusCase in $effectiveStatusCases) {
     Assert-Equal $statusCase.Expected (Get-EffectiveStatus $statusCase.Domain) "域名 [$($statusCase.Domain)] 的有效优先级"
 }
 
+$parentDomainCases = @(
+    [PSCustomObject]@{ Domain = "a.b.c"; Expected = "b.c" },
+    [PSCustomObject]@{ Domain = "a.b.c.d"; Expected = "b.c.d,c.d" },
+    [PSCustomObject]@{ Domain = "a.b"; Expected = "" }
+)
+foreach ($parentCase in $parentDomainCases) {
+    Assert-Equal $parentCase.Expected ((Get-ParentDomains $parentCase.Domain) -join ",") "域名 [$($parentCase.Domain)] 的父域提取"
+}
+
 # 执行生产脚本中的真实方案 A 投影代码，而非在测试中另写替代实现。
 $generatorSource = [System.IO.File]::ReadAllText($generatorPath)
 $projectionStartMatch = [regex]::Match($generatorSource, '(?m)^\$suffixConflictExactDomains\s*=')
