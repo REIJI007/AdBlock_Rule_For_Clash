@@ -1064,6 +1064,7 @@ foreach ($candidate in $suffixConflictExactDomains) {
 }
 
 $domainTreeCompletedDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$domainTreeSuffixPreferredDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 if ($domainTreeRoots.Count -gt 0) {
     # 规则域名与白名单域名均进入索引；所有父域节点补齐树路径，但中间节点不是输出候选。
     $domainTreeKnownDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -1103,7 +1104,6 @@ if ($domainTreeRoots.Count -gt 0) {
     $script:domainTreeRawExactSet = $rawExactSet
     $script:domainTreeCompletedDomains = $domainTreeCompletedDomains
     $script:domainTreeSuffixDowngradedDomains = $suffixDowngradedDomains
-    $domainTreeSuffixPreferredDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     $script:domainTreeSuffixPreferredDomains = $domainTreeSuffixPreferredDomains
 
     function Expand-DomainTreeBlacklist([string]$domain) {
@@ -1121,9 +1121,7 @@ if ($domainTreeRoots.Count -gt 0) {
                     $wasExact = $script:domainTreeRawExactSet.Remove($domain)
                     $wasSuffix = $script:domainTreeRawSuffixSet.Add($domain)
                     $script:domainTreeSuffixDowngradedDomains.Remove($domain) | Out-Null
-                    if ($wasExact -or $wasSuffix) {
-                        $script:domainTreeSuffixPreferredDomains.Add($domain) | Out-Null
-                    }
+                    $script:domainTreeSuffixPreferredDomains.Add($domain) | Out-Null
                 }
                 else {
                     # 冲突节点或仅有 SUFFIX 的子节点均保守收窄为 DOMAIN，避免覆盖白名单及未知后代。
@@ -1155,7 +1153,7 @@ if ($domainTreeRoots.Count -gt 0) {
         Expand-DomainTreeBlacklist $root
     }
     Remove-Item Function:\Expand-DomainTreeBlacklist -ErrorAction SilentlyContinue
-    Remove-Variable domainTreeChildren, domainTreeKnownDomains, domainTreeNodes, domainTreeRoots, domainTreeAllBlacklists, domainTreeValidSuffixRules, domainTreeRawSuffixSet, domainTreeRawExactSet, domainTreeSuffixDowngradedDomains, domainTreeValidExactRules, domainTreeSuffixConflictExactDomains, domainTreeSuffixPreferredDomains -Scope Script -ErrorAction SilentlyContinue
+    Remove-Variable domainTreeChildren, domainTreeKnownDomains, domainTreeNodes, domainTreeRoots, domainTreeAllBlacklists, domainTreeValidSuffixRules, domainTreeRawSuffixSet, domainTreeRawExactSet, domainTreeSuffixDowngradedDomains, domainTreeValidExactRules, domainTreeSuffixConflictExactDomains -Scope Script -ErrorAction SilentlyContinue
 }
 
 Write-Host "域名树补全完成：新增/收窄 $($domainTreeCompletedDomains.Count) 条 DOMAIN；同域双类型优先 SUFFIX：$($domainTreeSuffixPreferredDomains.Count)"
