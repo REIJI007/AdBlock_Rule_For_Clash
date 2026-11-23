@@ -705,6 +705,10 @@ function Parse-Rule {
                 $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
             }
         }
+        elseif ($line -match '^@@\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(?:\$(.*))?$') {
+            $extractDomain = $Matches[1].ToLower()
+            $modPartRaw = $Matches[2]
+        }
         elseif ($line -match '^@@([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
             $extractDomain = $Matches[1].ToLower()
         }
@@ -728,7 +732,7 @@ function Parse-Rule {
     }
 
     # 精确 URL / AdGuard 精确域名规则
-    if ($line -match '^\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})\|(\$(.+))?$') {
+    if ($line -match '^\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(\$(.+))?$') {
         $candidate = $Matches[1].ToLower()
         $modStr = $Matches[3]
 

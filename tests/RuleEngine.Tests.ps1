@@ -45,6 +45,21 @@ Describe 'Five-tier priority evaluation' {
         Test-AdblockSuffixMatch 'a.example.com' 'example.com' | Should -BeTrue
         Test-AdblockSuffixMatch 'example.com' 'example.com' | Should -BeTrue
     }
+    It 'parses exact domain exception anchors with caret-pipe delimiters' {
+        InModuleScope AdBlockRuleEngine {
+            $allow = Parse-Rule -line '@@|api.taboola.com^|'
+            $allow.Action | Should -Be 'EXCLUDE'
+            $allow.Domain | Should -Be 'api.taboola.com'
+
+            $importantAllow = Parse-Rule -line '@@|api.taboola.com^|$important'
+            $importantAllow.Action | Should -Be 'EXCLUDE'
+            $importantAllow.IsImportant | Should -BeTrue
+
+            $block = Parse-Rule -line '|api.taboola.com^|'
+            $block.Action | Should -Be 'EXACT'
+            $block.Domain | Should -Be 'api.taboola.com'
+        }
+    }
     It 'normalizes Unicode IDN domain rules to Punycode' {
         InModuleScope AdBlockRuleEngine {
             $parsed = Parse-Rule -line '||例子.测试^'
