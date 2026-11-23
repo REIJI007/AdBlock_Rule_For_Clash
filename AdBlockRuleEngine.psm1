@@ -5,7 +5,7 @@ $script:PslWildcard = [System.Collections.Generic.HashSet[string]]::new([System.
 $script:PslException = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
 function ConvertTo-NormalizedDomain {
-    param([Parameter(Mandatory)][string]$Domain)
+    param([Parameter(Mandatory)][AllowNull()][AllowEmptyString()][string]$Domain)
     $value = $Domain.Trim()
     if ([string]::IsNullOrWhiteSpace($value) -or $value.EndsWith('..')) { return $null }
     if ($value.EndsWith('.')) { $value = $value.Substring(0, $value.Length - 1) }
@@ -161,7 +161,7 @@ function Resolve-AdblockModifiers {
 function Parse-AdblockRuleLine {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)][string]$Line,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Line,
         [Parameter(Mandatory)][ValidateSet('BLOCK','ALLOW')][string]$DefaultAction,
         [string]$SourceUrl='',
         [int]$SourceLine=0,
@@ -257,7 +257,7 @@ function Parse-AdblockRuleLine {
 
 function Resolve-AdblockRuleSet {
     [CmdletBinding()]
-    param([Parameter(Mandatory)][object[]]$ParsedRules)
+    param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$ParsedRules)
     $cancelledIds=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
     $cancellations=[System.Collections.Generic.List[object]]::new()
     $baseRules=[System.Collections.Generic.List[object]]::new()
@@ -394,7 +394,7 @@ function Update-AdblockAllowSubtree {
 
 function Get-AdblockCompilation {
     [CmdletBinding()]
-    param([Parameter(Mandatory)][object[]]$Rules)
+    param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Rules)
     $trie=New-AdblockRuleTrie -Rules $Rules
 
     # P0 allow always wins. A P2 exact allow is wholly suppressed by any
@@ -689,7 +689,7 @@ function Write-AdblockAtomicText {
 }
 
 function Write-AdblockCompiledOutputs {
-    param([Parameter(Mandatory)][object[]]$Rules,[Parameter(Mandatory)][string]$OutputDirectory)
+    param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Rules,[Parameter(Mandatory)][string]$OutputDirectory)
     $ordered=@($Rules | Sort-Object Type,Domain)
     $yaml=[System.Collections.Generic.List[string]]::new()
     $yaml.Add('payload:')

@@ -22,6 +22,13 @@ co.uk
 !www.ck
 '@
 
+Assert-Equal (Parse-AdblockRuleLine -Line '' -DefaultAction BLOCK) $null 'blank lines are safely ignored'
+$emptyResolved = Resolve-AdblockRuleSet -ParsedRules @()
+Assert-Equal $emptyResolved.Rules.Count 0 'empty parser input yields an empty resolved ruleset'
+$emptyCompilation = Get-AdblockCompilation -Rules @()
+Assert-Equal $emptyCompilation.Status 'EXACT' 'empty ruleset is exactly representable'
+Assert-Equal $emptyCompilation.OutputRules.Count 0 'empty ruleset emits no rules'
+
 Assert-Equal (Get-AdblockPublicSuffix 'shop.example.co.uk') 'co.uk' 'PSL exact multi-label suffix'
 Assert-Equal (Get-AdblockPublicSuffix 'a.b.ck') 'b.ck' 'PSL wildcard suffix'
 Assert-Equal (Get-AdblockPublicSuffix 'www.ck') 'ck' 'PSL exception rule'
