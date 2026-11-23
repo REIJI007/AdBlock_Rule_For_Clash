@@ -360,6 +360,8 @@ function Resolve-Modifiers([string]$modStr) {
         $parts = $mod -split '=', 2
         $modName = $parts[0]
 
+        if ($modName -in @('all', 'reason')) { continue }
+
         if ($modName -eq 'important') {
             $ret.IsImportant = $true
             continue
@@ -456,50 +458,7 @@ function Get-ParentDomains([string]$domain) {
     return $result
 }
 
-$modAllowSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@('all','document','doc','reason') | ForEach-Object { $modAllowSet.Add($_) | Out-Null }
 
-function Resolve-Modifiers([string]$modStr) {
-    $ret = [PSCustomObject]@{ Decision = "CONTINUE"; SkipReason = $null; IsImportant = $false }
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $ret }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        $modName = ($mod -split '=')[0]
-        if ($modName -eq 'important') { $ret.IsImportant = $true; continue }
-        if ($modAllowSet.Contains($modName)) { continue }
-        if ($modName -eq 'dnsrewrite') {
-            $rv = if ($mod -match '=(.+)$') { $Matches[1] } else { '' }
-            if ($rv -eq 'nxdomain' -or $rv -match '^noerror;a;[\d.]+$' -or $rv -match '^noerror;aaaa;[0:]*$' -or $rv -eq 'noerror;aaaa;::1') { continue }
-            $ret.Decision = "SKIP";
-            $ret.SkipReason = "dnsrewrite-non-block:$rv"; return $ret
-        }
-        $ret.Decision = "SKIP"
-        $ret.SkipReason = "unsupported-modifier:$modName"; return $ret
-    }
-    if ($ret.IsImportant) { $ret.Decision = "IMPORTANT_CONTINUE" }
-    return $ret
-}
-
-$whitelistSubresourceTypes = [System.Collections.Generic.HashSet[string]]@('document','script','image','stylesheet','css','object','xmlhttprequest','xhr','media','font','subdocument','ping','websocket','webrtc','other','object-subrequest')
-
-function Is-ContextConstrainedWhitelist([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { ($_ -split '=')[0].Trim().ToLower() })) {
-        if ($mod -ne 'important') { return $true }
-    }
-    return $false
-}
-
-function Get-WhitelistImportantFlag([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        if ($mod -eq 'important') { return $true }
-    }
-    return $false
-}
-
-function Is-WhitelistSource([string]$url) {
-    return $url -match "(?i)allowlist|exclusions|exceptions|whitelist"
-}
 
 # ── 集中式规则解析函数 ───────────────────────────────────────
 function Parse-Rule {
@@ -649,7 +608,7 @@ function Parse-Rule {
         $result.Domain = $candidate
         $result.IsImportant = $modResult.IsImportant
         $result.RuleKey = Get-RuleIdentity $patternText $modStr
-        $result.IsFilterRule = $true
+        $result.IsFilterRule = -not $isWhitelistSource
         return $result
     }
 
@@ -702,7 +661,7 @@ function Parse-Rule {
         $result.Domain = $raw
         $result.IsImportant = $modResult.IsImportant
         $result.RuleKey = Get-RuleIdentity $patternText $modStr
-        $result.IsFilterRule = $true
+        $result.IsFilterRule = -not $isWhitelistSource
         return $result
     }
 
@@ -825,9 +784,24 @@ foreach ($item in $urlContents) {
         if ($null -eq $item.Content) { throw "下载失败，已跳过" }
         foreach ($line in ($item.Content -split "\r?\n")) {
             $normalizedLine = $line.Trim().Trim([char]0xFEFF)
-            $parsed = Parse-Rule $normalizedLine -isWhitelistSource $isWhitelistSrc
+            $linesToParse = [System.Collections.Generic.List[string]]::new()
+            $hostsMatch = [regex]::Match($normalizedLine, '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+(.+)$')
+            if ($hostsMatch.Success) {
+                $hostPart = ($hostsMatch.Groups[2].Value -split '\s+#', 2)[0]
+                foreach ($hostName in ($hostPart -split '\s+')) {
+                    if ($hostName -match '^[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$') {
+                        $linesToParse.Add("$($hostsMatch.Groups[1].Value) $hostName")
+                    }
+                }
+            }
+            else {
+                $linesToParse.Add($normalizedLine)
+            }
 
-            switch ($parsed.Action) {
+            foreach ($candidateLine in $linesToParse) {
+                $parsed = Parse-Rule $candidateLine -isWhitelistSource $isWhitelistSrc
+
+                switch ($parsed.Action) {
                 "BADFILTER" {
                     if (-not [string]::IsNullOrWhiteSpace($parsed.RuleKey)) {
                         $badfilterCancelKeys.Add($parsed.RuleKey) | Out-Null
@@ -848,6 +822,7 @@ foreach ($item in $urlContents) {
                             $parsedRulesByKey[$storeKey] = $parsed
                         }
                     }
+                }
                 }
             }
         }
@@ -1046,7 +1021,7 @@ $allLines.Add("# Total Rules: $ruleCount")
 $allLines.Add("# DOMAIN : $($classExactBlocks.Count)")
 $allLines.Add("# DOMAIN-SUFFIX : $($classSuffixBlocks.Count)")
 $allLines.Add("# Whitelist : $($classWhitelist.Count)")
-$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) suffix rules narrowed to DOMAIN; positive domain rules cannot encode descendant exceptions")
+$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) suffix/exception conflicts cannot be represented exactly by positive DOMAIN rules")
 $allLines.Add("")
 
 $allLines.Add("payload:")
@@ -1057,7 +1032,7 @@ foreach ($d in ($classSuffixBlocks | Sort-Object)) {
 }
 
 foreach ($d in ($classExactBlocks | Sort-Object)) {
-    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [SEMANTIC-LOSS] $d: suffix scope narrowed to exact due to an exception") }
+    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [SEMANTIC-LOSS] $($d): suffix scope narrowed to exact due to an exception") }
     $allLines.Add("  - DOMAIN,$d")
 }
 
@@ -1070,7 +1045,7 @@ Write-Host "===== 生成完成 ====="
 Write-Host "生成时间: $generateTime"
 Write-Host "总规则数: $ruleCount (DOMAIN: $($classExactBlocks.Count) | DOMAIN-SUFFIX: $($classSuffixBlocks.Count))"
 Write-Host "白名单放行: $($classWhitelist.Count)"
-Write-Host "后缀例外冲突降级数: $($suffixConflictExactDomains.Count)（仅保留可表达的精确范围）"
+Write-Host "后缀/例外不可表达冲突数: $($suffixConflictExactDomains.Count)（输出为保守近似）"
 Write-Host "提示: DOMAIN / DOMAIN-SUFFIX 只能表达正向域名集合，无法完整表示父后缀内的子域例外"
 Write-Host "文件路径: $outputPath"
 Write-Host "=== 文件前 20 行预览 ==="
