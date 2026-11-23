@@ -267,13 +267,12 @@ function Compile-AdblockRules {
     }
 }
 
-function Load-AdblockPublicSuffixList {
+function Set-AdblockPublicSuffixRules {
     [CmdletBinding()]
-    param([string]$Uri = 'https://publicsuffix.org/list/public_suffix_list.dat')
-    $response = Invoke-WebRequest -Uri $Uri -TimeoutSec 45 -MaximumRedirection 10 -Headers @{ 'User-Agent' = 'AdBlock_Rule_For_Clash/1.0' } -ErrorAction Stop
+    param([string[]]$Rules)
     $set = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($line in ($response.Content -split '\r?\n')) {
-        $rule = $line.Trim()
+    foreach ($entry in $Rules) {
+        $rule = ([string]$entry).Trim()
         if (-not $rule -or $rule.StartsWith('//')) { continue }
         $prefix = ''
         if ($rule.StartsWith('!')) { $prefix = '!'; $rule = $rule.Substring(1) }
@@ -281,9 +280,17 @@ function Load-AdblockPublicSuffixList {
         $ascii = Normalize-Domain $rule
         if (Is-ValidDNSDomain $ascii) { [void]$set.Add($prefix + $ascii) }
     }
-    if ($set.Count -lt 1000) { throw "PSL data looks incomplete ($($set.Count) rules)." }
     $script:PslRules = $set
     return $set.Count
+}
+
+function Load-AdblockPublicSuffixList {
+    [CmdletBinding()]
+    param([string]$Uri = 'https://publicsuffix.org/list/public_suffix_list.dat')
+    $response = Invoke-WebRequest -Uri $Uri -TimeoutSec 45 -MaximumRedirection 10 -Headers @{ 'User-Agent' = 'AdBlock_Rule_For_Clash/1.0' } -ErrorAction Stop
+    $count = Set-AdblockPublicSuffixRules -Rules ($response.Content -split '\r?\n')
+    if ($count -lt 1000) { throw "PSL data looks incomplete ($count rules)." }
+    return $count
 }
 
 function Get-AdblockSourceConfig {
@@ -794,5 +801,5 @@ function Parse-Rule {
 Export-ModuleMember -Function @(
  'Get-AdblockRuleIdentity','Get-AdblockRulePriority','Test-AdblockSuffixMatch',
  'Get-AdblockDomainDecision','Compile-AdblockRules','Get-PublicSuffix',
- 'Is-PublicSuffix','Load-AdblockPublicSuffixList','Invoke-AdblockGeneration'
+ 'Is-PublicSuffix','Set-AdblockPublicSuffixRules','Load-AdblockPublicSuffixList','Invoke-AdblockGeneration'
 )

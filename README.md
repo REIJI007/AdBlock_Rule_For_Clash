@@ -35,6 +35,7 @@ rule-providers:
   adblock:
     type: http
     behavior: classical
+    format: yaml
     url: https://raw.githubusercontent.com/REIJI007/AdBlock_Rule_For_Clash/main/adblock_reject.yaml
     path: ./ruleset/adblock_reject.yaml
     interval: 120
@@ -44,3 +45,13 @@ rules:
   - GEOSITE,category-ads-all,REJECT
   - RULE-SET,adblock,REJECT
 ```
+
+## Rule semantics and generated artifacts
+
+Upstream allowlists are evaluated internally and are never emitted. The generated artifacts contain only DOMAIN and DOMAIN-SUFFIX block rules.
+
+The priority order is P0 important allow, P1 important block, P2 ordinary allow, P3 ordinary exact block, and P4 ordinary suffix block. Match type is retained independently from priority. The $badfilter cancellation is scoped to the source list and normalized base-rule identity.
+
+DOMAIN and DOMAIN-SUFFIX cannot represent a blocked parent domain with an allowed child exception. Strict compilation therefore detects these set differences and fails before writing or publishing output. It does not silently downgrade a suffix rule to an exact rule or claim that a lossy result is equivalent. URL/path and request-context rules that cannot be represented at DNS layer are counted as unsupported upstream rules.
+
+Use behavior: classical with format: yaml for the YAML provider, or behavior: classical with format: text for the plain-text provider.
