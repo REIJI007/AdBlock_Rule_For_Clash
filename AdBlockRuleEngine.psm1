@@ -347,7 +347,7 @@ function Set-AdblockPublicSuffixRules {
 function Load-AdblockPublicSuffixList {
     [CmdletBinding()]
     param([string]$Uri = 'https://publicsuffix.org/list/public_suffix_list.dat')
-    $response = Invoke-WebRequest -Uri $Uri -TimeoutSec 45 -MaximumRedirection 10 -Headers @{ 'User-Agent' = 'AdBlock_Rule_For_Clash/1.0' } -ErrorAction Stop
+    $response = Invoke-WebRequest -Uri $Uri -TimeoutSec 20 -MaximumRedirection 10 -Headers @{ 'User-Agent' = 'AdBlock_Rule_For_Clash/1.0' } -ErrorAction Stop
     $count = Set-AdblockPublicSuffixRules -Rules ($response.Content -split '\r?\n')
     if ($count -lt 1000) { throw "PSL data looks incomplete ($count rules)." }
     return $count
@@ -383,7 +383,7 @@ function Invoke-AdblockGeneration {
             $result = $null
             $lastError = $null
 
-            for ($attempt = 1; $attempt -le 3; $attempt++) {
+            for ($attempt = 1; $attempt -le 2; $attempt++) {
                 try {
                     $response = Invoke-WebRequest -Uri $source.url -TimeoutSec 45 -MaximumRedirection 10 -Headers @{
                         'User-Agent' = 'AdBlock_Rule_For_Clash/1.0'
@@ -412,7 +412,7 @@ function Invoke-AdblockGeneration {
                 }
                 catch {
                     $lastError = $_.Exception.Message
-                    if ($attempt -lt 3) { Start-Sleep -Seconds (2 * $attempt) }
+                    if ($attempt -lt 2) { Start-Sleep -Seconds 2 }
                 }
             }
 
@@ -421,14 +421,14 @@ function Invoke-AdblockGeneration {
                     Source = $source
                     Content = $null
                     Success = $false
-                    Attempts = 3
+                    Attempts = 2
                     Error = $lastError
                     Sha256 = $null
                     ByteCount = 0
                 }
             }
             $result
-        } -ThrottleLimit 12
+        } -ThrottleLimit 24
     )
 
     $failed = @($downloadResults | Where-Object { -not $_.Success })
