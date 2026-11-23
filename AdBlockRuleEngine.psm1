@@ -681,7 +681,7 @@ function Invoke-AdblockGeneration {
                     $rawLine=[string]$lineToParse.Text
                     $lineSourceUrl=[string]$lineToParse.SourceUrl
                     $lineNumber=[int]$lineToParse.SourceLine
-                    $parsed=Parse-Rule -line $rawLine -isWhitelistSource ([string]$source.defaultAction -eq 'ALLOW')
+                    $parsed=Parse-Rule -line $rawLine -isWhitelistSource ([string]$source.defaultAction -eq 'ALLOW') -SourceSyntax ([string]$source.syntax)
                     $stats.Parsed++
                     if ($parsed.Action -eq 'SKIP') {
                         $stats.Skipped++
@@ -857,7 +857,7 @@ function Get-WhitelistImportantFlag([string]$modStr) {
 function Test-AdblockStrictParseIssue([string]$SkipReason) {
     # Explicitly understood non-DNS rules may be skipped and counted. Unknown
     # syntax must stop strict compilation rather than silently lose a rule.
-    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable','unresolvable-wildcard'))
+    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable','unresolvable-wildcard','syntax-mismatch'))
 }
 
 function Is-WhitelistSource([string]$url) {
@@ -870,7 +870,11 @@ function Is-WhitelistSource([string]$url) {
 
 # ── 集中式规则解析函数 ───────────────────────────────────────
 function Parse-Rule {
-    param([string]$line, [bool]$isWhitelistSource = $false)
+    param(
+        [string]$line,
+        [bool]$isWhitelistSource = $false,
+        [ValidateSet('AUTO','ADBLOCK','HOSTS','DNSMASQ')][string]$SourceSyntax = 'AUTO'
+    )
 
     $result = [PSCustomObject]@{
         Action      = "SKIP"
@@ -899,6 +903,18 @@ function Parse-Rule {
 
     if ($line -match '^\|https?://') {
         $result.SkipReason = "exact-url-rule"
+        return $result
+    }
+
+    # Respect source-level syntax declarations. AUTO retains safe auto-detection.
+    $isHostsLine = $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+'
+    $isDnsmasqLine = $line -match '^(address|server|local)=/'
+    if (
+        ($SourceSyntax -eq 'HOSTS' -and -not $isHostsLine) -or
+        ($SourceSyntax -eq 'DNSMASQ' -and -not $isDnsmasqLine) -or
+        ($SourceSyntax -eq 'ADBLOCK' -and ($isHostsLine -or $isDnsmasqLine))
+    ) {
+        $result.SkipReason = "syntax-mismatch"
         return $result
     }
 
