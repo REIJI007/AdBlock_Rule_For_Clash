@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-rule-generation
+  group: adblock-rule-generation-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
