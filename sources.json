@@ -3530,15 +3530,16 @@
     "url": "https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exclusions.txt",
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
-    "required": true,
-    "enabled": true,
+    "required": false,
+    "enabled": false,
     "sha256": null,
     "preprocessor": "NONE",
     "plainDomainMatchType": "SUFFIX",
     "hostsMatchType": "SUFFIX",
     "maxBytes": 25000000,
     "retries": 2,
-    "timeoutSeconds": 60
+    "timeoutSeconds": 60,
+    "notes": "Internal exclusion input used by the AdGuard SDNS hostlist-compiler configuration to filter its component sources; not a standalone global allowlist. Disabled here to avoid turning these exclusions into global ALLOW rules."
   },
   {
     "id": "source-237",
