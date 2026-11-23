@@ -208,6 +208,23 @@ foreach ($domain in $uniqueExactRules) {
     if (Is-ValidDNSDomain $domain) { $validExactRules.Add($domain) | Out-Null }
 }
 
+# 锁定生产优先级解析器的继承边界，防止字符串扫描优化改变语义。
+$effectiveStatusCases = @(
+    @("ads.example.test", "BLACKLIST_P4"),
+    @("safe.ads.example.test", "WHITELIST_P2"),
+    @("blocked.safe.ads.example.test", "BLACKLIST_P4"),
+    @("tracker.example.test", "BLACKLIST_P3"),
+    @("sub.tracker.example.test", "UNKNOWN"),
+    @("priority.example.test", "BLACKLIST_P1"),
+    @("important-exception.priority.example.test", "WHITELIST_P0"),
+    @("exact-safe.important-parent.example.test", "WHITELIST_P0"),
+    @("child.exact-safe.important-parent.example.test", "BLACKLIST_P1"),
+    @("badfilter.example.test", "BLACKLIST_P4")
+)
+foreach ($statusCase in $effectiveStatusCases) {
+    Assert-Equal $statusCase[1] (Get-EffectiveStatus $statusCase[0]) "域名 [$($statusCase[0])] 的有效优先级"
+}
+
 # 执行生产脚本中的真实方案 A 投影代码，而非在测试中另写替代实现。
 $generatorSource = [System.IO.File]::ReadAllText($generatorPath)
 $projectionStartMatch = [regex]::Match($generatorSource, '(?m)^\$suffixConflictExactDomains\s*=')
