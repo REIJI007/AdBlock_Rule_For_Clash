@@ -163,7 +163,8 @@ if ($TargetFormat -eq "clash") {
             $artifactSuffixDomains.Add($Matches[1])
         }
     }
-}else {
+}
+else {
     $json = Get-Content -LiteralPath $artifactPath -Raw -Encoding utf8 | ConvertFrom-Json -ErrorAction Stop
     if ([int]$json.version -ne 1 -or @($json.rules).Count -ne 1) {
         throw "sing-box 产物结构不符合预期"
