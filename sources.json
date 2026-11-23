@@ -5,7 +5,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-002",
@@ -13,7 +14,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-003",
@@ -21,7 +23,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-004",
@@ -29,7 +32,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-005",
@@ -37,7 +41,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-006",
@@ -45,7 +50,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-007",
@@ -53,7 +59,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-008",
@@ -61,7 +68,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-009",
@@ -69,7 +77,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-010",
@@ -77,7 +86,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-011",
@@ -85,7 +95,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-012",
@@ -93,7 +104,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-013",
@@ -101,7 +113,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-014",
@@ -109,7 +122,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-015",
@@ -117,7 +131,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-016",
@@ -125,7 +140,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-017",
@@ -133,7 +149,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-018",
@@ -141,7 +158,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-019",
@@ -149,7 +167,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-020",
@@ -157,7 +176,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-021",
@@ -165,7 +185,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-022",
@@ -173,7 +194,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-023",
@@ -181,7 +203,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-024",
@@ -189,7 +212,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-025",
@@ -197,7 +221,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-026",
@@ -205,7 +230,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-027",
@@ -213,7 +239,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-028",
@@ -221,7 +248,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-029",
@@ -229,7 +257,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-030",
@@ -237,7 +266,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-031",
@@ -245,7 +275,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-032",
@@ -253,7 +284,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-033",
@@ -261,7 +293,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-034",
@@ -269,7 +302,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-035",
@@ -277,7 +311,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-036",
@@ -285,7 +320,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-037",
@@ -293,7 +329,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-038",
@@ -301,7 +338,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-039",
@@ -309,7 +347,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-040",
@@ -317,7 +356,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-041",
@@ -325,7 +365,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-042",
@@ -333,7 +374,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-043",
@@ -341,7 +383,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-044",
@@ -349,7 +392,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-045",
@@ -357,7 +401,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-046",
@@ -365,7 +410,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-047",
@@ -373,7 +419,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-048",
@@ -381,7 +428,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-049",
@@ -389,7 +437,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-050",
@@ -397,7 +446,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-051",
@@ -405,7 +455,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-052",
@@ -413,7 +464,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-053",
@@ -421,7 +473,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-054",
@@ -429,7 +482,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-055",
@@ -437,7 +491,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-056",
@@ -445,7 +500,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-057",
@@ -453,7 +509,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-058",
@@ -461,7 +518,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-059",
@@ -469,7 +527,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-060",
@@ -477,7 +536,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-061",
@@ -485,7 +545,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-062",
@@ -493,7 +554,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-063",
@@ -501,7 +563,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-064",
@@ -509,7 +572,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-065",
@@ -517,7 +581,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-066",
@@ -525,7 +590,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-067",
@@ -533,7 +599,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-068",
@@ -541,7 +608,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-069",
@@ -549,7 +617,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-070",
@@ -557,7 +626,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-071",
@@ -565,7 +635,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-072",
@@ -573,7 +644,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-073",
@@ -581,7 +653,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-074",
@@ -589,7 +662,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-075",
@@ -597,7 +671,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-076",
@@ -605,7 +680,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-077",
@@ -613,7 +689,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-078",
@@ -621,7 +698,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-079",
@@ -629,7 +707,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-080",
@@ -637,7 +716,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-081",
@@ -645,7 +725,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-082",
@@ -653,7 +734,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-083",
@@ -661,7 +743,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-084",
@@ -669,7 +752,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-085",
@@ -677,7 +761,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-086",
@@ -685,7 +770,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-087",
@@ -693,7 +779,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-088",
@@ -701,7 +788,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-089",
@@ -709,7 +797,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-090",
@@ -717,7 +806,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-091",
@@ -725,7 +815,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-092",
@@ -733,7 +824,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-093",
@@ -741,7 +833,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-094",
@@ -749,7 +842,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-095",
@@ -757,7 +851,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-096",
@@ -765,7 +860,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-097",
@@ -773,7 +869,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-098",
@@ -781,7 +878,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-099",
@@ -789,7 +887,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-100",
@@ -797,7 +896,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-101",
@@ -805,7 +905,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-102",
@@ -813,7 +914,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-103",
@@ -821,7 +923,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-104",
@@ -829,7 +932,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-105",
@@ -837,7 +941,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-106",
@@ -845,7 +950,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-107",
@@ -853,7 +959,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-108",
@@ -861,7 +968,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-109",
@@ -869,7 +977,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-110",
@@ -877,7 +986,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-111",
@@ -885,7 +995,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-112",
@@ -893,7 +1004,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-113",
@@ -901,7 +1013,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-114",
@@ -909,7 +1022,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-115",
@@ -917,7 +1031,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-116",
@@ -925,7 +1040,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-117",
@@ -933,7 +1049,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-118",
@@ -941,7 +1058,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-119",
@@ -949,7 +1067,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-120",
@@ -957,7 +1076,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-121",
@@ -965,7 +1085,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-122",
@@ -973,7 +1094,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-123",
@@ -981,7 +1103,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-124",
@@ -989,7 +1112,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-125",
@@ -997,7 +1121,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-126",
@@ -1005,7 +1130,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-127",
@@ -1013,7 +1139,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-128",
@@ -1021,7 +1148,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-129",
@@ -1029,7 +1157,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-130",
@@ -1037,7 +1166,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-131",
@@ -1045,7 +1175,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-132",
@@ -1053,7 +1184,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-133",
@@ -1061,7 +1193,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-134",
@@ -1069,7 +1202,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-135",
@@ -1077,7 +1211,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-136",
@@ -1085,7 +1220,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-137",
@@ -1093,7 +1229,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-138",
@@ -1101,7 +1238,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-139",
@@ -1109,7 +1247,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-140",
@@ -1117,7 +1256,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-141",
@@ -1125,7 +1265,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-142",
@@ -1133,7 +1274,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-143",
@@ -1141,7 +1283,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-144",
@@ -1149,7 +1292,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-145",
@@ -1157,7 +1301,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-146",
@@ -1165,7 +1310,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-147",
@@ -1173,7 +1319,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-148",
@@ -1181,7 +1328,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-149",
@@ -1189,7 +1337,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-150",
@@ -1197,7 +1346,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-151",
@@ -1205,7 +1355,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-152",
@@ -1213,7 +1364,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-153",
@@ -1221,7 +1373,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-154",
@@ -1229,7 +1382,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-155",
@@ -1237,7 +1391,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-156",
@@ -1245,7 +1400,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-157",
@@ -1253,7 +1409,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-158",
@@ -1261,7 +1418,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-159",
@@ -1269,7 +1427,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-160",
@@ -1277,7 +1436,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-161",
@@ -1285,7 +1445,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-162",
@@ -1293,7 +1454,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-163",
@@ -1301,7 +1463,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-164",
@@ -1309,7 +1472,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-165",
@@ -1317,7 +1481,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-166",
@@ -1325,7 +1490,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-167",
@@ -1333,7 +1499,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-168",
@@ -1341,7 +1508,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-169",
@@ -1349,7 +1517,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-170",
@@ -1357,7 +1526,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-171",
@@ -1365,7 +1535,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-172",
@@ -1373,7 +1544,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-173",
@@ -1381,7 +1553,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-174",
@@ -1389,7 +1562,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-175",
@@ -1397,7 +1571,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-176",
@@ -1405,7 +1580,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-177",
@@ -1413,7 +1589,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-178",
@@ -1421,7 +1598,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-179",
@@ -1429,7 +1607,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-180",
@@ -1437,7 +1616,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-181",
@@ -1445,7 +1625,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-182",
@@ -1453,7 +1634,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-183",
@@ -1461,7 +1643,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-184",
@@ -1469,7 +1652,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-185",
@@ -1477,7 +1661,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-186",
@@ -1485,7 +1670,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-187",
@@ -1493,7 +1679,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-188",
@@ -1501,7 +1688,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-189",
@@ -1509,7 +1697,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-190",
@@ -1517,7 +1706,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-191",
@@ -1525,7 +1715,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-192",
@@ -1533,7 +1724,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-193",
@@ -1541,7 +1733,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-194",
@@ -1549,7 +1742,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-195",
@@ -1557,7 +1751,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-196",
@@ -1565,7 +1760,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-197",
@@ -1573,7 +1769,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-198",
@@ -1581,7 +1778,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-199",
@@ -1589,7 +1787,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-200",
@@ -1597,7 +1796,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-201",
@@ -1605,7 +1805,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-202",
@@ -1613,7 +1814,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-203",
@@ -1621,7 +1823,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-204",
@@ -1629,7 +1832,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-205",
@@ -1637,7 +1841,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-206",
@@ -1645,7 +1850,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-207",
@@ -1653,7 +1859,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-208",
@@ -1661,7 +1868,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-209",
@@ -1669,7 +1877,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-210",
@@ -1677,7 +1886,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-211",
@@ -1685,7 +1895,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-212",
@@ -1693,7 +1904,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-213",
@@ -1701,7 +1913,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-214",
@@ -1709,7 +1922,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-215",
@@ -1717,7 +1931,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-216",
@@ -1725,7 +1940,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-217",
@@ -1733,7 +1949,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-218",
@@ -1741,7 +1958,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-219",
@@ -1749,7 +1967,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-220",
@@ -1757,7 +1976,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-221",
@@ -1765,7 +1985,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-222",
@@ -1773,7 +1994,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-223",
@@ -1781,7 +2003,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-224",
@@ -1789,7 +2012,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-225",
@@ -1797,7 +2021,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-226",
@@ -1805,7 +2030,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-227",
@@ -1813,7 +2039,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-228",
@@ -1821,7 +2048,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-229",
@@ -1829,7 +2057,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-230",
@@ -1837,7 +2066,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-231",
@@ -1845,7 +2075,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-232",
@@ -1853,7 +2084,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-233",
@@ -1861,7 +2093,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-234",
@@ -1869,7 +2102,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-235",
@@ -1877,7 +2111,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-236",
@@ -1885,7 +2120,8 @@
     "syntax": "AUTO",
     "defaultAction": "ALLOW",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-237",
@@ -1893,7 +2129,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-238",
@@ -1901,7 +2138,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-239",
@@ -1909,7 +2147,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-240",
@@ -1917,7 +2156,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-241",
@@ -1925,7 +2165,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-242",
@@ -1933,7 +2174,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-243",
@@ -1941,7 +2183,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-244",
@@ -1949,7 +2192,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-245",
@@ -1957,7 +2201,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-246",
@@ -1965,7 +2210,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-247",
@@ -1973,7 +2219,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-248",
@@ -1981,7 +2228,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-249",
@@ -1989,7 +2237,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-250",
@@ -1997,7 +2246,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-251",
@@ -2005,7 +2255,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-252",
@@ -2013,7 +2264,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-253",
@@ -2021,7 +2273,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-254",
@@ -2029,7 +2282,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-255",
@@ -2037,7 +2291,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-256",
@@ -2045,7 +2300,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-257",
@@ -2053,7 +2309,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-258",
@@ -2061,7 +2318,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-259",
@@ -2069,7 +2327,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-260",
@@ -2077,7 +2336,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-261",
@@ -2085,7 +2345,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-262",
@@ -2093,7 +2354,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-263",
@@ -2101,7 +2363,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-264",
@@ -2109,7 +2372,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-265",
@@ -2117,7 +2381,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-266",
@@ -2125,7 +2390,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-267",
@@ -2133,7 +2399,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-268",
@@ -2141,7 +2408,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-269",
@@ -2149,7 +2417,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-270",
@@ -2157,7 +2426,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-271",
@@ -2165,7 +2435,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-272",
@@ -2173,7 +2444,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-273",
@@ -2181,7 +2453,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-274",
@@ -2189,7 +2462,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-275",
@@ -2197,7 +2471,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-276",
@@ -2205,7 +2480,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-277",
@@ -2213,7 +2489,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-278",
@@ -2221,7 +2498,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-279",
@@ -2229,7 +2507,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-280",
@@ -2237,7 +2516,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-281",
@@ -2245,7 +2525,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-282",
@@ -2253,7 +2534,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-283",
@@ -2261,7 +2543,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-284",
@@ -2269,7 +2552,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-285",
@@ -2277,7 +2561,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-286",
@@ -2285,7 +2570,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-287",
@@ -2293,7 +2579,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-288",
@@ -2301,7 +2588,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-289",
@@ -2309,7 +2597,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-290",
@@ -2317,7 +2606,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-291",
@@ -2325,7 +2615,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-292",
@@ -2333,7 +2624,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-293",
@@ -2341,7 +2633,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-294",
@@ -2349,7 +2642,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-295",
@@ -2357,7 +2651,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-296",
@@ -2365,7 +2660,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-297",
@@ -2373,7 +2669,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-298",
@@ -2381,7 +2678,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-299",
@@ -2389,7 +2687,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-300",
@@ -2397,7 +2696,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-301",
@@ -2405,7 +2705,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-302",
@@ -2413,7 +2714,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-303",
@@ -2421,7 +2723,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-304",
@@ -2429,7 +2732,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-305",
@@ -2437,7 +2741,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-306",
@@ -2445,7 +2750,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-307",
@@ -2453,7 +2759,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-308",
@@ -2461,7 +2768,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-309",
@@ -2469,7 +2777,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-310",
@@ -2477,7 +2786,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-311",
@@ -2485,7 +2795,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-312",
@@ -2493,7 +2804,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-313",
@@ -2501,7 +2813,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-314",
@@ -2509,7 +2822,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-315",
@@ -2517,7 +2831,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-316",
@@ -2525,7 +2840,8 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   },
   {
     "id": "source-317",
@@ -2533,6 +2849,7 @@
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
     "required": true,
-    "enabled": true
+    "enabled": true,
+    "sha256": null
   }
 ]
