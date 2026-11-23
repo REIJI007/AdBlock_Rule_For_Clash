@@ -325,6 +325,7 @@ Describe 'Independent YAML, TXT and MRS generation contracts' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'yaml'"
+        $scriptText | Should -Match "config/upstream-sources\.json"
         $scriptText | Should -Not -Match "Format 'txt'"
         $scriptText | Should -Not -Match "Format 'mrs'"
     }
@@ -333,6 +334,7 @@ Describe 'Independent YAML, TXT and MRS generation contracts' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'txt'"
+        $scriptText | Should -Match "config/upstream-sources\.json"
         $scriptText | Should -Not -Match "Format 'yaml'"
         $scriptText | Should -Not -Match "Format 'mrs'"
     }
@@ -341,6 +343,7 @@ Describe 'Independent YAML, TXT and MRS generation contracts' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_mrs.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'mrs'"
+        $scriptText | Should -Match "config/upstream-sources\.json"
         $scriptText | Should -Not -Match "Format 'yaml'"
         $scriptText | Should -Not -Match "Format 'txt'"
         $moduleText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../AdBlockRuleEngine.psm1') -Raw
