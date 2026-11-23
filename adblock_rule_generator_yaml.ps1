@@ -655,7 +655,7 @@ function Invoke-AdblockGeneration {
         foreach ($source in $sources) {
             $subscriptionUrl=[string]$source.url
             if (-not $downloads.Contents.ContainsKey($subscriptionUrl)) { continue }
-            if ($downloads.Contents[$subscriptionUrl] -match '(?m)^\s*!#(?:include|if|endif)\b') {
+            if ($downloads.Contents[$subscriptionUrl] -match '(?im)^\s*!#') {
                 $visited=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
                 [void]$visited.Add($subscriptionUrl)
                 $expanded=Expand-AdblockIncludes -Content $downloads.Contents[$subscriptionUrl] -SourceUrl $subscriptionUrl -Client $includeClient -Visited $visited -IncludeManifest $includeManifest -MaxBytes ([long]$source.maxBytes)
@@ -665,7 +665,7 @@ function Invoke-AdblockGeneration {
                 for ($lineIndex=0; $lineIndex -lt $sourceLines.Length; $lineIndex++) {
                     $lineText=([string]$sourceLines[$lineIndex]).TrimStart([char]0xFEFF)
                     if ($lineText -match '^\s*!#') {
-                        $preprocessorIssues.Add(('preprocessor-directive-on-source-not-marked-UBO:{0}:{1}' -f $subscriptionUrl,($lineIndex+1)))
+                        $preprocessorIssues.Add(('unsupported-preprocessor-directive:{0}:{1}:{2}' -f $subscriptionUrl,($lineIndex+1),$text))
                         continue
                     }
                     $plainLines.Add([PSCustomObject]@{Text=$lineText;SourceUrl=$subscriptionUrl;SourceLine=$lineIndex+1})
