@@ -39,7 +39,7 @@ jobs:
         shell: pwsh
         run: |
           $urls = @(Get-Content ./upstream-sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
-          if ($urls.Count -ne 315) { throw "Expected 315 active required upstream URLs, found $($urls.Count)." }
+          if ($urls.Count -ne 317) { throw "Expected 317 upstream URLs, found $($urls.Count)." }
 
           $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
           foreach ($url in $urls) {
