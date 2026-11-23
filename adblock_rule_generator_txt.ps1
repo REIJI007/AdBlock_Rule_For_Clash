@@ -531,6 +531,7 @@ function Parse-Rule {
 
             $result.Action = "EXCLUDE"
             $result.Domain = $extractDomain
+            # 白名单侧优先避免误杀：域名锚定例外按后缀白名单投影；只有结尾 | 明确限定地址结束时才按精确白名单处理。
             $result.SourceFormat = if ($beforeMods -match '\|') { "whitelist-exact" } else { "whitelist-suffix" }
             $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
             $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw $isWhitelistSource
@@ -649,13 +650,16 @@ function Parse-Rule {
             return $result
         }
 
+        # 只有明确的 ^ 分隔符才能安全投影为 DOMAIN-SUFFIX。
+        # 白名单例外按更宽的后缀范围豁免以降低误杀；阻止规则无 ^ 时则收窄为 DOMAIN，避免扩大拦截。
+        $isDomainSuffix = ($restBeforeDollar -eq '^')
         if ($isWhitelistSource) {
             $result.Action = "EXCLUDE"
             $result.SourceFormat = "whitelist-suffix"
         }
         else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "adblock-suffix"
+            $result.Action = if ($isDomainSuffix) { "SUFFIX" } else { "EXACT" }
+            $result.SourceFormat = if ($isDomainSuffix) { "adblock-suffix" } else { "adblock-domain-anchor-exact" }
         }
 
         $result.Domain = $raw
@@ -900,13 +904,15 @@ foreach ($d in $uniqueExactRules) {
     if (Is-ValidDNSDomain $d) { $validExactRules.Add($d) | Out-Null }
 }
 
-# 保留项目现有的优先级策略，同时严格区分精确匹配（EXACT）与后缀匹配（SUFFIX）的继承范围。
+# 规则优先级遵循过滤规则的全局优先级，而不是“越具体的域名优先”：
+# P0 重要白名单 > P1 重要黑名单 > P2 普通白名单 > P3 普通黑名单。
+# 每个优先级都先检查当前域名及其所有父级后缀；DOMAIN 仅匹配当前域名，SUFFIX 匹配当前域名及其子域。
 function Get-EffectiveStatus([string]$domain) {
     $domain = Normalize-Domain $domain
     if ([string]::IsNullOrWhiteSpace($domain)) { return "UNKNOWN" }
     $labels = $domain -split '\.'
 
-    # P0：重要白名单。精确例外仅作用于自身域名；后缀例外会向子域继承。
+    # P0：任何匹配当前请求的 $important 白名单，均优先于重要/普通黑名单。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
@@ -914,7 +920,7 @@ function Get-EffectiveStatus([string]$domain) {
         if ($importantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST_P0" }
     }
 
-    # P1：重要黑名单。重要精确规则仅匹配当前主机；重要后缀规则会向下级子域继承。
+    # P1：重要黑名单优先于所有普通白名单及普通黑名单。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
@@ -922,47 +928,102 @@ function Get-EffectiveStatus([string]$domain) {
         if ($importantSuffixDomains.Contains($current)) { return "BLACKLIST_P1" }
     }
 
-    # P2–P4：优先采用距离当前域名最近的规则；同一层级先判断例外，再判断拦截。
+    # P2：普通白名单对所有匹配同一请求的普通黑名单生效，不受域名层级深浅影响。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
         if ($i -eq 0 -and $excludedExactDomains.Contains($current)) { return "WHITELIST_P2" }
         if ($excludedSuffixDomains.Contains($current)) { return "WHITELIST_P2" }
+    }
+
+    # P3：不存在更高优先级的匹配白名单/重要规则时，任意普通黑名单匹配即拦截。
+    $current = $domain
+    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
+        $current = ($labels[$i..($labels.Length-1)] -join '.')
         if ($i -eq 0 -and $validExactRules.Contains($current)) { return "BLACKLIST_P3" }
-        if ($validSuffixRules.Contains($current)) { return "BLACKLIST_P4" }
+        if ($validSuffixRules.Contains($current)) { return "BLACKLIST_P3" }
+    }
+    return "UNKNOWN"
+}
+
+# 判断一个后缀白名单是否对其一般子域有效。
+# 故意忽略 EXACT 规则：精确黑/白名单只影响根域本身，不影响该后缀白名单对其他子域的作用。
+function Get-SuffixEffectiveStatus([string]$domain) {
+    $domain = Normalize-Domain $domain
+    if ([string]::IsNullOrWhiteSpace($domain)) { return "UNKNOWN" }
+    $labels = $domain -split '\.'
+
+    # P0：重要后缀白名单。
+    $current = $domain
+    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
+        $current = ($labels[$i..($labels.Length-1)] -join '.')
+        if ($importantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST_P0" }
+    }
+
+    # P1：重要后缀黑名单。
+    $current = $domain
+    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
+        $current = ($labels[$i..($labels.Length-1)] -join '.')
+        if ($importantSuffixDomains.Contains($current)) { return "BLACKLIST_P1" }
+    }
+
+    # P2：普通后缀白名单。
+    $current = $domain
+    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
+        $current = ($labels[$i..($labels.Length-1)] -join '.')
+        if ($excludedSuffixDomains.Contains($current)) { return "WHITELIST_P2" }
+    }
+
+    # P3：普通后缀黑名单。
+    $current = $domain
+    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
+        $current = ($labels[$i..($labels.Length-1)] -join '.')
+        if ($validSuffixRules.Contains($current)) { return "BLACKLIST_P3" }
     }
     return "UNKNOWN"
 }
 
 Write-Host "正在执行自动降级机制与冲突检测..."
 $suffixConflictExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$allWhitelists = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$allWhitelists.UnionWith($excludedExactDomains)
-$allWhitelists.UnionWith($excludedSuffixDomains)
-$allWhitelists.UnionWith($importantWhitelistExactDomains)
-$allWhitelists.UnionWith($importantWhitelistSuffixDomains)
+$sameDomainSuffixWhitelistConflicts = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$suffixDowngradedDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
-# 方案 A：仅投影本轮上游中明确列出、且经优先级处理后仍然有效的黑名单候选域名。
-# 父级后缀规则存在有效的子域例外时，仅将该父级候选降级为 DOMAIN；已知子域候选仍按其自身有效的 EXACT / SUFFIX 匹配范围输出。
-# 不枚举整个 DNS 命名空间，也不补造上游未提供的未知子域；上游规则更新后，在下一轮重新执行投影。
-foreach ($w in $allWhitelists) {
+# 方案 A：优先保证不误杀。精确白名单与后缀白名单分别判断，不能用根域的 EXACT 冲突结果推断其所有子域。
+# 精确白名单只有在根域请求本身有效时，才使覆盖它的父级 SUFFIX 候选降级。
+foreach ($w in $excludedExactDomains) {
     if ((Get-EffectiveStatus $w) -notlike "WHITELIST*") { continue }
 
-    # 同域的 EXACT 白名单仅豁免域名本身（根域名），后缀黑名单仍可能覆盖其子域。
-    if (
-        $validSuffixRules.Contains($w) -and
-        ($excludedExactDomains.Contains($w) -or $importantWhitelistExactDomains.Contains($w))
-    ) {
+    # 同域精确白名单只豁免根域；无法用 DOMAIN / DOMAIN-SUFFIX 表达“根域放行、全部子域继续拦截”。
+    if ($validSuffixRules.Contains($w)) {
+        $sameDomainSuffixWhitelistConflicts.Add($w) | Out-Null
         $suffixConflictExactDomains.Add($w) | Out-Null
     }
 
     foreach ($parent in (Get-ParentDomains $w)) {
-        if ($validSuffixRules.Contains($parent) -and (Get-EffectiveStatus $parent) -like "BLACKLIST*") {
+        if ($validSuffixRules.Contains($parent)) {
             $suffixConflictExactDomains.Add($parent) | Out-Null
         }
     }
 }
-Write-Host "冲突检测完成：$($suffixConflictExactDomains.Count) 个父 SUFFIX 候选降级为 DOMAIN；显式子域黑名单候选仍独立保留"
+
+# 后缀白名单的根域可能被 EXACT 黑名单覆盖，但它仍可能对其他子域有效。
+# 因此只用 suffix 规则判断其一般子域范围，忽略不继承的 EXACT 黑/白名单。
+foreach ($w in $excludedSuffixDomains) {
+    if ((Get-SuffixEffectiveStatus $w) -notlike "WHITELIST*") { continue }
+
+    # 同域后缀白名单与后缀黑名单冲突时，禁止保留同域 SUFFIX；若根域另有更高优先级 EXACT 黑名单，最终仍可单独输出 DOMAIN。
+    if ($validSuffixRules.Contains($w)) {
+        $sameDomainSuffixWhitelistConflicts.Add($w) | Out-Null
+        $suffixConflictExactDomains.Add($w) | Out-Null
+    }
+
+    foreach ($parent in (Get-ParentDomains $w)) {
+        if ($validSuffixRules.Contains($parent)) {
+            $suffixConflictExactDomains.Add($parent) | Out-Null
+        }
+    }
+}
+Write-Host "冲突检测完成：$($suffixConflictExactDomains.Count) 个父 SUFFIX 候选需检查降级；同域精确白名单冲突：$($sameDomainSuffixWhitelistConflicts.Count)"
 
 $rawSuffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $rawExactSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -977,6 +1038,9 @@ foreach ($d in $allBlacklists) {
     }
     else {
         $rawExactSet.Add($d) | Out-Null
+        if ($validSuffixRules.Contains($d) -and $suffixConflictExactDomains.Contains($d)) {
+            $suffixDowngradedDomains.Add($d) | Out-Null
+        }
     }
 }
 
@@ -1001,11 +1065,16 @@ foreach ($d in $rawExactSet) {
 }
 
 $classWhitelist = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-foreach ($w in $allWhitelists) {
+# EXACT 白名单按根域实际状态统计；SUFFIX 白名单按一般子域作用范围统计，避免被根域 EXACT 冲突误判为无效。
+foreach ($w in $excludedExactDomains) {
     if ((Get-EffectiveStatus $w) -like "WHITELIST*") { $classWhitelist.Add($w) | Out-Null }
 }
+foreach ($w in $excludedSuffixDomains) {
+    if ((Get-SuffixEffectiveStatus $w) -like "WHITELIST*") { $classWhitelist.Add($w) | Out-Null }
+}
 
-Write-Host "三类集合构建完成：Whitelist $($classWhitelist.Count) | DOMAIN $($classExactBlocks.Count) | DOMAIN-SUFFIX $($classSuffixBlocks.Count)"
+Write-Host "规则集合构建完成：Whitelist $($classWhitelist.Count) | DOMAIN $($classExactBlocks.Count) | DOMAIN-SUFFIX $($classSuffixBlocks.Count)"
+Write-Host "后缀规则保守降级为 DOMAIN：$($suffixDowngradedDomains.Count) | 同域精确白名单抑制后缀候选：$($sameDomainSuffixWhitelistConflicts.Count)"
 
 # ── 输出 YAML 规则集 ───────────────────────────────
 $ruleCount    = $classExactBlocks.Count + $classSuffixBlocks.Count
@@ -1022,6 +1091,8 @@ $allLines.Add("# 规则总数：$ruleCount")
 $allLines.Add("# 精确域名规则（DOMAIN）：$($classExactBlocks.Count)")
 $allLines.Add("# 后缀域名规则（DOMAIN-SUFFIX）：$($classSuffixBlocks.Count)")
 $allLines.Add("# 白名单规则数：$($classWhitelist.Count)")
+$allLines.Add("# 后缀规则保守降级为 DOMAIN：$($suffixDowngradedDomains.Count)")
+$allLines.Add("# 同域精确白名单抑制后缀候选：$($sameDomainSuffixWhitelistConflicts.Count)")
 $allLines.Add("")
 
 $allLines.Add("payload:")
@@ -1032,7 +1103,7 @@ foreach ($d in ($classSuffixBlocks | Sort-Object)) {
 }
 
 foreach ($d in ($classExactBlocks | Sort-Object)) {
-    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [语义损失] $($d)：由于存在例外，后缀匹配范围已收窄为精确域名匹配（DOMAIN）") }
+    if ($suffixDowngradedDomains.Contains($d)) { $allLines.Add("  # [保守降级/FN] $($d)：上游存在有效白名单，后缀匹配收窄为精确域名；未单独列出的子域不再拦截") }
     $allLines.Add("  - DOMAIN,$d")
 }
 
@@ -1050,5 +1121,5 @@ Write-Host "=== 文件前 20 行预览 ==="
 Get-Content -Path $outputPath -TotalCount 20 | ForEach-Object { Write-Host $_ }
 
 $totalSkipped = ($skipStats.Values | Measure-Object -Sum).Sum
-Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | SuffixConflicts: $($suffixConflictExactDomains.Count) | Skipped: $totalSkipped"
+Add-Content -Path $logFilePath -Value "Generated at $generateTime | Total: $ruleCount | DOMAIN: $($classExactBlocks.Count) | SUFFIX: $($classSuffixBlocks.Count) | Whitelist: $($classWhitelist.Count) | SuffixDowngraded: $($suffixDowngradedDomains.Count) | SameDomainWhitelistConflicts: $($sameDomainSuffixWhitelistConflicts.Count) | Skipped: $totalSkipped"
 Pause
