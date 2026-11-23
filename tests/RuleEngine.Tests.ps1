@@ -295,8 +295,8 @@ Describe 'Explicit source semantics and ingestion safeguards' {
     It 'keeps one compact root-level URL list with unique HTTPS entries' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
         $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        $urls.Count | Should -Be 315
-        (@($urls | Select-Object -Unique)).Count | Should -Be 315
+        $urls.Count | Should -Be 317
+        (@($urls | Select-Object -Unique)).Count | Should -Be 317
 
         foreach ($url in $urls) {
             $url | Should -BeOfType ([string])
@@ -307,10 +307,133 @@ Describe 'Explicit source semantics and ingestion safeguards' {
 
 
 Describe 'Excluded upstream inputs' {
-    It 'does not treat AdGuard SDNS internal exclusions as a global allowlist source' {
+    It 'retains all original upstream URLs, including the optional antiadblock and SDNS exclusions sources' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
         $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        @($urls | Where-Object { $_ -match '/Filters/exclusions\.txt$' }).Count | Should -Be 0
+        @($urls | Where-Object { $_ -match '/Filters/exclusions\.txt
+    }
+
+}
+
+
+Describe 'Independent embedded YAML and TXT generators with YAML-dependent MRS conversion' {
+    It 'embeds the shared processing core in the YAML generator' {
+        $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1'
+        $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+        $scriptText | Should -Match 'function Invoke-AdblockGeneration'
+        $scriptText | Should -Match 'function Parse-Rule'
+        $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'yaml'"
+        $scriptText | Should -Match "upstream-sources\.json"
+        $scriptText | Should -Not -Match 'Import-Module.*AdBlockRuleEngine'
+    }
+
+    It 'embeds the shared processing core in the TXT generator' {
+        $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1'
+        $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+        $scriptText | Should -Match 'function Invoke-AdblockGeneration'
+        $scriptText | Should -Match 'function Parse-Rule'
+        $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'txt'"
+        $scriptText | Should -Match "upstream-sources\.json"
+        $scriptText | Should -Not -Match 'Import-Module.*AdBlockRuleEngine'
+    }
+
+    It 'keeps both embedded cores synchronized apart from the output format' {
+        $yamlText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txtText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        $yamlCore = $yamlText -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $txtCore = $txtText -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore | Should -Be $txtCore
+    }
+
+    It 'runs MRS after successful YAML generation or explicit manual dispatch' {
+        $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml') -Raw
+        $mrsWorkflow | Should -Match 'workflow_run:'
+        $mrsWorkflow | Should -Match 'Run_AdBlock_Rule_Generator_YAML'
+        $mrsWorkflow | Should -Match 'types: \[completed\]'
+        $mrsWorkflow | Should -Match 'branches: \[main\]'
+        $mrsWorkflow | Should -Match "github.event.workflow_run.conclusion == 'success'"
+        $mrsWorkflow | Should -Match 'workflow_dispatch:'
+        $mrsWorkflow | Should -Not -Match '(?m)^\s*schedule:'
+        $mrsWorkflow | Should -Not -Match 'upstream-sources\.json'
+    }
+
+    It 'converts the committed YAML artifact and publishes only the MRS binary' {
+        $mrsWorkflow = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml') -Raw
+        $mrsWorkflow | Should -Match 'adblock_reject\.yaml'
+        $mrsWorkflow | Should -Match 'convert-ruleset domain yaml'
+        $mrsWorkflow | Should -Match 'adblock_reject\.mrs'
+        $mrsWorkflow | Should -Match 'git add -- adblock_reject\.mrs'
+        $mrsWorkflow | Should -Not -Match 'adblock_reject_mrs_input\.yaml'
+        $mrsWorkflow | Should -Not -Match 'git add --.*adblock_reject\.yaml'
+        $mrsWorkflow | Should -Not -Match 'git add --.*adblock_reject\.txt'
+    }
+}
+
+
+Describe 'Console progress and build diagnostics' {
+    It 'prints timestamped console messages with severity labels' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            $consoleOutput = Write-AdblockConsole -Level INFO -Message '正在下载上游规则源' 6>&1
+            ($consoleOutput | Out-String).Contains('[INFO') | Should -BeTrue
+            ($consoleOutput | Out-String) | Should -Match '正在下载上游规则源'
+        }
+    }
+
+    It 'reports each source, each build stage and final rule counts' {
+        $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        foreach ($scriptText in @($yaml,$txt)) {
+            $scriptText | Should -Match '正在发起上游下载'
+            $scriptText | Should -Match '下载完成'
+            $scriptText | Should -Match '正在解析上游规则'
+            $scriptText | Should -Match '阶段 1/6'
+            $scriptText | Should -Match '阶段 6/6'
+            $scriptText | Should -Match '总规则数'
+            $scriptText | Should -Match 'DOMAIN-SUFFIX'
+            $scriptText | Should -Match '总耗时'
+        }
+    }
+
+    It 'keeps YAML and TXT console diagnostics synchronized' {
+        $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $txtCore = $txt -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore | Should -Be $txtCore
+    }
+}
+
+
+Describe 'Root upstream list integrity' {
+    It 'contains all 317 original upstream URLs once, in a single JSON array' {
+        $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
+        $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $urls.Count | Should -Be 317
+        (@($urls | Select-Object -Unique)).Count | Should -Be 317
+        foreach ($url in $urls) {
+            $url | Should -BeOfType ([string])
+            ([Uri]$url).Scheme | Should -Be 'https'
+        }
+    }
+}
+
+
+
+
+
+Describe 'Automatic rule syntax detection' {
+    It 'detects Hosts, DNSMASQ, AdBlock and plain-domain rules without source metadata' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            (Parse-Rule -line '0.0.0.0 ads.example.com').Action | Should -Be 'EXACT'
+            (Parse-Rule -line 'address=/ads.example.com/0.0.0.0').Action | Should -Be 'SUFFIX'
+            (Parse-Rule -line '||ads.example.com^').Action | Should -Be 'SUFFIX'
+            (Parse-Rule -line 'ads.example.com').Action | Should -Be 'EXACT'
+            (Parse-Rule -line '@@||safe.example.com^').Action | Should -Be 'EXCLUDE'
+        }
+    }
+}
+ }).Count | Should -Be 1
+        $urls | Should -Contain 'https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt'
     }
 
 }
@@ -408,8 +531,8 @@ Describe 'Root upstream list integrity' {
     It 'contains the active required upstream URLs once, in a single JSON array' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
         $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        $urls.Count | Should -Be 315
-        (@($urls | Select-Object -Unique)).Count | Should -Be 315
+        $urls.Count | Should -Be 317
+        (@($urls | Select-Object -Unique)).Count | Should -Be 317
         foreach ($url in $urls) {
             $url | Should -BeOfType ([string])
             ([Uri]$url).Scheme | Should -Be 'https'
