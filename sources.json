@@ -6,7 +6,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-002",
@@ -15,7 +21,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-003",
@@ -24,7 +36,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-004",
@@ -33,7 +51,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-005",
@@ -42,7 +66,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-006",
@@ -51,7 +81,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-007",
@@ -60,7 +96,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-008",
@@ -69,7 +111,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-009",
@@ -78,7 +126,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-010",
@@ -87,7 +141,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-011",
@@ -96,7 +156,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-012",
@@ -105,7 +171,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-013",
@@ -114,7 +186,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-014",
@@ -123,7 +201,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-015",
@@ -132,7 +216,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-016",
@@ -141,7 +231,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-017",
@@ -150,7 +246,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-018",
@@ -159,7 +261,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-019",
@@ -168,7 +276,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-020",
@@ -177,7 +291,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-021",
@@ -186,7 +306,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-022",
@@ -195,7 +321,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-023",
@@ -204,7 +336,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-024",
@@ -213,7 +351,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-025",
@@ -222,7 +366,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-026",
@@ -231,7 +381,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-027",
@@ -240,7 +396,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-028",
@@ -249,7 +411,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-029",
@@ -258,7 +426,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-030",
@@ -267,7 +441,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-031",
@@ -276,7 +456,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-032",
@@ -285,7 +471,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-033",
@@ -294,7 +486,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-034",
@@ -303,7 +501,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-035",
@@ -312,7 +516,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-036",
@@ -321,7 +531,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-037",
@@ -330,7 +546,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-038",
@@ -339,7 +561,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-039",
@@ -348,7 +576,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-040",
@@ -357,7 +591,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-041",
@@ -366,7 +606,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-042",
@@ -375,7 +621,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-043",
@@ -384,7 +636,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-044",
@@ -393,7 +651,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-045",
@@ -402,7 +666,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-046",
@@ -411,7 +681,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-047",
@@ -420,7 +696,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-048",
@@ -429,7 +711,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-049",
@@ -438,7 +726,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-050",
@@ -447,7 +741,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-051",
@@ -456,7 +756,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-052",
@@ -465,7 +771,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-053",
@@ -474,7 +786,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-054",
@@ -483,7 +801,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-055",
@@ -492,7 +816,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-056",
@@ -501,7 +831,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-057",
@@ -510,7 +846,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-058",
@@ -519,7 +861,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-059",
@@ -528,7 +876,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-060",
@@ -537,7 +891,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-061",
@@ -546,7 +906,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-062",
@@ -555,7 +921,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-063",
@@ -564,7 +936,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-064",
@@ -573,7 +951,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-065",
@@ -582,7 +966,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-066",
@@ -591,7 +981,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-067",
@@ -600,7 +996,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-068",
@@ -609,7 +1011,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-069",
@@ -618,7 +1026,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-070",
@@ -627,7 +1041,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-071",
@@ -636,7 +1056,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-072",
@@ -645,7 +1071,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-073",
@@ -654,7 +1086,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-074",
@@ -663,7 +1101,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-075",
@@ -672,7 +1116,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-076",
@@ -681,7 +1131,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-077",
@@ -690,7 +1146,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-078",
@@ -699,7 +1161,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-079",
@@ -708,7 +1176,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-080",
@@ -717,7 +1191,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-081",
@@ -726,7 +1206,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-082",
@@ -735,7 +1221,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-083",
@@ -744,7 +1236,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-084",
@@ -753,7 +1251,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-085",
@@ -762,7 +1266,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-086",
@@ -771,7 +1281,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-087",
@@ -780,7 +1296,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-088",
@@ -789,7 +1311,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-089",
@@ -798,7 +1326,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-090",
@@ -807,7 +1341,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-091",
@@ -816,7 +1356,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-092",
@@ -825,7 +1371,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-093",
@@ -834,7 +1386,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-094",
@@ -843,7 +1401,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-095",
@@ -852,7 +1416,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-096",
@@ -861,7 +1431,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-097",
@@ -870,7 +1446,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-098",
@@ -879,7 +1461,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-099",
@@ -888,7 +1476,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-100",
@@ -897,7 +1491,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-101",
@@ -906,7 +1506,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-102",
@@ -915,7 +1521,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-103",
@@ -924,7 +1536,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-104",
@@ -933,7 +1551,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-105",
@@ -942,7 +1566,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-106",
@@ -951,7 +1581,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-107",
@@ -960,7 +1596,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-108",
@@ -969,7 +1611,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-109",
@@ -978,7 +1626,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-110",
@@ -987,7 +1641,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-111",
@@ -996,7 +1656,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-112",
@@ -1005,7 +1671,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-113",
@@ -1014,7 +1686,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-114",
@@ -1023,7 +1701,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-115",
@@ -1032,7 +1716,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-116",
@@ -1041,7 +1731,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-117",
@@ -1050,7 +1746,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-118",
@@ -1059,7 +1761,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-119",
@@ -1068,7 +1776,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-120",
@@ -1077,7 +1791,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-121",
@@ -1086,7 +1806,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-122",
@@ -1095,7 +1821,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-123",
@@ -1104,7 +1836,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-124",
@@ -1113,7 +1851,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-125",
@@ -1122,7 +1866,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-126",
@@ -1131,7 +1881,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-127",
@@ -1140,7 +1896,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-128",
@@ -1149,7 +1911,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-129",
@@ -1158,7 +1926,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-130",
@@ -1167,7 +1941,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-131",
@@ -1176,7 +1956,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-132",
@@ -1185,7 +1971,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-133",
@@ -1194,7 +1986,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-134",
@@ -1203,7 +2001,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-135",
@@ -1213,7 +2017,13 @@
     "required": false,
     "enabled": true,
     "sha256": null,
-    "notes": "Upstream Git blob is currently empty; keep optional so a future populated file is included without blocking generation."
+    "notes": "Upstream Git blob is currently empty; keep optional so a future populated file is included without blocking generation.",
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-136",
@@ -1222,7 +2032,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-137",
@@ -1231,7 +2047,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-138",
@@ -1240,7 +2062,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-139",
@@ -1249,7 +2077,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-140",
@@ -1258,7 +2092,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-141",
@@ -1267,7 +2107,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-142",
@@ -1276,7 +2122,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-143",
@@ -1285,7 +2137,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-144",
@@ -1294,7 +2152,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-145",
@@ -1303,7 +2167,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-146",
@@ -1312,7 +2182,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-147",
@@ -1321,7 +2197,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-148",
@@ -1330,7 +2212,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-149",
@@ -1339,7 +2227,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-150",
@@ -1348,7 +2242,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-151",
@@ -1357,7 +2257,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-152",
@@ -1366,7 +2272,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-153",
@@ -1375,7 +2287,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-154",
@@ -1384,7 +2302,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-155",
@@ -1393,7 +2317,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-156",
@@ -1402,7 +2332,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-157",
@@ -1411,7 +2347,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-158",
@@ -1420,7 +2362,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-159",
@@ -1429,7 +2377,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-160",
@@ -1438,7 +2392,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-161",
@@ -1447,7 +2407,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-162",
@@ -1456,7 +2422,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-163",
@@ -1465,7 +2437,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-164",
@@ -1474,7 +2452,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-165",
@@ -1483,7 +2467,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-166",
@@ -1492,7 +2482,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-167",
@@ -1501,7 +2497,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-168",
@@ -1510,7 +2512,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-169",
@@ -1519,7 +2527,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-170",
@@ -1528,7 +2542,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-171",
@@ -1537,7 +2557,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-172",
@@ -1546,7 +2572,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-173",
@@ -1555,7 +2587,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-174",
@@ -1564,7 +2602,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-175",
@@ -1573,7 +2617,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-176",
@@ -1582,7 +2632,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-177",
@@ -1591,7 +2647,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-178",
@@ -1600,7 +2662,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-179",
@@ -1609,7 +2677,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-180",
@@ -1618,7 +2692,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-181",
@@ -1627,7 +2707,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-182",
@@ -1636,7 +2722,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-183",
@@ -1645,7 +2737,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-184",
@@ -1654,7 +2752,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-185",
@@ -1663,7 +2767,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-186",
@@ -1672,7 +2782,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-187",
@@ -1681,7 +2797,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-188",
@@ -1690,7 +2812,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-189",
@@ -1699,7 +2827,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-190",
@@ -1708,7 +2842,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-191",
@@ -1717,7 +2857,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-192",
@@ -1726,7 +2872,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-193",
@@ -1735,7 +2887,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-194",
@@ -1744,7 +2902,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-195",
@@ -1753,7 +2917,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-196",
@@ -1762,7 +2932,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-197",
@@ -1771,7 +2947,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-198",
@@ -1780,7 +2962,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-199",
@@ -1789,7 +2977,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-200",
@@ -1798,7 +2992,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-201",
@@ -1807,7 +3007,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-202",
@@ -1816,7 +3022,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-203",
@@ -1825,7 +3037,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-204",
@@ -1834,7 +3052,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-205",
@@ -1843,7 +3067,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-206",
@@ -1852,7 +3082,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-207",
@@ -1861,7 +3097,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-208",
@@ -1870,7 +3112,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-209",
@@ -1879,7 +3127,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-210",
@@ -1888,7 +3142,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-211",
@@ -1897,7 +3157,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-212",
@@ -1906,7 +3172,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-213",
@@ -1915,7 +3187,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-214",
@@ -1924,7 +3202,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-215",
@@ -1933,7 +3217,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-216",
@@ -1942,7 +3232,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-217",
@@ -1951,7 +3247,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-218",
@@ -1960,7 +3262,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-219",
@@ -1969,7 +3277,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-220",
@@ -1978,7 +3292,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-221",
@@ -1987,7 +3307,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-222",
@@ -1996,7 +3322,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-223",
@@ -2005,7 +3337,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-224",
@@ -2014,7 +3352,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-225",
@@ -2023,7 +3367,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-226",
@@ -2032,7 +3382,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-227",
@@ -2041,7 +3397,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-228",
@@ -2050,7 +3412,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-229",
@@ -2059,7 +3427,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-230",
@@ -2068,7 +3442,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-231",
@@ -2077,7 +3457,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-232",
@@ -2086,7 +3472,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-233",
@@ -2095,7 +3487,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-234",
@@ -2104,7 +3502,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-235",
@@ -2113,7 +3517,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-236",
@@ -2122,7 +3532,13 @@
     "defaultAction": "ALLOW",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "SUFFIX",
+    "hostsMatchType": "SUFFIX",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-237",
@@ -2131,7 +3547,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-238",
@@ -2140,7 +3562,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-239",
@@ -2149,7 +3577,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-240",
@@ -2158,7 +3592,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-241",
@@ -2167,7 +3607,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-242",
@@ -2176,7 +3622,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-243",
@@ -2185,7 +3637,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-244",
@@ -2194,7 +3652,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-245",
@@ -2203,7 +3667,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-246",
@@ -2212,7 +3682,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-247",
@@ -2221,7 +3697,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-248",
@@ -2230,7 +3712,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-249",
@@ -2239,7 +3727,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-250",
@@ -2248,7 +3742,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-251",
@@ -2257,7 +3757,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-252",
@@ -2266,7 +3772,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-253",
@@ -2275,7 +3787,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-254",
@@ -2284,7 +3802,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-255",
@@ -2293,7 +3817,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-256",
@@ -2302,7 +3832,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-257",
@@ -2311,7 +3847,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-258",
@@ -2320,7 +3862,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-259",
@@ -2329,7 +3877,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-260",
@@ -2338,7 +3892,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-261",
@@ -2347,7 +3907,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-262",
@@ -2356,7 +3922,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-263",
@@ -2365,7 +3937,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-264",
@@ -2374,7 +3952,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-265",
@@ -2383,7 +3967,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-266",
@@ -2392,7 +3982,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-267",
@@ -2401,7 +3997,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-268",
@@ -2410,7 +4012,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-269",
@@ -2419,7 +4027,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-270",
@@ -2428,7 +4042,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-271",
@@ -2437,7 +4057,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-272",
@@ -2446,7 +4072,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-273",
@@ -2455,7 +4087,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-274",
@@ -2464,7 +4102,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-275",
@@ -2473,7 +4117,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-276",
@@ -2482,7 +4132,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-277",
@@ -2491,7 +4147,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-278",
@@ -2500,7 +4162,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-279",
@@ -2509,7 +4177,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-280",
@@ -2518,7 +4192,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-281",
@@ -2527,7 +4207,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-282",
@@ -2536,7 +4222,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-283",
@@ -2545,7 +4237,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-284",
@@ -2554,7 +4252,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-285",
@@ -2563,7 +4267,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-286",
@@ -2572,7 +4282,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-287",
@@ -2581,7 +4297,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-288",
@@ -2590,7 +4312,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-289",
@@ -2599,7 +4327,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-290",
@@ -2608,7 +4342,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-291",
@@ -2617,7 +4357,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-292",
@@ -2626,7 +4372,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-293",
@@ -2635,7 +4387,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-294",
@@ -2644,7 +4402,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-295",
@@ -2653,7 +4417,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-296",
@@ -2662,7 +4432,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-297",
@@ -2671,7 +4447,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-298",
@@ -2680,7 +4462,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-299",
@@ -2689,7 +4477,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-300",
@@ -2698,7 +4492,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-301",
@@ -2707,7 +4507,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-302",
@@ -2716,7 +4522,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "UBO",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-303",
@@ -2725,7 +4537,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-304",
@@ -2734,7 +4552,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-305",
@@ -2743,7 +4567,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-306",
@@ -2752,7 +4582,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-307",
@@ -2761,7 +4597,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-308",
@@ -2770,7 +4612,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-309",
@@ -2779,7 +4627,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-310",
@@ -2788,7 +4642,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-311",
@@ -2797,7 +4657,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-312",
@@ -2806,7 +4672,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-313",
@@ -2815,7 +4687,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-314",
@@ -2824,7 +4702,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-315",
@@ -2833,7 +4717,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-316",
@@ -2842,7 +4732,13 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   },
   {
     "id": "source-317",
@@ -2851,6 +4747,12 @@
     "defaultAction": "BLOCK",
     "required": true,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "preprocessor": "NONE",
+    "plainDomainMatchType": "EXACT",
+    "hostsMatchType": "EXACT",
+    "maxBytes": 25000000,
+    "retries": 2,
+    "timeoutSeconds": 60
   }
 ]
