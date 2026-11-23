@@ -415,6 +415,12 @@ function Is-WhitelistSource([string]$url) {
 function Normalize-Domain([string]$domain) {
     if ([string]::IsNullOrWhiteSpace($domain)) { return $null }
     $d = $domain.Trim()
+
+    # 规则集中的绝大多数域名已经是 ASCII；跳过高开销的 IDN 对象构造。
+    if ($d -notmatch '[^\x00-\x7F]') {
+        return $d.ToLowerInvariant()
+    }
+
     try {
         $idn = New-Object System.Globalization.IdnMapping
         $ascii = $idn.GetAscii($d)
@@ -904,34 +910,88 @@ foreach ($d in $uniqueExactRules) {
 function Get-EffectiveStatus([string]$domain) {
     $domain = Normalize-Domain $domain
     if ([string]::IsNullOrWhiteSpace($domain)) { return "UNKNOWN" }
-    $labels = $domain -split '\.'
+
+    # 同一轮解析中的白黑名单集合固定；缓存可避免重叠父域被重复解析。
+    if ($null -eq $script:_effectiveStatusCache) {
+        $script:_effectiveStatusCache = [System.Collections.Generic.Dictionary[string, string]]::new(
+            [System.StringComparer]::OrdinalIgnoreCase
+        )
+    }
+    $cachedStatus = $null
+    if ($script:_effectiveStatusCache.TryGetValue($domain, [ref]$cachedStatus)) {
+        return $cachedStatus
+    }
+
+    # 通过 IndexOf / Substring 逐层向父域回溯，避免 Split、数组切片与 Join 的大量分配。
+    $status = "UNKNOWN"
 
     # P0：重要白名单。精确例外仅作用于自身域名；后缀例外会向子域继承。
-    $current = $domain
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length-1)] -join '.')
-        if ($i -eq 0 -and $importantWhitelistExactDomains.Contains($current)) { return "WHITELIST_P0" }
-        if ($importantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST_P0" }
+    if ($importantWhitelistExactDomains.Contains($domain)) {
+        $status = "WHITELIST_P0"
+    }
+    else {
+        $start = 0
+        $dot = $domain.IndexOf('.')
+        while ($dot -ge 0) {
+            $current = $domain.Substring($start)
+            if ($importantWhitelistSuffixDomains.Contains($current)) {
+                $status = "WHITELIST_P0"
+                break
+            }
+            $start = $dot + 1
+            $dot = $domain.IndexOf('.', $start)
+        }
     }
 
     # P1：重要黑名单。重要精确规则仅匹配当前主机；重要后缀规则会向下级子域继承。
-    $current = $domain
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length-1)] -join '.')
-        if ($i -eq 0 -and $importantExactDomains.Contains($current)) { return "BLACKLIST_P1" }
-        if ($importantSuffixDomains.Contains($current)) { return "BLACKLIST_P1" }
+    if ($status -eq "UNKNOWN") {
+        if ($importantExactDomains.Contains($domain)) {
+            $status = "BLACKLIST_P1"
+        }
+        else {
+            $start = 0
+            $dot = $domain.IndexOf('.')
+            while ($dot -ge 0) {
+                $current = $domain.Substring($start)
+                if ($importantSuffixDomains.Contains($current)) {
+                    $status = "BLACKLIST_P1"
+                    break
+                }
+                $start = $dot + 1
+                $dot = $domain.IndexOf('.', $start)
+            }
+        }
     }
 
     # P2–P4：优先采用距离当前域名最近的规则；同一层级先判断例外，再判断拦截。
-    $current = $domain
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length-1)] -join '.')
-        if ($i -eq 0 -and $excludedExactDomains.Contains($current)) { return "WHITELIST_P2" }
-        if ($excludedSuffixDomains.Contains($current)) { return "WHITELIST_P2" }
-        if ($i -eq 0 -and $validExactRules.Contains($current)) { return "BLACKLIST_P3" }
-        if ($validSuffixRules.Contains($current)) { return "BLACKLIST_P4" }
+    if ($status -eq "UNKNOWN") {
+        $start = 0
+        $dot = $domain.IndexOf('.')
+        while ($dot -ge 0) {
+            $current = $domain.Substring($start)
+            if ($start -eq 0 -and $excludedExactDomains.Contains($current)) {
+                $status = "WHITELIST_P2"
+                break
+            }
+            if ($excludedSuffixDomains.Contains($current)) {
+                $status = "WHITELIST_P2"
+                break
+            }
+            if ($start -eq 0 -and $validExactRules.Contains($current)) {
+                $status = "BLACKLIST_P3"
+                break
+            }
+            if ($validSuffixRules.Contains($current)) {
+                $status = "BLACKLIST_P4"
+                break
+            }
+            $start = $dot + 1
+            $dot = $domain.IndexOf('.', $start)
+        }
     }
-    return "UNKNOWN"
+
+    $script:_effectiveStatusCache[$domain] = $status
+    return $status
 }
 
 Write-Host "正在执行自动降级机制与冲突检测..."
