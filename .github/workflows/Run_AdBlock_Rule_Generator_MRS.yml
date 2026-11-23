@@ -1,15 +1,11 @@
 name: Run_AdBlock_Rule_Generator_MRS
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - Run_AdBlock_Rule_Generator_YAML
+    types: [completed]
     branches: [main]
-    paths:
-      - 'AdBlockRuleEngine.psm1'
-      - 'adblock_rule_generator_mrs.ps1'
-      - 'config/upstream-sources.json'
-      - '.github/workflows/Run_AdBlock_Rule_Generator_MRS.yml'
-  schedule:
-    - cron: '*/20 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,33 +17,29 @@ concurrency:
 
 jobs:
   generate-mrs:
-    if: github.ref == 'refs/heads/main'
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: windows-latest
     defaults:
       run:
         shell: pwsh
     steps:
-      - name: Checkout main
+      - name: Checkout latest main and its generated YAML artifact
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
-      - name: Verify PowerShell 7
-        run: $PSVersionTable.PSVersion.ToString()
-
-      - name: Generate MRS conversion input independently
-        run: ./adblock_rule_generator_mrs.ps1
-
-      - name: Upload MRS diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: adblock-mrs-diagnostics
-          path: |
-            adblock_sources_manifest_mrs.json
-            adblock_build_report_mrs.json
-          if-no-files-found: ignore
-          retention-days: 14
+      - name: Verify PowerShell 7 and YAML input
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          $inputYaml = Join-Path $PWD 'adblock_reject.yaml'
+          if (-not (Test-Path -LiteralPath $inputYaml)) { throw 'Generated YAML artifact adblock_reject.yaml is missing.' }
+          if ((Get-Item -LiteralPath $inputYaml).Length -lt 16) { throw 'Generated YAML artifact is unexpectedly small.' }
+          if (-not (Select-String -LiteralPath $inputYaml -Pattern '^payload:' -Quiet)) { throw 'Generated YAML artifact has no payload section.' }
 
       - name: Download latest Mihomo
         run: |
@@ -63,10 +55,9 @@ jobs:
           & ./mihomo.exe -v
           if ($LASTEXITCODE -ne 0) { throw 'Mihomo version check failed.' }
 
-      - name: Convert independent input to MRS
+      - name: Convert the generated YAML artifact to MRS
         run: |
-          if (-not (Test-Path ./adblock_reject_mrs_input.yaml)) { throw 'MRS conversion input is missing.' }
-          & ./mihomo.exe convert-ruleset domain yaml ./adblock_reject_mrs_input.yaml ./adblock_reject.mrs
+          & ./mihomo.exe convert-ruleset domain yaml ./adblock_reject.yaml ./adblock_reject.mrs
           if ($LASTEXITCODE -ne 0) { throw 'Mihomo domain ruleset conversion failed.' }
           if (-not (Test-Path ./adblock_reject.mrs)) { throw 'MRS output was not created.' }
           if ((Get-Item ./adblock_reject.mrs).Length -lt 16) { throw 'MRS output is unexpectedly small.' }
