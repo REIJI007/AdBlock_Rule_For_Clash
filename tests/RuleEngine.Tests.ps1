@@ -14,7 +14,8 @@ BeforeAll {
             'Test-PublicSuffix',
             'Set-AdblockPublicSuffixRules',
             'Import-AdblockPublicSuffixList',
-            'Invoke-AdblockGeneration'
+            'Invoke-AdblockGeneration',
+            'Write-AdblockConsole'
         )
     }
     Import-Module $testModule -Force
@@ -365,6 +366,40 @@ Describe 'Independent embedded YAML and TXT generators with YAML-dependent MRS c
         $mrsWorkflow | Should -Not -Match 'adblock_reject_mrs_input\.yaml'
         $mrsWorkflow | Should -Not -Match 'git add --.*adblock_reject\.yaml'
         $mrsWorkflow | Should -Not -Match 'git add --.*adblock_reject\.txt'
+    }
+}
+
+
+Describe 'Console progress and build diagnostics' {
+    It 'prints timestamped console messages with severity labels' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            $consoleOutput = Write-AdblockConsole -Level INFO -Message '正在下载上游规则源' 6>&1
+            ($consoleOutput | Out-String) | Should -Match '\\[INFO\\]'
+            ($consoleOutput | Out-String) | Should -Match '正在下载上游规则源'
+        }
+    }
+
+    It 'reports each source, each build stage and final rule counts' {
+        $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        foreach ($scriptText in @($yaml,$txt)) {
+            $scriptText | Should -Match '正在发起上游下载'
+            $scriptText | Should -Match '下载完成'
+            $scriptText | Should -Match '正在解析上游规则'
+            $scriptText | Should -Match '阶段 1/6'
+            $scriptText | Should -Match '阶段 6/6'
+            $scriptText | Should -Match '总规则数'
+            $scriptText | Should -Match 'DOMAIN-SUFFIX'
+            $scriptText | Should -Match '总耗时'
+        }
+    }
+
+    It 'keeps YAML and TXT console diagnostics synchronized' {
+        $yaml = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txt = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        $yamlCore = $yaml -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $txtCore = $txt -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore | Should -Be $txtCore
     }
 }
 
