@@ -40,6 +40,7 @@ $stateExport = @'
 $__upstreamAuditState = [PSCustomObject]@{
     UrlList = @($urlList)
     UrlContents = @($urlContents)
+    DownloadErrors = @(if (Test-Path -LiteralPath $logFilePath) { Get-Content -LiteralPath $logFilePath | Where-Object { $_ -match '^下载 .* 时出错:' } })
     ParsedRuleCount = $parsedRulesByKey.Count
     SkipStats = $skipStats
     ValidExactRules = $validExactRules
@@ -72,16 +73,18 @@ if ($null -eq $state) {
 $sha256 = [System.Security.Cryptography.SHA256]::Create()
 $sourceDigestLines = [System.Collections.Generic.List[string]]::new()
 $failedUrls = [System.Collections.Generic.List[string]]::new()
+$emptySourceUrls = [System.Collections.Generic.List[string]]::new()
 $sourceBytes = [int64]0
 $sourceLineCount = [int64]0
 
 foreach ($item in $state.UrlContents) {
-    if ([string]::IsNullOrWhiteSpace([string]$item.Content)) {
+    if ($null -eq $item.Content) {
         $failedUrls.Add([string]$item.Url)
         continue
     }
 
     $contentBytes = [System.Text.Encoding]::UTF8.GetBytes([string]$item.Content)
+    if ($contentBytes.Length -eq 0) { $emptySourceUrls.Add([string]$item.Url) }
     $sourceBytes += $contentBytes.Length
     $sourceLineCount += ([regex]::Matches([string]$item.Content, '\r?\n').Count + 1)
     $contentHash = [BitConverter]::ToString($sha256.ComputeHash($contentBytes)).Replace("-", "").ToLowerInvariant()
@@ -112,6 +115,9 @@ if ($failedUrls.Count -gt 0 -or $state.UrlContents.Count -ne $state.UrlList.Coun
         successfulSourceCount = $sourceDigestLines.Count
         failedSourceCount = $failedUrls.Count
         failedSourceUrls = @($failedUrls)
+        downloadErrors = @($state.DownloadErrors)
+        emptySourceCount = $emptySourceUrls.Count
+        emptySourceUrls = @($emptySourceUrls)
         sourceBytes = $sourceBytes
         sourceLineCount = $sourceLineCount
         partialSnapshotSha256 = $snapshotHash
@@ -375,6 +381,8 @@ $metrics = [ordered]@{
     upstreamSourceUrlCount = $state.UrlList.Count
     successfullyDownloadedSourceCount = $sourceDigestLines.Count
     failedSourceCount = 0
+    emptySourceCount = $emptySourceUrls.Count
+    emptySourceUrls = @($emptySourceUrls)
     sourceBytes = $sourceBytes
     sourceLineCount = $sourceLineCount
     sourceSnapshotSha256 = $snapshotHash
@@ -410,7 +418,7 @@ $metrics = [ordered]@{
     falsePositiveExamples = @($falsePositiveExamples)
     falseNegativeExamples = @($falseNegativeExamples)
     mismatchExamplesLimit = $maxMismatchExamples
-    methodology = "The evaluation corpus is derived from every active, successfully parsed upstream domain-level exact/suffix blacklist and whitelist domain, plus every domain in the checked-in artifact. Each rule domain and every ancestor boundary is evaluated at the boundary itself and at one collision-free representative child domain. The upstream expected decision comes from the generator's effective-priority resolver; the observed decision comes from the checked-in DOMAIN/DOMAIN-SUFFIX artifact. This represents every distinguishable region in the finite exact/suffix rule-boundary tree. Unsupported URL-, path-, resource-, regex-, wildcard- and context-specific rules are not coerced into domain semantics; they are counted separately as skipped."
+    methodology = "The evaluation corpus is derived from every active, successfully parsed upstream domain-level exact/suffix blacklist and whitelist domain, plus every domain in the checked-in artifact. Each rule domain and every ancestor boundary is evaluated at the boundary itself and at one collision-free representative child domain. The upstream expected decision comes from the generator's effective-priority resolver; the observed decision comes from the checked-in DOMAIN/DOMAIN-SUFFIX artifact. This represents every distinguishable region in the finite exact/suffix rule-boundary tree. Unsupported URL-, path-, resource-, regex-, wildcard- and context-specific rules are not coerced into domain semantics; they are counted separately as skipped. A successfully fetched zero-byte upstream file is valid and recorded as an empty source, not as a download failure; a null content value is reserved for a failed request."
     scopeNote = "Precision, recall, F1 and semantic agreement are weighted over deterministic rule-boundary representative points, not Internet traffic, unique registrable domains, or every possible DNS name. The 34 fixed probes are not used to estimate these metrics."
 }
 
@@ -424,7 +432,7 @@ $summary = @(
     "",
     "| 指标 | 结果 |",
     "|---|---:|",
-    "| 上游源成功数 | $($sourceDigestLines.Count) / $($state.UrlList.Count) |",
+    "| 上游源成功数 | $($sourceDigestLines.Count) / $($state.UrlList.Count) |\n    "| 成功但为空的源 | $($emptySourceUrls.Count) |",
     "| 唯一上游域名规则域名 | $($upstreamRuleDomains.Count) |",
     "| 语义边界域名节点 | $($evaluationBoundaries.Count) |",
     "| 评估点（根域 + 代表子域） | $evaluationPointCount |",
