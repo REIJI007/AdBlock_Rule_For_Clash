@@ -70,7 +70,7 @@ $sourceBytes = [int64]0
 $sourceLineCount = [int64]0
 
 foreach ($item in $state.UrlContents) {
-    if ($null -eq $item.Content -or [string]::IsNullOrWhiteSpace([string]$item.Content)) {
+    if ($null -eq $item.Content) {
         $failedUrls.Add([string]$item.Url)
         continue
     }
