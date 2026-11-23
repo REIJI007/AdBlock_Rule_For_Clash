@@ -251,8 +251,8 @@
     },
     {
       "domain": "sub.only.safe.ads.example.test",
-      "expectedBlocked": true,
-      "reason": "精确白名单不向子域继承；计入方案 A 投影损失"
+      "expectedBlocked": false,
+      "reason": "该域名仍处于 safe.ads.example.test 的后缀白名单范围内；尽管 only.safe.ads.example.test 另有精确白名单，但这里应由更高层的后缀白名单继承放行"
     },
     {
       "domain": "tracker.example.test",
