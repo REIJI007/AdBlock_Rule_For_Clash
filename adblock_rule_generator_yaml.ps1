@@ -361,8 +361,7 @@ function Resolve-Modifiers([string]$modStr) {
         $parts = $mod -split '=', 2
         $modName = $parts[0]
 
-        if ($modName -in @('all', 'reason')) { continue }
-
+        # $all 扩展到弹窗/文档/内联资源；$reason 依赖 $document，均不是纯域名阻断语义。
         if ($modName -eq 'important') {
             $ret.IsImportant = $true
             continue
