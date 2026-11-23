@@ -523,7 +523,7 @@ function Invoke-AdblockGeneration {
                             Type = 'UNRECOGNIZED_RULE_SYNTAX'
                             Root = $url
                             Detail = $rawLine
-                            Message = "Unrecognized rule syntax in required source '$url' at line $lineNumber: $rawLine"
+                            Message = "Unrecognized rule syntax in required source '$url' at line ${lineNumber}: $rawLine"
                         })
                     }
                     continue
