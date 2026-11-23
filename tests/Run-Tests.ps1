@@ -165,8 +165,8 @@ $forward = New-AdblockRuleTrie -Rules $randomRules.ToArray()
 $reversedRules = [object[]]$randomRules.ToArray()
 [array]::Reverse($reversedRules)
 $reverse = New-AdblockRuleTrie -Rules $reversedRules
-foreach ($host in @('example.net','ads.example.net','x.ads.example.net','safe.example.net','new.other.net')) {
-    Assert-Equal (Get-AdblockDecision -Trie $forward -Domain $host) (Get-AdblockDecision -Trie $reverse -Domain $host) "rule-order invariance for $host"
+foreach ($queryDomain in @('example.net','ads.example.net','x.ads.example.net','safe.example.net','new.other.net')) {
+    Assert-Equal (Get-AdblockDecision -Trie $forward -Domain $queryDomain) (Get-AdblockDecision -Trie $reverse -Domain $queryDomain) "rule-order invariance for $queryDomain"
 }
 
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('adblock-test-' + [Guid]::NewGuid().ToString('N'))
