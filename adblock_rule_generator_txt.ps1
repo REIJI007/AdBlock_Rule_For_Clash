@@ -441,11 +441,37 @@ function Write-AdblockConsole {
         [Parameter(Mandatory)][ValidateSet('STAGE','INFO','SUCCESS','WARNING','ERROR')][string]$Level,
         [Parameter(Mandatory)][AllowEmptyString()][string]$Message
     )
-
-    # Keep the original generator's concise Write-Host style. Suppress internal
-    # per-request/per-stage diagnostics; show only the useful original messages.
-    if ($Message -match '正在解析上游规则：(.+)
-
+    # Restore the original concise Write-Host output; suppress verbose diagnostics.
+    if ($Message -match '正在解析上游规则：(.+)$') {
+        Write-Host ("正在处理: {0}" -f $Matches[1])
+        return
+    }
+    if ($Message -match '正在下载 PSL 公共后缀列表') {
+        Write-Host "正在加载 PSL 公共后缀列表..."
+        return
+    }
+    if ($Message -match 'PSL 加载完成') {
+        Write-Host $Message
+        return
+    }
+    if ($Message -match '下载 .+ 时出错|uBO Include 下载失败') {
+        Write-Host $Message
+        return
+    }
+    if ($Message -match 'badfilter 撤销身份') {
+        $count = [regex]::Match($Message,'\d+').Value
+        Write-Host ("正在执行 `$badfilter 撤销规则，共 {0} 条撤销目标..." -f $count)
+        return
+    }
+    if ($Message -match '五级优先级裁决') {
+        Write-Host "正在执行自动降级机制与冲突检测..."
+        return
+    }
+    if ($Message -match '冲突检测完成|三类集合构建完成|冲突补全完成') {
+        Write-Host $Message
+        return
+    }
+}
 function Invoke-AdblockSourceDownloads {
     [CmdletBinding()]
     param([Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Sources)
