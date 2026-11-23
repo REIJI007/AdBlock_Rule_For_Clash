@@ -143,7 +143,7 @@ function Get-AuditEffectiveRuleKind {
 
 $artifactPath = Join-Path $repoRoot $artifactName
 if (-not (Test-Path -LiteralPath $artifactPath)) {
-    throw "生产生成器未生成产物：$artifactPath"
+    throw "找不到仓库中待审计的正式产物：$artifactPath"
 }
 
 $artifactFileSha256 = (Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -153,15 +153,17 @@ $artifactSuffixDomains = [System.Collections.Generic.List[string]]::new()
 
 if ($TargetFormat -eq "clash") {
     foreach ($line in (Get-Content -LiteralPath $artifactPath -Encoding utf8)) {
-        if ($line -match '^# 生成时间：(.*)
+        if ($line -match '^# 生成时间：(.*)$') {
+            $artifactHeaderGeneratedAt = $Matches[1].Trim()
+        }
+        elseif ($line -match '^\s*-\s+DOMAIN,([^,\s]+)\s*$') {
             $artifactExactDomains.Add($Matches[1])
         }
         elseif ($line -match '^\s*-\s+DOMAIN-SUFFIX,([^,\s]+)\s*$') {
             $artifactSuffixDomains.Add($Matches[1])
         }
     }
-}
-else {
+}else {
     $json = Get-Content -LiteralPath $artifactPath -Raw -Encoding utf8 | ConvertFrom-Json -ErrorAction Stop
     if ([int]$json.version -ne 1 -or @($json.rules).Count -ne 1) {
         throw "sing-box 产物结构不符合预期"
