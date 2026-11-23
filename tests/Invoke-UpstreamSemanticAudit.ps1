@@ -228,15 +228,16 @@ foreach ($domain in $artifactExactDomains) {
 
 # DOMAIN-SUFFIX 保留后缀匹配语义：必须有有效上游后缀规则，且无例外冲突。
 foreach ($domain in $artifactSuffixDomains) {
-    $kind = Get-AuditEffectiveRuleKind -Domain $domain
+    $hasSourceSuffix = $state.ValidSuffixRules.Contains($domain)
     $hasEffectiveWhitelistException = $state.SuffixConflictExactDomains.Contains($domain)
+    $isEffectivelyBlocked = (Get-EffectiveStatus $domain) -like "BLACKLIST*"
 
-    if ($kind -eq "SUFFIX" -and -not $hasEffectiveWhitelistException) {
+    if ($hasSourceSuffix -and -not $hasEffectiveWhitelistException -and $isEffectivelyBlocked) {
         $consistentEntries++
         continue
     }
 
-    if ($kind -eq "SUFFIX" -and $hasEffectiveWhitelistException) {
+    if ($hasSourceSuffix -and $hasEffectiveWhitelistException) {
         $mismatchCounts.suffixOutputWithEffectiveWhitelistException++
         $reason = "产物后缀范围覆盖了上游有效白名单例外"
     }
@@ -289,7 +290,7 @@ $metrics = [ordered]@{
     semanticMismatchBreakdown = $mismatchCounts
     semanticMismatches = @($mismatchedEntries)
     formula = "semanticallyConsistentEntryCount / artifactEntryTotal * 100"
-    methodology = "Each checked-in DOMAIN entry counts only when the effective upstream rule at that hostname is EXACT. Each checked-in DOMAIN-SUFFIX entry counts only when the effective upstream rule is SUFFIX and no effective whitelist exception is projected beneath it. Unproven scope-equivalence remains in the denominator and is not counted in the numerator."
+    methodology = "Each checked-in DOMAIN entry counts only when the effective upstream rule at that hostname is EXACT. Each checked-in DOMAIN-SUFFIX entry counts only when an upstream suffix rule exists, the root domain is effectively blocked, and no effective whitelist exception is projected beneath that suffix. Unproven scope-equivalence remains in the denominator and is not counted in the numerator."
 }
 
 $metrics | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $reportPath -Encoding utf8
