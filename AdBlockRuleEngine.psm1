@@ -102,6 +102,7 @@ function Get-AdblockMatchType(
     return 'EXACT'
 }
 
+
 function Get-AdblockRulePriority([string]$Action, [string]$MatchType, [bool]$IsImportant) {
     if ($Action -eq 'ALLOW') { if ($IsImportant) { return 0 }; return 2 }
     if ($Action -eq 'BLOCK') {
@@ -351,20 +352,18 @@ function Set-AdblockPublicSuffixRules {
 
 function Load-AdblockPublicSuffixList {
     [CmdletBinding()]
-    param([string]$Uri = 'https://publicsuffix.org/list/public_suffix_list.dat')
-    $client = [System.Net.Http.HttpClient]::new()
+    param([string]$Uri='https://publicsuffix.org/list/public_suffix_list.dat')
+    $client=[System.Net.Http.HttpClient]::new()
     try {
-        $client.Timeout = [TimeSpan]::FromSeconds(45)
+        $client.Timeout=[TimeSpan]::FromSeconds(45)
         $client.DefaultRequestHeaders.UserAgent.ParseAdd('AdBlock_Rule_For_Clash/2.0')
-        $download = Get-AdblockRemoteText -Client $client -Url $Uri -MaxBytes 5000000 -Retries 2 -TimeoutSeconds 45
-    }
-    finally {
-        $client.Dispose()
-    }
-    $count = Set-AdblockPublicSuffixRules -Rules ($download.Content -split '\r?\n')
+        $download=Get-AdblockRemoteText -Client $client -Url $Uri -MaxBytes 5000000 -Retries 2 -TimeoutSeconds 45
+    } finally { $client.Dispose() }
+    $count=Set-AdblockPublicSuffixRules -Rules ($download.Content -split '\r?\n')
     if ($count -lt 1000) { throw "PSL data looks incomplete ($count rules)." }
     return $count
 }
+
 
 function Read-AdblockHttpResponse {
     [CmdletBinding()]
@@ -373,21 +372,16 @@ function Read-AdblockHttpResponse {
         [long]$MaxBytes = 25000000,
         [System.Threading.CancellationToken]$CancellationToken = [System.Threading.CancellationToken]::None
     )
-    if (-not $Response.IsSuccessStatusCode) {
-        throw ('HTTP {0} {1}' -f [int]$Response.StatusCode,$Response.ReasonPhrase)
-    }
+    if (-not $Response.IsSuccessStatusCode) { throw ('HTTP {0} {1}' -f [int]$Response.StatusCode,$Response.ReasonPhrase) }
     if ($null -ne $Response.Content.Headers.ContentLength -and [long]$Response.Content.Headers.ContentLength -gt $MaxBytes) {
         throw "Response exceeds maxBytes ($MaxBytes)"
     }
-
     $inputStream = $Response.Content.ReadAsStreamAsync($CancellationToken).GetAwaiter().GetResult()
     $memoryStream = [System.IO.MemoryStream]::new()
     $buffer = [byte[]]::new(81920)
     try {
         while (($read = $inputStream.ReadAsync($buffer,0,$buffer.Length,$CancellationToken).GetAwaiter().GetResult()) -gt 0) {
-            if (($memoryStream.Length + $read) -gt $MaxBytes) {
-                throw "Response exceeds maxBytes ($MaxBytes)"
-            }
+            if (($memoryStream.Length + $read) -gt $MaxBytes) { throw "Response exceeds maxBytes ($MaxBytes)" }
             $memoryStream.Write($buffer,0,$read)
         }
         $bytes = $memoryStream.ToArray()
@@ -396,26 +390,12 @@ function Read-AdblockHttpResponse {
         $memoryStream.Dispose()
         $inputStream.Dispose()
     }
-
     if ($bytes.Length -eq 0) { throw 'Empty response body' }
-    try {
-        $utf8 = [System.Text.UTF8Encoding]::new($false,$true)
-        $content = $utf8.GetString($bytes)
-    }
-    catch {
-        throw "Response is not valid UTF-8: $($_.Exception.Message)"
-    }
-    if ($content -match '^\s*<(?:!doctype\s+html|html)\b') {
-        throw 'Received HTML instead of a filter list'
-    }
-
+    try { $content = [System.Text.UTF8Encoding]::new($false,$true).GetString($bytes) }
+    catch { throw "Response is not valid UTF-8: $($_.Exception.Message)" }
+    if ($content -match '^\s*<(?:!doctype\s+html|html)\b') { throw 'Received HTML instead of a filter list' }
     $sha = [System.Security.Cryptography.SHA256]::HashData($bytes)
-    return [PSCustomObject]@{
-        Content = $content
-        Bytes = $bytes.Length
-        Sha256 = [Convert]::ToHexString($sha).ToLowerInvariant()
-        StatusCode = [int]$Response.StatusCode
-    }
+    return [PSCustomObject]@{Content=$content;Bytes=$bytes.Length;Sha256=[Convert]::ToHexString($sha).ToLowerInvariant();StatusCode=[int]$Response.StatusCode}
 }
 
 function Get-AdblockRemoteText {
@@ -428,7 +408,7 @@ function Get-AdblockRemoteText {
         [int]$TimeoutSeconds = 75
     )
     $lastError = $null
-    for ($attempt = 0; $attempt -le $Retries; $attempt++) {
+    for ($attempt=0; $attempt -le $Retries; $attempt++) {
         $response = $null
         $cancellation = $null
         try {
@@ -445,7 +425,7 @@ function Get-AdblockRemoteText {
             if ($null -ne $cancellation) { $cancellation.Dispose() }
         }
     }
-    throw ("Download failed after {0} attempts: {1}: {2}" -f ($Retries + 1),$Url,$lastError)
+    throw ("Download failed after {0} attempts: {1}: {2}" -f ($Retries+1),$Url,$lastError)
 }
 
 function Invoke-AdblockSourceDownloads {
@@ -457,81 +437,58 @@ function Invoke-AdblockSourceDownloads {
     $contents = [System.Collections.Generic.Dictionary[string,string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     $manifest = [System.Collections.Generic.List[object]]::new()
     $failedRequired = [System.Collections.Generic.List[string]]::new()
-
     try {
         $batchSize = 12
-        for ($offset = 0; $offset -lt $Sources.Count; $offset += $batchSize) {
-            $end = [Math]::Min($offset + $batchSize - 1,$Sources.Count - 1)
+        for ($offset=0; $offset -lt $Sources.Count; $offset += $batchSize) {
+            $end = [Math]::Min($offset+$batchSize-1,$Sources.Count-1)
             $batch = @($Sources[$offset..$end])
             $pending = [System.Collections.Generic.List[object]]::new()
             foreach ($source in $batch) {
-                $timeoutSeconds = [Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
-                $cancellation = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeoutSeconds))
-                $task = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cancellation.Token)
-                $pending.Add([PSCustomObject]@{ Source=$source; Task=$task; Cancellation=$cancellation })
+                $timeout = [Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
+                $cts = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeout))
+                $task = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cts.Token)
+                $pending.Add([PSCustomObject]@{Source=$source;Task=$task;Cancellation=$cts})
             }
-
             foreach ($item in $pending) {
-                $source = $item.Source
-                $download = $null
-                $errorText = $null
-                $attemptsMade = 0
-                $response = $null
-                $retryCancellation = $null
-                for ($attempt = 0; $attempt -le [int]$source.retries; $attempt++) {
-                    $attemptsMade++
+                $source=$item.Source; $download=$null; $errorText=$null; $response=$null; $retryCts=$null; $attempts=0
+                for ($attempt=0; $attempt -le [int]$source.retries; $attempt++) {
+                    $attempts++
                     try {
                         if ($attempt -eq 0) {
-                            $response = $item.Task.GetAwaiter().GetResult()
-                            $activeToken = $item.Cancellation.Token
+                            $response=$item.Task.GetAwaiter().GetResult()
+                            $token=$item.Cancellation.Token
+                        } else {
+                            $timeout=[Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
+                            $retryCts=[System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeout))
+                            $response=$client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$retryCts.Token).GetAwaiter().GetResult()
+                            $token=$retryCts.Token
                         }
-                        else {
-                            $retryCancellation = [System.Threading.CancellationTokenSource]::new(
-                                [TimeSpan]::FromSeconds([Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds)))
-                            )
-                            $response = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$retryCancellation.Token).GetAwaiter().GetResult()
-                            $activeToken = $retryCancellation.Token
-                        }
-                        $download = Read-AdblockHttpResponse -Response $response -MaxBytes ([long]$source.maxBytes) -CancellationToken $activeToken
-                        if ($source.sha256 -and $download.Sha256 -ne ([string]$source.sha256).ToLowerInvariant()) {
-                            throw 'SHA-256 mismatch with pinned source hash'
-                        }
+                        $download=Read-AdblockHttpResponse -Response $response -MaxBytes ([long]$source.maxBytes) -CancellationToken $token
+                        if ($source.sha256 -and $download.Sha256 -ne ([string]$source.sha256).ToLowerInvariant()) { throw 'SHA-256 mismatch with pinned source hash' }
                         break
                     }
                     catch {
-                        $errorText = $_.Exception.Message
-                        if ($attempt -lt [int]$source.retries) { Start-Sleep -Seconds ([Math]::Min(2 * ($attempt + 1),8)) }
+                        $errorText=$_.Exception.Message
+                        if ($attempt -lt [int]$source.retries) { Start-Sleep -Seconds ([Math]::Min(2*($attempt+1),8)) }
                     }
                     finally {
-                        if ($null -ne $response) { $response.Dispose(); $response = $null }
-                        if ($null -ne $retryCancellation) { $retryCancellation.Dispose(); $retryCancellation = $null }
+                        if ($null -ne $response) { $response.Dispose(); $response=$null }
+                        if ($null -ne $retryCts) { $retryCts.Dispose(); $retryCts=$null }
                     }
                 }
                 $item.Cancellation.Dispose()
-
                 if ($null -eq $download) {
-                    $manifest.Add([PSCustomObject]@{
-                        Type='source'; Url=[string]$source.url; Required=[bool]$source.required
-                        Status='FAILED'; Attempts=$attemptsMade; Error=$errorText
-                    })
-                    if ([bool]$source.required) { $failedRequired.Add(([string]$source.url + ': ' + $errorText)) }
+                    $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='FAILED';Attempts=$attempts;Error=$errorText})
+                    if ([bool]$source.required) { $failedRequired.Add(([string]$source.url+': '+$errorText)) }
                     continue
                 }
-
-                $contents[[string]$source.url] = $download.Content
-                $manifest.Add([PSCustomObject]@{
-                    Type='source'; Url=[string]$source.url; Required=[bool]$source.required
-                    Status='OK'; Attempts=$attemptsMade; HttpStatus=$download.StatusCode
-                    Bytes=$download.Bytes; Sha256=$download.Sha256
-                })
+                $contents[[string]$source.url]=$download.Content
+                $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='OK';Attempts=$attempts;HttpStatus=$download.StatusCode;Bytes=$download.Bytes;Sha256=$download.Sha256})
             }
         }
     }
-    finally {
-        $client.Dispose()
-    }
-
-    return [PSCustomObject]@{ Contents=$contents; Manifest=$manifest; FailedRequired=$failedRequired.ToArray() }
+    finally { $client.Dispose() }
+    return [PSCustomObject]@{Contents=$contents;Manifest=$manifest;FailedRequired=$failedRequired.ToArray()}
 }
 
 function Expand-AdblockIncludes {
@@ -542,322 +499,301 @@ function Expand-AdblockIncludes {
         [Parameter(Mandatory)][System.Net.Http.HttpClient]$Client,
         [Parameter(Mandatory)]$Visited,
         [Parameter(Mandatory)][System.Collections.Generic.List[object]]$IncludeManifest,
-        [long]$MaxBytes = 25000000,
-        [int]$Depth = 0,
-        [int]$MaxDepth = 8
+        [long]$MaxBytes=25000000,
+        [int]$Depth=0,
+        [int]$MaxDepth=8
     )
-    if ($Depth -gt $MaxDepth) {
-        return [PSCustomObject]@{ Lines=@(); Issues=@("include-depth-exceeded:$SourceUrl") }
-    }
-
-    $lines = [System.Collections.Generic.List[object]]::new()
-    $issues = [System.Collections.Generic.List[string]]::new()
-    $conditionalDepth = 0
-    $sourceLines = $Content -split '\r?\n'
-
-    for ($i = 0; $i -lt $sourceLines.Length; $i++) {
-        $text = $sourceLines[$i].TrimEnd([char]13)
+    if ($Depth -gt $MaxDepth) { return [PSCustomObject]@{Lines=@();Issues=@("include-depth-exceeded:$SourceUrl")} }
+    $lines=[System.Collections.Generic.List[object]]::new()
+    $issues=[System.Collections.Generic.List[string]]::new()
+    $conditionalDepth=0
+    $sourceLines=$Content -split '\r?\n'
+    for ($i=0; $i -lt $sourceLines.Length; $i++) {
+        $text=$sourceLines[$i].TrimEnd([char]13)
         if ($text -match '^\s*!#if\b') {
             $conditionalDepth++
-            $issues.Add(('conditional-preprocessor-not-evaluated:{0}:{1}' -f $SourceUrl,($i + 1)))
+            $issues.Add(('conditional-preprocessor-not-evaluated:{0}:{1}' -f $SourceUrl,($i+1)))
             continue
         }
         if ($text -match '^\s*!#endif\b') {
-            if ($conditionalDepth -gt 0) { $conditionalDepth-- }
-            else { $issues.Add(('unbalanced-endif:{0}:{1}' -f $SourceUrl,($i + 1))) }
+            if ($conditionalDepth -gt 0) { $conditionalDepth-- } else { $issues.Add(('unbalanced-endif:{0}:{1}' -f $SourceUrl,($i+1))) }
             continue
         }
         if ($conditionalDepth -gt 0) { continue }
-
-        if ($text -match '^\s*!#include\s+(?<target>.+?)\s*
-    param([string]$Path = (Join-Path $PSScriptRoot 'sources.json'))
-    if (-not (Test-Path -LiteralPath $Path)) { throw "Source manifest not found: $Path" }
-    $items = @(Get-Content -LiteralPath $Path -Raw -Encoding utf8 | ConvertFrom-Json)
-    if ($items.Count -eq 0) { throw "Source manifest is empty: $Path" }
-    $script:SourceConfigByUrl = @{}
-    foreach ($item in $items) {
-        if (-not $item.enabled) { continue }
-        if ($item.defaultAction -notin @('ALLOW','BLOCK')) { throw "Invalid defaultAction: $($item.url)" }
-        if ($script:SourceConfigByUrl.ContainsKey([string]$item.url)) { throw "Duplicate source URL: $($item.url)" }
-        $script:SourceConfigByUrl[[string]$item.url] = $item
+        if ($text -match '^\s*!#include\s+(?<target>.+?)\s*$') {
+            $target=$Matches.target.Trim().Trim([char[]]@('<','>','"',[char]39,' '))
+            try {
+                $includeUri=[Uri]::new([Uri]$SourceUrl,$target)
+                if (-not $includeUri.IsAbsoluteUri -or $includeUri.Scheme -ne 'https') { throw 'uBO includes must resolve to HTTPS URLs.' }
+                $includeUrl=$includeUri.AbsoluteUri
+            } catch {
+                $issues.Add(('invalid-include-url:{0}:{1}:{2}' -f $SourceUrl,($i+1),$target))
+                continue
+            }
+            if (-not $Visited.Add($includeUrl)) { continue }
+            try {
+                $download=Get-AdblockRemoteText -Client $Client -Url $includeUrl -MaxBytes $MaxBytes -Retries 2 -TimeoutSeconds 75
+                $IncludeManifest.Add([PSCustomObject]@{Type='include';Url=$includeUrl;Required=$true;Status='OK';Bytes=$download.Bytes;Sha256=$download.Sha256})
+                $expanded=Expand-AdblockIncludes -Content $download.Content -SourceUrl $includeUrl -Client $Client -Visited $Visited -IncludeManifest $IncludeManifest -MaxBytes $MaxBytes -Depth ($Depth+1) -MaxDepth $MaxDepth
+                foreach ($entry in $expanded.Lines) { $lines.Add($entry) }
+                foreach ($issue in $expanded.Issues) { $issues.Add($issue) }
+            } catch {
+                $IncludeManifest.Add([PSCustomObject]@{Type='include';Url=$includeUrl;Required=$true;Status='FAILED';Error=$_.Exception.Message})
+                $issues.Add(('include-download-failed:{0}:{1}' -f $includeUrl,$_.Exception.Message))
+            }
+            continue
+        }
+        if ($text -match '^\s*!#') {
+            $issues.Add(('unsupported-preprocessor-directive:{0}:{1}:{2}' -f $SourceUrl,($i+1),$text))
+            continue
+        }
+        $lines.Add([PSCustomObject]@{Text=$text;SourceUrl=$SourceUrl;SourceLine=$i+1})
     }
-    return @($items | Where-Object { $_.enabled })
+    if ($conditionalDepth -gt 0) { $issues.Add("unclosed-conditional-preprocessor:$SourceUrl") }
+    return [PSCustomObject]@{Lines=$lines.ToArray();Issues=$issues.ToArray()}
 }
+
+function Write-AdblockAtomicText {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path,[Parameter(Mandatory)][AllowEmptyString()][string]$Content)
+    $directory=Split-Path -Parent $Path
+    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory)) {
+        [void](New-Item -ItemType Directory -Path $directory -Force)
+    }
+    $tempPath=$Path+'.'+[Guid]::NewGuid().ToString('N')+'.tmp'
+    try {
+        [System.IO.File]::WriteAllText($tempPath,$Content,[System.Text.UTF8Encoding]::new($false))
+        Move-Item -LiteralPath $tempPath -Destination $Path -Force
+    } finally {
+        if (Test-Path -LiteralPath $tempPath) { Remove-Item -LiteralPath $tempPath -Force }
+    }
+}
+
+function Get-AdblockSourceConfig {
+    [CmdletBinding()]
+    param([string]$Path=(Join-Path $PSScriptRoot 'sources.json'))
+    if (-not (Test-Path -LiteralPath $Path)) { throw "Source manifest not found: $Path" }
+    $items=@(Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json)
+    if ($items.Count -eq 0) { throw "Source manifest is empty: $Path" }
+    $script:SourceConfigByUrl=@{}
+    $seen=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($item in $items) {
+        if ([string]::IsNullOrWhiteSpace([string]$item.url)) { throw 'Every source must declare a URL.' }
+        if ($item.defaultAction -notin @('ALLOW','BLOCK')) { throw "Invalid defaultAction: $($item.url)" }
+        if ($item.syntax -notin @('AUTO','ADBLOCK','HOSTS','DNSMASQ')) { throw "Invalid syntax: $($item.url)" }
+        if ($item.preprocessor -notin @('NONE','UBO')) { throw "Invalid preprocessor: $($item.url)" }
+        if ($item.plainDomainMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid plainDomainMatchType: $($item.url)" }
+        if ($item.hostsMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid hostsMatchType: $($item.url)" }
+        if ($null -eq $item.required -or $item.required -isnot [bool]) { throw "Source must explicitly declare required: $($item.url)" }
+        if ($null -eq $item.enabled -or $item.enabled -isnot [bool]) { throw "Source must explicitly declare enabled: $($item.url)" }
+        if ([long]$item.maxBytes -lt 1) { throw "Invalid maxBytes: $($item.url)" }
+        if ([int]$item.retries -lt 0 -or [int]$item.retries -gt 5) { throw "Invalid retries: $($item.url)" }
+        if ([int]$item.timeoutSeconds -lt 1 -or [int]$item.timeoutSeconds -gt 300) { throw "Invalid timeoutSeconds: $($item.url)" }
+        if ($item.sha256 -and [string]$item.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid pinned SHA-256: $($item.url)" }
+        try { $uri=[Uri]::new([string]$item.url) } catch { throw "Invalid source URL: $($item.url)" }
+        if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Source URL must use HTTPS: $($item.url)" }
+        if (-not $seen.Add([string]$item.url)) { throw "Duplicate source URL: $($item.url)" }
+        if ($item.enabled) { $script:SourceConfigByUrl[[string]$item.url]=$item }
+    }
+    $enabled=@($items | Where-Object { $_.enabled })
+    if ($enabled.Count -eq 0) { throw 'No enabled upstream sources configured.' }
+    return $enabled
+}
+
 
 function Invoke-AdblockGeneration {
     [CmdletBinding()]
     param(
-        [ValidateSet('yaml','txt','both')]
-        [string]$Format = 'yaml',
-        [bool]$Strict = $true
+        [ValidateSet('yaml','txt','both')][string]$Format='yaml',
+        [bool]$Strict=$true
     )
-
-    $repositoryRoot = $PSScriptRoot
-    $manifestPath = Join-Path $repositoryRoot 'adblock_sources_manifest.json'
-    $reportPath = Join-Path $repositoryRoot 'adblock_build_report.json'
-    $sources = @(Get-AdblockSourceConfig)
-    $downloads = Invoke-AdblockSourceDownloads -Sources $sources
-    $manifest = [System.Collections.Generic.List[object]]::new()
+    $repositoryRoot=$PSScriptRoot
+    $manifestPath=Join-Path $repositoryRoot 'adblock_sources_manifest.json'
+    $reportPath=Join-Path $repositoryRoot 'adblock_build_report.json'
+    $sources=@(Get-AdblockSourceConfig)
+    $downloads=Invoke-AdblockSourceDownloads -Sources $sources
+    $manifest=[System.Collections.Generic.List[object]]::new()
     foreach ($item in $downloads.Manifest) { $manifest.Add($item) }
 
     if (@($downloads.FailedRequired).Count -gt 0) {
-        Write-AdblockAtomicText -Path $manifestPath -Content (($manifest | ConvertTo-Json -Depth 8) + [Environment]::NewLine)
-        $failureReport = [PSCustomObject]@{
-            SchemaVersion = 1
-            Status = 'SOURCE_FAILURE'
-            StrictMode = $Strict
-            SourceCount = $sources.Count
-            DownloadedSourceCount = @($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' }).Count
-            FailedRequiredSources = @($downloads.FailedRequired)
+        Write-AdblockAtomicText -Path $manifestPath -Content (($manifest | ConvertTo-Json -Depth 8)+[Environment]::NewLine)
+        $failedReport=[PSCustomObject]@{
+            SchemaVersion=1;Status='SOURCE_FAILURE';StrictMode=$Strict;SourceCount=$sources.Count
+            DownloadedSourceCount=@($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' }).Count
+            FailedRequiredSources=@($downloads.FailedRequired)
         }
-        Write-AdblockAtomicText -Path $reportPath -Content (($failureReport | ConvertTo-Json -Depth 12) + [Environment]::NewLine)
-        throw ("Required upstream sources failed; refusing to publish:" + [Environment]::NewLine + ($downloads.FailedRequired -join [Environment]::NewLine))
+        Write-AdblockAtomicText -Path $reportPath -Content (($failedReport | ConvertTo-Json -Depth 12)+[Environment]::NewLine)
+        throw ("Required upstream sources failed; refusing to publish:"+[Environment]::NewLine+($downloads.FailedRequired -join [Environment]::NewLine))
     }
 
-    $null = Load-AdblockPublicSuffixList
-    $preIssues = [System.Collections.Generic.List[object]]::new()
-    $preprocessorIssues = [System.Collections.Generic.List[string]]::new()
-    $includeManifest = [System.Collections.Generic.List[object]]::new()
-    $rawRules = [System.Collections.Generic.List[object]]::new()
-    $badfilterKeys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $skipStats = [System.Collections.Generic.Dictionary[string,int]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $stats = @{
-        Parsed = 0; Skipped = 0; Invalid = 0; Badfilter = 0
-        Wildcard = 0; PublicSuffix = 0; HostsExpanded = 0; Preprocessor = 0
-    }
-
-    $includeClient = [System.Net.Http.HttpClient]::new()
-    $includeClient.Timeout = [TimeSpan]::FromMilliseconds(-1)
+    $null=Load-AdblockPublicSuffixList
+    $preIssues=[System.Collections.Generic.List[object]]::new()
+    $preprocessorIssues=[System.Collections.Generic.List[string]]::new()
+    $includeManifest=[System.Collections.Generic.List[object]]::new()
+    $rawRules=[System.Collections.Generic.List[object]]::new()
+    $badfilterKeys=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $skipStats=[System.Collections.Generic.Dictionary[string,int]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $stats=@{Parsed=0;Skipped=0;Invalid=0;Badfilter=0;Wildcard=0;PublicSuffix=0;HostsExpanded=0}
+    $includeClient=[System.Net.Http.HttpClient]::new()
+    $includeClient.Timeout=[TimeSpan]::FromMilliseconds(-1)
     $includeClient.DefaultRequestHeaders.UserAgent.ParseAdd('AdBlock_Rule_For_Clash/2.0')
     try {
         foreach ($source in $sources) {
-            $subscriptionUrl = [string]$source.url
+            $subscriptionUrl=[string]$source.url
             if (-not $downloads.Contents.ContainsKey($subscriptionUrl)) { continue }
-
             if ($source.preprocessor -eq 'UBO') {
-                $visited = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+                $visited=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
                 [void]$visited.Add($subscriptionUrl)
-                $expanded = Expand-AdblockIncludes -Content $downloads.Contents[$subscriptionUrl] -SourceUrl $subscriptionUrl -Client $includeClient -Visited $visited -IncludeManifest $includeManifest -MaxBytes ([long]$source.maxBytes)
-            }
-            else {
-                $plainLines = [System.Collections.Generic.List[object]]::new()
-                $sourceLines = $downloads.Contents[$subscriptionUrl] -split '\r?\n'
-                for ($lineIndex = 0; $lineIndex -lt $sourceLines.Length; $lineIndex++) {
-                    $lineText = ([string]$sourceLines[$lineIndex]).TrimStart([char]0xFEFF)
+                $expanded=Expand-AdblockIncludes -Content $downloads.Contents[$subscriptionUrl] -SourceUrl $subscriptionUrl -Client $includeClient -Visited $visited -IncludeManifest $includeManifest -MaxBytes ([long]$source.maxBytes)
+            } else {
+                $plainLines=[System.Collections.Generic.List[object]]::new()
+                $sourceLines=$downloads.Contents[$subscriptionUrl] -split '\r?\n'
+                for ($lineIndex=0; $lineIndex -lt $sourceLines.Length; $lineIndex++) {
+                    $lineText=([string]$sourceLines[$lineIndex]).TrimStart([char]0xFEFF)
                     if ($lineText -match '^\s*!#') {
-                        $preprocessorIssues.Add(('preprocessor-directive-on-source-not-marked-UBO:{0}:{1}' -f $subscriptionUrl,($lineIndex + 1)))
+                        $preprocessorIssues.Add(('preprocessor-directive-on-source-not-marked-UBO:{0}:{1}' -f $subscriptionUrl,($lineIndex+1)))
                         continue
                     }
-                    $plainLines.Add([PSCustomObject]@{ Text=$lineText; SourceUrl=$subscriptionUrl; SourceLine=$lineIndex + 1 })
+                    $plainLines.Add([PSCustomObject]@{Text=$lineText;SourceUrl=$subscriptionUrl;SourceLine=$lineIndex+1})
                 }
-                $expanded = [PSCustomObject]@{ Lines=$plainLines.ToArray(); Issues=@() }
+                $expanded=[PSCustomObject]@{Lines=$plainLines.ToArray();Issues=@()}
             }
-
             foreach ($issue in $expanded.Issues) { $preprocessorIssues.Add([string]$issue) }
             foreach ($lineRecord in $expanded.Lines) {
-                $rawText = ([string]$lineRecord.Text).Trim()
-                $linesToParse = @([PSCustomObject]@{
-                    Text=$rawText; SourceUrl=[string]$lineRecord.SourceUrl; SourceLine=[int]$lineRecord.SourceLine
-                })
-
-                # Expand multi-host records but keep the original physical location.
+                $rawText=([string]$lineRecord.Text).Trim()
+                $linesToParse=@([PSCustomObject]@{Text=$rawText;SourceUrl=[string]$lineRecord.SourceUrl;SourceLine=[int]$lineRecord.SourceLine})
                 if ($rawText -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+(.+)$') {
-                    $hostsIp = $Matches[1]
-                    $hostTokens = @($Matches[2] -split '\s+')
+                    $hostsIp=$Matches[1]
+                    $hostTokens=@($Matches[2] -split '\s+')
                     if ($hostTokens.Count -gt 1) {
-                        $expandedHosts = [System.Collections.Generic.List[object]]::new()
+                        $expandedHosts=[System.Collections.Generic.List[object]]::new()
                         foreach ($hostName in $hostTokens) {
                             if (-not $hostName -or $hostName.StartsWith('#')) { break }
-                            $expandedHosts.Add([PSCustomObject]@{
-                                Text="$hostsIp $hostName"; SourceUrl=[string]$lineRecord.SourceUrl; SourceLine=[int]$lineRecord.SourceLine
-                            })
+                            $expandedHosts.Add([PSCustomObject]@{Text="$hostsIp $hostName";SourceUrl=[string]$lineRecord.SourceUrl;SourceLine=[int]$lineRecord.SourceLine})
                         }
-                        if ($expandedHosts.Count -gt 0) {
-                            $linesToParse = $expandedHosts.ToArray()
-                            $stats.HostsExpanded += $expandedHosts.Count
-                        }
+                        if ($expandedHosts.Count -gt 0) { $linesToParse=$expandedHosts.ToArray(); $stats.HostsExpanded+=$expandedHosts.Count }
                     }
                 }
-
                 foreach ($lineToParse in $linesToParse) {
-                    $rawLine = [string]$lineToParse.Text
-                    $lineSourceUrl = [string]$lineToParse.SourceUrl
-                    $lineNumber = [int]$lineToParse.SourceLine
-                    $parsed = Parse-Rule -line $rawLine -isWhitelistSource ([string]$source.defaultAction -eq 'ALLOW')
+                    $rawLine=[string]$lineToParse.Text
+                    $lineSourceUrl=[string]$lineToParse.SourceUrl
+                    $lineNumber=[int]$lineToParse.SourceLine
+                    $parsed=Parse-Rule -line $rawLine -isWhitelistSource ([string]$source.defaultAction -eq 'ALLOW')
                     $stats.Parsed++
-
                     if ($parsed.Action -eq 'SKIP') {
                         $stats.Skipped++
-                        $reason = [string]$parsed.SkipReason
-                        if (-not $skipStats.ContainsKey($reason)) { $skipStats[$reason] = 0 }
+                        $reason=[string]$parsed.SkipReason
+                        if (-not $skipStats.ContainsKey($reason)) { $skipStats[$reason]=0 }
                         $skipStats[$reason]++
                         if (Test-AdblockStrictParseIssue -SkipReason $reason) {
                             $preIssues.Add([PSCustomObject]@{
-                                Type='UNRECOGNIZED_RULE_SYNTAX'; Root=$lineSourceUrl; Detail=$rawLine
+                                Type='UNRECOGNIZED_RULE_SYNTAX';Root=$lineSourceUrl;Detail=$rawLine
                                 Message=('Unrecognized rule syntax in source {0}, line {1}: {2}' -f $lineSourceUrl,$lineNumber,$rawLine)
                             })
                         }
                         continue
                     }
-
-                    $identity = Get-AdblockRuleIdentity $rawLine
+                    $identity=Get-AdblockRuleIdentity $rawLine
                     if ($parsed.Action -eq 'BADFILTER') {
-                        [void]$badfilterKeys.Add($subscriptionUrl + [char]10 + $identity)
+                        [void]$badfilterKeys.Add($subscriptionUrl+[char]10+$identity)
                         $stats.Badfilter++
                         continue
                     }
-
                     if ($parsed.IsWildcard) {
                         $stats.Wildcard++
                         $preIssues.Add([PSCustomObject]@{
-                            Type='UNSUPPORTED_WILDCARD'; Root=$parsed.Domain; Detail=$rawLine
+                            Type='UNSUPPORTED_WILDCARD';Root=$parsed.Domain;Detail=$rawLine
                             Message="Wildcard pattern cannot be represented losslessly by DOMAIN / DOMAIN-SUFFIX: $rawLine"
                         })
                         continue
                     }
-
-                    $matchType = Get-AdblockMatchType -Parsed $parsed -RawRule $rawLine -PlainDomainMatchType ([string]$source.plainDomainMatchType) -HostsMatchType ([string]$source.hostsMatchType)
-                    $domain = Normalize-Domain ([string]$parsed.Domain)
+                    $matchType=Get-AdblockMatchType -Parsed $parsed -RawRule $rawLine -PlainDomainMatchType ([string]$source.plainDomainMatchType) -HostsMatchType ([string]$source.hostsMatchType)
+                    $domain=Normalize-Domain ([string]$parsed.Domain)
                     if (-not (Is-ValidDNSDomain $domain)) {
                         $stats.Invalid++
                         $preIssues.Add([PSCustomObject]@{
-                            Type='INVALID_DOMAIN'; Root=$domain; Detail=$rawLine
+                            Type='INVALID_DOMAIN';Root=$domain;Detail=$rawLine
                             Message=('Parsed domain is not a valid DNS rule name at {0}:{1}: {2}' -f $lineSourceUrl,$lineNumber,$rawLine)
                         })
                         continue
                     }
-
-                    $action = if ($parsed.Action -eq 'EXCLUDE') { 'ALLOW' } else { 'BLOCK' }
-                    $important = [bool]$parsed.IsImportant
-                    $priority = Get-AdblockRulePriority -Action $action -MatchType $matchType -IsImportant $important
+                    $action=if ($parsed.Action -eq 'EXCLUDE') {'ALLOW'} else {'BLOCK'}
+                    $important=[bool]$parsed.IsImportant
+                    $priority=Get-AdblockRulePriority -Action $action -MatchType $matchType -IsImportant $important
                     if (Is-PublicSuffix $domain) { $stats.PublicSuffix++ }
-                    $modifierText = ''
-                    if ($rawLine -match '\$(?<mods>.+)$') { $modifierText = [string]$Matches.mods }
-                    $modifierNames = @($modifierText -split ',' | ForEach-Object { $_.Trim().ToLowerInvariant() } | Where-Object { $_ })
-
                     $rawRules.Add([PSCustomObject]@{
-                        Domain=$domain; MatchType=$matchType; Action=$action; Priority=$priority
-                        IsImportant=$important; Modifiers=$modifierNames; RawRule=$rawLine
-                        RuleIdentity=$identity; SourceUrl=$lineSourceUrl; SubscriptionUrl=$subscriptionUrl
-                        SourceLine=$lineNumber; SourceFormat=$parsed.SourceFormat
+                        Domain=$domain;MatchType=$matchType;Action=$action;Priority=$priority;IsImportant=$important
+                        RawRule=$rawLine;RuleIdentity=$identity;SourceUrl=$lineSourceUrl;SubscriptionUrl=$subscriptionUrl
+                        SourceLine=$lineNumber;SourceFormat=$parsed.SourceFormat
                     })
                 }
             }
         }
-    }
-    finally {
-        $includeClient.Dispose()
-    }
+    } finally { $includeClient.Dispose() }
 
     foreach ($include in $includeManifest) { $manifest.Add($include) }
     foreach ($issue in $preprocessorIssues) {
-        $preIssues.Add([PSCustomObject]@{ Type='UNRESOLVED_PREPROCESSOR'; Root=''; Detail=[string]$issue; Message=[string]$issue })
+        $preIssues.Add([PSCustomObject]@{Type='UNRESOLVED_PREPROCESSOR';Root='';Detail=[string]$issue;Message=[string]$issue})
     }
-
-    $activeRules = [System.Collections.Generic.List[object]]::new()
+    $activeRules=[System.Collections.Generic.List[object]]::new()
     foreach ($rule in $rawRules) {
-        $key = $rule.SubscriptionUrl + [char]10 + $rule.RuleIdentity
+        $key=$rule.SubscriptionUrl+[char]10+$rule.RuleIdentity
         if (-not $badfilterKeys.Contains($key)) { $activeRules.Add($rule) }
     }
-
-    $dedup = [System.Collections.Generic.Dictionary[string,object]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    $dedup=[System.Collections.Generic.Dictionary[string,object]]::new([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($rule in $activeRules) {
-        $key = "$($rule.Priority)|$($rule.Action)|$($rule.MatchType)|$($rule.Domain)"
+        $key="$($rule.Priority)|$($rule.Action)|$($rule.MatchType)|$($rule.Domain)"
         if (-not $dedup.ContainsKey($key)) { $dedup.Add($key,$rule) }
     }
-    $rules = @($dedup.Values)
-
-    # Persist diagnostics before enforcing strict mode, so failed builds remain reviewable.
-    $compiled = Compile-AdblockRules -Rules $rules -Strict:$false -PreExistingIssues $preIssues.ToArray()
-    $successfulSources = @($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' } | Sort-Object Url)
-    $fingerprintInput = ($successfulSources | ForEach-Object { '{0}|{1}|{2}' -f $_.Url,$_.Sha256,$_.Bytes }) -join [Environment]::NewLine
-    $fingerprintBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($fingerprintInput)
-    $snapshotHash = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($fingerprintBytes)).ToLowerInvariant()
-
-    $exact = @($compiled.Exact)
-    $suffix = @($compiled.Suffix)
-    $report = [PSCustomObject]@{
-        SchemaVersion=1
-        Status=if ($compiled.IsLossless) { 'EXACT' } else { 'UNREPRESENTABLE' }
-        StrictMode=$Strict
-        SourceCount=$sources.Count
-        DownloadedSourceCount=$successfulSources.Count
+    $rules=@($dedup.Values)
+    $compiled=Compile-AdblockRules -Rules $rules -Strict:$false -PreExistingIssues $preIssues.ToArray()
+    $successfulSources=@($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' } | Sort-Object Url)
+    $fingerprintParts=@($successfulSources | ForEach-Object { "$($_.Url)|$($_.Sha256)|$($_.Bytes)" })
+    $fingerprintInput=$fingerprintParts -join [Environment]::NewLine
+    $fingerprintBytes=[System.Text.UTF8Encoding]::new($false).GetBytes($fingerprintInput)
+    $snapshotHash=[Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($fingerprintBytes)).ToLowerInvariant()
+    $exact=@($compiled.Exact); $suffix=@($compiled.Suffix)
+    $status=if ($compiled.IsLossless) {'EXACT'} else {'UNREPRESENTABLE'}
+    $report=[PSCustomObject]@{
+        SchemaVersion=1;Status=$status;StrictMode=$Strict;SourceCount=$sources.Count;DownloadedSourceCount=$successfulSources.Count
         FailedOptionalSourceCount=@($manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'FAILED' -and -not $_.Required }).Count
-        SnapshotSha256=$snapshotHash
-        ParsedLineCount=$stats.Parsed
-        ActiveRuleCount=$rules.Count
-        DomainCount=$exact.Count
-        DomainSuffixCount=$suffix.Count
-        BadfilterCount=$stats.Badfilter
-        SkippedLineCount=$stats.Skipped
-        InvalidDomainCount=$stats.Invalid
-        WildcardCount=$stats.Wildcard
-        HostsExpandedCount=$stats.HostsExpanded
-        PreprocessorIssueCount=$preprocessorIssues.Count
-        PreprocessorIssues=@($preprocessorIssues)
-        PublicSuffixRuleCount=$stats.PublicSuffix
-        ConflictCount=$compiled.Issues.Count
-        Conflicts=@($compiled.Issues)
-        SkipReasonSummary=@($skipStats.GetEnumerator() | Sort-Object Name | ForEach-Object { [PSCustomObject]@{ Reason=$_.Key; Count=$_.Value } })
+        SnapshotSha256=$snapshotHash;ParsedLineCount=$stats.Parsed;ActiveRuleCount=$rules.Count
+        DomainCount=$exact.Count;DomainSuffixCount=$suffix.Count;BadfilterCount=$stats.Badfilter
+        SkippedLineCount=$stats.Skipped;InvalidDomainCount=$stats.Invalid;WildcardCount=$stats.Wildcard
+        HostsExpandedCount=$stats.HostsExpanded;PreprocessorIssueCount=$preprocessorIssues.Count
+        PreprocessorIssues=@($preprocessorIssues);PublicSuffixRuleCount=$stats.PublicSuffix
+        ConflictCount=$compiled.Issues.Count;Conflicts=@($compiled.Issues)
+        SkipReasonSummary=@($skipStats.GetEnumerator() | Sort-Object Name | ForEach-Object { [PSCustomObject]@{Reason=$_.Key;Count=$_.Value} })
         IncludeCount=$includeManifest.Count
     }
-
-    Write-AdblockAtomicText -Path $manifestPath -Content (($manifest | ConvertTo-Json -Depth 10) + [Environment]::NewLine)
-    Write-AdblockAtomicText -Path $reportPath -Content (($report | ConvertTo-Json -Depth 14) + [Environment]::NewLine)
+    Write-AdblockAtomicText -Path $manifestPath -Content (($manifest | ConvertTo-Json -Depth 10)+[Environment]::NewLine)
+    Write-AdblockAtomicText -Path $reportPath -Content (($report | ConvertTo-Json -Depth 14)+[Environment]::NewLine)
     if ($Strict -and -not $compiled.IsLossless) {
         throw ("Strict compilation failed: {0} unrepresentable issue(s). No generated provider files were overwritten. See {1}." -f $compiled.Issues.Count,$reportPath)
     }
-
-    $yamlRules = @($suffix | ForEach-Object { '  - DOMAIN-SUFFIX,' + $_ }) +
-                 @($exact | ForEach-Object { '  - DOMAIN,' + $_ })
-    $yamlText = @(
-        '# Generated by AdBlock_Rule_For_Clash'
-        "# DOMAIN: $($exact.Count)"
-        "# DOMAIN-SUFFIX: $($suffix.Count)"
-        'payload:'
-    ) + $yamlRules
-    $txtRules = @($suffix | ForEach-Object { 'DOMAIN-SUFFIX,' + $_ }) +
-                @($exact | ForEach-Object { 'DOMAIN,' + $_ })
-
-    $domainYamlRules = @($exact | ForEach-Object { '  - "' + $_ + '"' }) +
-                       @($suffix | ForEach-Object { '  - "+.' + $_ + '"' })
-    $domainYamlText = @(
-        '# Generated Mihomo domain-behavior ruleset input'
-        "# DOMAIN: $($exact.Count)"
-        "# DOMAIN-SUFFIX: $($suffix.Count)"
-        'payload:'
-    ) + $domainYamlRules
-
-    $outputs = [System.Collections.Generic.List[object]]::new()
+    $yamlRules=@($suffix | ForEach-Object {'  - DOMAIN-SUFFIX,'+$_})+@($exact | ForEach-Object {'  - DOMAIN,'+$_})
+    $yamlText=@('# Generated by AdBlock_Rule_For_Clash',"# DOMAIN: $($exact.Count)","# DOMAIN-SUFFIX: $($suffix.Count)",'payload:')+$yamlRules
+    $txtRules=@($suffix | ForEach-Object {'DOMAIN-SUFFIX,'+$_})+@($exact | ForEach-Object {'DOMAIN,'+$_})
+    $domainYamlRules=@($exact | ForEach-Object {'  - "'+$_+'"'})+@($suffix | ForEach-Object {'  - "+.'+$_+'"'})
+    $domainYamlText=@('# Generated Mihomo domain-behavior ruleset input',"# DOMAIN: $($exact.Count)","# DOMAIN-SUFFIX: $($suffix.Count)",'payload:')+$domainYamlRules
+    $outputs=[System.Collections.Generic.List[object]]::new()
     if ($Format -in @('yaml','both')) {
-        $outputs.Add([PSCustomObject]@{
-            Path=Join-Path $repositoryRoot 'adblock_reject.yaml'
-            Text=($yamlText -join [Environment]::NewLine) + [Environment]::NewLine
-        })
+        $outputs.Add([PSCustomObject]@{Path=(Join-Path $repositoryRoot 'adblock_reject.yaml');Text=($yamlText -join [Environment]::NewLine)+[Environment]::NewLine})
     }
     if ($Format -in @('txt','both')) {
-        $outputs.Add([PSCustomObject]@{
-            Path=Join-Path $repositoryRoot 'adblock_reject.txt'
-            Text=($txtRules -join [Environment]::NewLine) + [Environment]::NewLine
-        })
+        $outputs.Add([PSCustomObject]@{Path=(Join-Path $repositoryRoot 'adblock_reject.txt');Text=($txtRules -join [Environment]::NewLine)+[Environment]::NewLine})
     }
-    $outputs.Add([PSCustomObject]@{
-        Path=Join-Path $repositoryRoot 'adblock_reject_domain.yaml'
-        Text=($domainYamlText -join [Environment]::NewLine) + [Environment]::NewLine
-    })
-
+    $outputs.Add([PSCustomObject]@{Path=(Join-Path $repositoryRoot 'adblock_reject_domain.yaml');Text=($domainYamlText -join [Environment]::NewLine)+[Environment]::NewLine})
     foreach ($output in $outputs) {
         Write-AdblockAtomicText -Path $output.Path -Content $output.Text
         Write-Host "Generated: $($output.Path)"
     }
-
     Write-Host ("Sources: {0}; downloaded: {1}; failed optional: {2}" -f $sources.Count,$successfulSources.Count,$report.FailedOptionalSourceCount)
     Write-Host "Source snapshot SHA-256: $snapshotHash"
     Write-Host ("Parsed lines: {0}; active rules: {1}; DOMAIN: {2}; DOMAIN-SUFFIX: {3}" -f $stats.Parsed,$rules.Count,$exact.Count,$suffix.Count)
     Write-Host ("Skipped: {0}; invalid: {1}; wildcard: {2}; badfilter: {3}; issues: {4}" -f $stats.Skipped,$stats.Invalid,$stats.Wildcard,$stats.Badfilter,$compiled.Issues.Count)
     return $report
 }
-
 $modAllowSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 @('all','reason') | ForEach-Object { $modAllowSet.Add($_) | Out-Null }
 
@@ -1055,1781 +991,6 @@ function Parse-Rule {
         if ([string]::IsNullOrEmpty($restBeforeDollar)) {
             $result.SkipReason = "unbounded-domain-anchor"
             return $result
-        }
-
-        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?            $result.SkipReason = "path-or-query-specific-rule"
-            return $result
-        }
-
-        # 处理 $badfilter 撤销规则
-        if ($rest -match '^\^?\$(.+)$') {
-            $modList = (
-                $Matches[1] -split ',' |
-                ForEach-Object {
-                    ($_ -split '=')[0].Trim().ToLower()
-                }
-            )
-
-            if ($modList -contains 'badfilter') {
-                $domain = $raw
-
-                if (
-                    $domain -notmatch '\*' -and
-                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
-                ) {
-                    $result.Action = "BADFILTER"
-                    $result.Domain = $domain
-                    return $result
-                }
-            }
-        }
-
-        # 处理其他修饰符
-        if ($rest -match '^\^?\$(.+)$') {
-            $modResult = Resolve-Modifiers $Matches[1]
-
-            if ($modResult.Decision -eq "SKIP") {
-                $result.SkipReason = $modResult.SkipReason
-                return $result
-            }
-
-            $result.IsImportant = $modResult.IsImportant
-        }
-
-        # 解析通配域名
-        $domain = $null
-
-        if ($raw -match '\*') {
-            $domain = Resolve-WildcardDomain $raw
-
-            if ($null -eq $domain) {
-                $result.SkipReason = "unresolvable-wildcard"
-                return $result
-            }
-
-            $result.IsWildcard = $true
-        }
-        else {
-            $domain = $raw
-        }
-
-        # 不将 IP 地址作为域名后缀规则
-        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
-            $result.SkipReason = "ip-address"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-suffix"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "adblock-suffix"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # Hosts 文件规则
-    if (
-        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(\s.*)?$'
-    ) {
-        $domain = $Matches[2].ToLower()
-
-        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
-            $result.SkipReason = "localhost-entry"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-hosts"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "hosts"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq address 规则
-    if ($line -match '^address=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/([^/]*)$') {
-        $domain = $Matches[1].ToLower()
-        $target = $Matches[2].Trim()
-        $isBlock = $false
-
-        switch -Regex ($target) {
-            '^$' {
-                $isBlock = $true
-            }
-            '^0\.0\.0\.0$' {
-                $isBlock = $true
-            }
-            '^127\.0\.0\.1$' {
-                $isBlock = $true
-            }
-            '^::$' {
-                $isBlock = $true
-            }
-            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
-                $isBlock = $true
-            }
-            '^#$' {
-                $isBlock = $false
-            }
-            default {
-                $isBlock = $false
-            }
-        }
-
-        if (-not $isBlock) {
-            $result.SkipReason = "dnsmasq-dns-forward:$target"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-address"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq server 路由规则不作为屏蔽规则
-    if ($line -match '^server=/([\p{L}\p{N}.-]+\.[\p{L}]{2,})/') {
-        $result.SkipReason = "dnsmasq-server-routing"
-        return $result
-    }
-
-    # dnsmasq local 规则
-    if ($line -match '^local=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq-local"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-local"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    # 纯域名规则
-    if ($line -match '^([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-plain"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "plain-domain"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    $result.SkipReason = "no-pattern-match"
-
-    return $result
-}
-Export-ModuleMember -Function @(
-    'Test-AdblockStrictParseIssue',
-    'Get-AdblockRuleIdentity',
-    'Get-AdblockRulePriority',
-    'Test-AdblockSuffixMatch',
-    'Get-AdblockDomainDecision',
-    'Compile-AdblockRules',
-    'Get-PublicSuffix',
-    'Is-PublicSuffix',
-    'Set-AdblockPublicSuffixRules',
-    'Load-AdblockPublicSuffixList',
-    'Invoke-AdblockGeneration'
-)
-) {
-            $target = $Matches.target.Trim().Trim('<','>','"',"'")
-            try { $includeUrl = ([Uri]::new([Uri]$SourceUrl,$target)).AbsoluteUri }
-            catch {
-                $issues.Add(('invalid-include-url:{0}:{1}:{2}' -f $SourceUrl,($i + 1),$target))
-                continue
-            }
-            if (-not $Visited.Add($includeUrl)) { continue }
-
-            try {
-                $download = Get-AdblockRemoteText -Client $Client -Url $includeUrl -MaxBytes $MaxBytes -Retries 2 -TimeoutSeconds 75
-                $IncludeManifest.Add([PSCustomObject]@{
-                    Type='include'; Url=$includeUrl; Required=$true; Status='OK'
-                    Bytes=$download.Bytes; Sha256=$download.Sha256
-                })
-                $expanded = Expand-AdblockIncludes -Content $download.Content -SourceUrl $includeUrl -Client $Client -Visited $Visited -IncludeManifest $IncludeManifest -MaxBytes $MaxBytes -Depth ($Depth + 1) -MaxDepth $MaxDepth
-                foreach ($entry in $expanded.Lines) { $lines.Add($entry) }
-                foreach ($issue in $expanded.Issues) { $issues.Add($issue) }
-            }
-            catch {
-                $IncludeManifest.Add([PSCustomObject]@{
-                    Type='include'; Url=$includeUrl; Required=$true; Status='FAILED'; Error=$_.Exception.Message
-                })
-                $issues.Add(('include-download-failed:{0}:{1}' -f $includeUrl,$_.Exception.Message))
-            }
-            continue
-        }
-
-        if ($text -match '^\s*!#') {
-            $issues.Add(('unsupported-preprocessor-directive:{0}:{1}:{2}' -f $SourceUrl,($i + 1),$text))
-            continue
-        }
-        $lines.Add([PSCustomObject]@{ Text=$text; SourceUrl=$SourceUrl; SourceLine=$i + 1 })
-    }
-
-    if ($conditionalDepth -gt 0) { $issues.Add("unclosed-conditional-preprocessor:$SourceUrl") }
-    return [PSCustomObject]@{ Lines=$lines.ToArray(); Issues=$issues.ToArray() }
-}
-
-function Write-AdblockAtomicText {
-    [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$Path,[Parameter(Mandatory)][AllowEmptyString()][string]$Content)
-    $directory = Split-Path -Parent $Path
-    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory)) {
-        [void](New-Item -ItemType Directory -Path $directory -Force)
-    }
-    $temporaryPath = $Path + '.' + [Guid]::NewGuid().ToString('N') + '.tmp'
-    try {
-        [System.IO.File]::WriteAllText($temporaryPath,$Content,[System.Text.UTF8Encoding]::new($false))
-        Move-Item -LiteralPath $temporaryPath -Destination $Path -Force
-    }
-    finally {
-        if (Test-Path -LiteralPath $temporaryPath) { Remove-Item -LiteralPath $temporaryPath -Force }
-    }
-}
-
-function Get-AdblockSourceConfig {
-    [CmdletBinding()]
-    param([string]$Path = (Join-Path $PSScriptRoot 'sources.json'))
-    if (-not (Test-Path -LiteralPath $Path)) { throw "Source manifest not found: $Path" }
-    $items = @(Get-Content -LiteralPath $Path -Raw -Encoding utf8 | ConvertFrom-Json)
-    if ($items.Count -eq 0) { throw "Source manifest is empty: $Path" }
-
-    $script:SourceConfigByUrl = @{}
-    $seenUrls = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($item in $items) {
-        if ([string]::IsNullOrWhiteSpace([string]$item.url)) { throw 'Every source must declare a URL.' }
-        if ($item.defaultAction -notin @('ALLOW','BLOCK')) { throw "Invalid defaultAction: $($item.url)" }
-        if ($item.syntax -notin @('AUTO','ADBLOCK','HOSTS','DNSMASQ')) { throw "Invalid syntax: $($item.url)" }
-        if ($item.preprocessor -notin @('NONE','UBO')) { throw "Invalid preprocessor: $($item.url)" }
-        if ($item.plainDomainMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid plainDomainMatchType: $($item.url)" }
-        if ($item.hostsMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid hostsMatchType: $($item.url)" }
-        if ($null -eq $item.required -or $item.required -isnot [bool]) { throw "Source must explicitly declare required: $($item.url)" }
-        if ($null -eq $item.enabled -or $item.enabled -isnot [bool]) { throw "Source must explicitly declare enabled: $($item.url)" }
-        if ([long]$item.maxBytes -lt 1) { throw "Invalid maxBytes: $($item.url)" }
-        if ([int]$item.retries -lt 0 -or [int]$item.retries -gt 5) { throw "Invalid retries: $($item.url)" }
-        if ([int]$item.timeoutSeconds -lt 1 -or [int]$item.timeoutSeconds -gt 300) { throw "Invalid timeoutSeconds: $($item.url)" }
-        if ($item.sha256 -and [string]$item.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid pinned SHA-256: $($item.url)" }
-
-        try { $uri = [Uri]::new([string]$item.url) }
-        catch { throw "Invalid source URL: $($item.url)" }
-        if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Source URL must use HTTPS: $($item.url)" }
-        if (-not $seenUrls.Add([string]$item.url)) { throw "Duplicate source URL: $($item.url)" }
-
-        if ($item.enabled) { $script:SourceConfigByUrl[[string]$item.url] = $item }
-    }
-
-    $enabled = @($items | Where-Object { $_.enabled })
-    if ($enabled.Count -eq 0) { throw 'No enabled upstream sources configured.' }
-    return $enabled
-}
-
-function Invoke-AdblockGeneration {
-    [CmdletBinding()]
-    param(
-        [ValidateSet('yaml','txt','both')]
-        [string]$Format = 'yaml',
-        [bool]$Strict = $true
-    )
-
-    $sources = @(Get-AdblockSourceConfig)
-    $downloadResults = @(
-        $sources | ForEach-Object -Parallel {
-            $source = $_
-            $result = $null
-            $lastError = $null
-
-            for ($attempt = 1; $attempt -le 2; $attempt++) {
-                try {
-                    $response = Invoke-WebRequest -Uri $source.url -TimeoutSec 45 -MaximumRedirection 10 -Headers @{
-                        'User-Agent' = 'AdBlock_Rule_For_Clash/1.0'
-                    } -ErrorAction Stop
-
-                    $body = [string]$response.Content
-                    if ([string]::IsNullOrWhiteSpace($body)) { throw 'Empty response body' }
-                    if ($body -match '^\s*<(?:!doctype\s+html|html)\b') { throw 'Received HTML instead of a filter list' }
-
-                    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($body)
-                    $sha = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
-                    if ($source.sha256 -and $sha -ne ([string]$source.sha256).ToLowerInvariant()) {
-                        throw 'SHA-256 mismatch with pinned source hash'
-                    }
-
-                    $result = [PSCustomObject]@{
-                        Source = $source
-                        Content = $body
-                        Success = $true
-                        Attempts = $attempt
-                        Error = $null
-                        Sha256 = $sha
-                        ByteCount = $bytes.Length
-                    }
-                    break
-                }
-                catch {
-                    $lastError = $_.Exception.Message
-                    if ($attempt -lt 2) { Start-Sleep -Seconds 2 }
-                }
-            }
-
-            if ($null -eq $result) {
-                $result = [PSCustomObject]@{
-                    Source = $source
-                    Content = $null
-                    Success = $false
-                    Attempts = 2
-                    Error = $lastError
-                    Sha256 = $null
-                    ByteCount = 0
-                }
-            }
-            $result
-        } -ThrottleLimit 24
-    )
-
-    $failed = @($downloadResults | Where-Object { -not $_.Success })
-    foreach ($item in $failed) {
-        Write-Warning "Download failed: $($item.Source.url): $($item.Error)"
-    }
-
-    $requiredFailures = @($failed | Where-Object { $_.Source.required })
-    if ($requiredFailures.Count -gt 0) {
-        throw "Strict source acquisition failed: $($requiredFailures.Count) required source(s) unavailable. No output was written."
-    }
-
-    $successfulSources = @($downloadResults | Where-Object { $_.Success } | Sort-Object { $_.Source.url })
-    $fingerprintInput = ($successfulSources | ForEach-Object {
-        "$($_.Source.url)|$($_.Sha256)|$($_.ByteCount)"
-    }) -join [Environment]::NewLine
-    $fingerprintBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($fingerprintInput)
-    $snapshotHash = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($fingerprintBytes)).ToLowerInvariant()
-    Write-Host "Source snapshot SHA-256: $snapshotHash ($($successfulSources.Count) source files)"
-
-    $null = Load-AdblockPublicSuffixList
-    $rawRules = [System.Collections.Generic.List[object]]::new()
-    $badfilterKeys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $preIssues = [System.Collections.Generic.List[object]]::new()
-    $skipStats = [System.Collections.Generic.Dictionary[string,int]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $stats = @{
-        Parsed = 0
-        Skipped = 0
-        Invalid = 0
-        Badfilter = 0
-        Wildcard = 0
-        PublicSuffix = 0
-        HostsExpanded = 0
-        Preprocessor = 0
-    }
-
-    foreach ($download in $downloadResults) {
-        if (-not $download.Success) { continue }
-
-        $url = [string]$download.Source.url
-        $isWhitelistSource = Is-WhitelistSource $url
-        $lineNumber = 0
-
-        foreach ($line in ($download.Content -split '\r?\n')) {
-            $lineNumber++
-            $sourceLine = $line.Trim()
-
-            # uBlock directives alter the effective source before parsing. Do not
-            # mistake them for comments: without an evaluator they are unresolved.
-            if ($sourceLine -match '^!#') {
-                $stats.Preprocessor++
-                $preIssues.Add([PSCustomObject]@{
-                    Type = 'UNPROCESSED_PREPROCESSOR'
-                    Root = $url
-                    Detail = $sourceLine
-                    Message = "uBlock preprocessor directive requires expansion/context evaluation: $sourceLine"
-                })
-                continue
-            }
-
-            # A hosts line can contain multiple hostnames. Preserve every mapping.
-            $linesToParse = @($sourceLine)
-            if ($sourceLine -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+(.+)$') {
-                $hostsIp = $Matches[1]
-                $hostNamesText = $Matches[2]
-                $hostTokens = @($hostNamesText -split '\s+')
-                if ($hostTokens.Count -gt 1) {
-                    $expanded = [System.Collections.Generic.List[string]]::new()
-                    foreach ($hostName in $hostTokens) {
-                        if (-not $hostName -or $hostName.StartsWith('#')) { break }
-                        $expanded.Add("$hostsIp $hostName")
-                    }
-                    if ($expanded.Count -gt 0) {
-                        $linesToParse = $expanded.ToArray()
-                        $stats.HostsExpanded += $expanded.Count
-                    }
-                }
-            }
-
-            foreach ($rawLine in $linesToParse) {
-                $parsed = Parse-Rule -line $rawLine -isWhitelistSource $isWhitelistSource
-                $stats.Parsed++
-
-                if ($parsed.Action -eq 'SKIP') {
-                    $stats.Skipped++
-                    $reason = [string]$parsed.SkipReason
-                    if (-not $skipStats.ContainsKey($reason)) { $skipStats[$reason] = 0 }
-                    $skipStats[$reason]++
-
-                    if (Test-AdblockStrictParseIssue -SkipReason $reason) {
-                        $preIssues.Add([PSCustomObject]@{
-                            Type = 'UNRECOGNIZED_RULE_SYNTAX'
-                            Root = $url
-                            Detail = $rawLine
-                            Message = "Unrecognized rule syntax in required source '$url' at line ${lineNumber}: $rawLine"
-                        })
-                    }
-                    continue
-                }
-
-                $identity = Get-AdblockRuleIdentity $rawLine
-                if ($parsed.Action -eq 'BADFILTER') {
-                    [void]$badfilterKeys.Add($url + [char]10 + $identity)
-                    $stats.Badfilter++
-                    continue
-                }
-
-                if ($parsed.IsWildcard) {
-                    $stats.Wildcard++
-                    $preIssues.Add([PSCustomObject]@{
-                        Type = 'UNSUPPORTED_WILDCARD'
-                        Root = $parsed.Domain
-                        Detail = $rawLine
-                        Message = "Wildcard pattern cannot be represented losslessly by DOMAIN / DOMAIN-SUFFIX: $rawLine"
-                    })
-                    continue
-                }
-
-                $matchType = Get-AdblockMatchType -Parsed $parsed -RawRule $rawLine
-                $domain = Normalize-Domain ([string]$parsed.Domain)
-                if (-not (Is-ValidDNSDomain $domain)) {
-                    $stats.Invalid++
-                    $preIssues.Add([PSCustomObject]@{
-                        Type = 'INVALID_DOMAIN'
-                        Root = $domain
-                        Detail = $rawLine
-                        Message = "Parsed domain is not a valid DNS rule name: $rawLine"
-                    })
-                    continue
-                }
-
-                $action = if ($parsed.Action -eq 'EXCLUDE') { 'ALLOW' } else { 'BLOCK' }
-                $important = [bool]$parsed.IsImportant
-                $priority = Get-AdblockRulePriority -Action $action -MatchType $matchType -IsImportant $important
-
-                if (Is-PublicSuffix $domain) { $stats.PublicSuffix++ }
-
-                $rawRules.Add([PSCustomObject]@{
-                    Domain = $domain
-                    MatchType = $matchType
-                    Action = $action
-                    Priority = $priority
-                    IsImportant = $important
-                    RawRule = $rawLine
-                    RuleIdentity = $identity
-                    SourceUrl = $url
-                    SourceLine = $lineNumber
-                    SourceFormat = $parsed.SourceFormat
-                })
-            }
-        }
-    }
-
-    # $badfilter is bound to the source subscription and normalized base rule.
-    # Match type and every non-badfilter modifier remain part of rule identity.
-    $activeRules = [System.Collections.Generic.List[object]]::new()
-    foreach ($rule in $rawRules) {
-        $key = $rule.SourceUrl + [char]10 + $rule.RuleIdentity
-        if (-not $badfilterKeys.Contains($key)) {
-            $activeRules.Add($rule)
-        }
-    }
-
-    # Semantic deduplication keeps one diagnostic record per effective rule.
-    $dedup = [System.Collections.Generic.Dictionary[string,object]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($rule in $activeRules) {
-        $key = "$($rule.Priority)|$($rule.Action)|$($rule.MatchType)|$($rule.Domain)"
-        if (-not $dedup.ContainsKey($key)) { $dedup.Add($key, $rule) }
-    }
-    $rules = @($dedup.Values)
-
-    $compiled = Compile-AdblockRules -Rules $rules -Strict:$Strict -PreExistingIssues $preIssues.ToArray()
-    $exact = @($compiled.Exact)
-    $suffix = @($compiled.Suffix)
-
-    # Render only the requested positive blacklist syntax.
-    $yamlRules = @($suffix | ForEach-Object { "  - DOMAIN-SUFFIX,$_" }) +
-                 @($exact | ForEach-Object { "  - DOMAIN,$_" })
-    $yamlText = @(
-        '# Generated by AdBlock_Rule_For_Clash'
-        "# DOMAIN: $($exact.Count)"
-        "# DOMAIN-SUFFIX: $($suffix.Count)"
-        'payload:'
-    ) + $yamlRules
-    $txtRules = @($suffix | ForEach-Object { "DOMAIN-SUFFIX,$_" }) +
-                @($exact | ForEach-Object { "DOMAIN,$_" })
-
-    $outputs = @()
-    if ($Format -in @('yaml','both')) {
-        $outputs += @{
-            Path = Join-Path $PSScriptRoot 'adblock_reject.yaml'
-            Text = ($yamlText -join [Environment]::NewLine) + [Environment]::NewLine
-        }
-    }
-    if ($Format -in @('txt','both')) {
-        $outputs += @{
-            Path = Join-Path $PSScriptRoot 'adblock_reject.txt'
-            Text = ($txtRules -join [Environment]::NewLine) + [Environment]::NewLine
-        }
-    }
-
-    # Write only after all acquisition, parsing and semantic checks succeed.
-    foreach ($output in $outputs) {
-        $temp = $output.Path + '.tmp'
-        [System.IO.File]::WriteAllText($temp, $output.Text, [System.Text.UTF8Encoding]::new($false))
-        Move-Item -LiteralPath $temp -Destination $output.Path -Force
-        Write-Host "Generated: $($output.Path)"
-    }
-
-    Write-Host "Sources: $($sources.Count); downloaded: $($downloadResults.Count - $failed.Count); failed optional: $($failed.Count)"
-    Write-Host "Snapshot SHA-256: $snapshotHash"
-    Write-Host "Parsed lines: $($stats.Parsed); active semantic rules: $($rules.Count)"
-    Write-Host "DOMAIN: $($exact.Count); DOMAIN-SUFFIX: $($suffix.Count)"
-    Write-Host "Skipped non-domain rules: $($stats.Skipped); invalid: $($stats.Invalid); wildcard: $($stats.Wildcard)"
-    Write-Host "Public-suffix patterns retained with original match type: $($stats.PublicSuffix); badfilter cancellations: $($stats.Badfilter)"
-    if ($skipStats.Count -gt 0) {
-        Write-Host ("Skip reasons: " + (($skipStats.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }) -join ', '))
-    }
-
-    return [PSCustomObject]@{
-        Sources = $sources.Count
-        Downloaded = $downloadResults.Count - $failed.Count
-        FailedOptional = @($failed | Where-Object { -not $_.Source.required }).Count
-        SnapshotSha256 = $snapshotHash
-        ParsedLines = $stats.Parsed
-        ActiveRules = $rules.Count
-        ExactCount = $exact.Count
-        SuffixCount = $suffix.Count
-        BadfilterCount = $stats.Badfilter
-        SkippedCount = $stats.Skipped
-        InvalidCount = $stats.Invalid
-        UnrepresentableCount = $compiled.Issues.Count
-        IsLossless = $compiled.IsLossless
-    }
-}
-
-$modAllowSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@('all','reason') | ForEach-Object { $modAllowSet.Add($_) | Out-Null }
-
-function Resolve-Modifiers([string]$modStr) {
-    $ret = [PSCustomObject]@{ Decision = "CONTINUE"; SkipReason = $null; IsImportant = $false }
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $ret }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        $modName = ($mod -split '=')[0]
-        if ($modName -eq 'important') { $ret.IsImportant = $true; continue }
-        if ($modAllowSet.Contains($modName)) { continue }
-        if ($modName -eq 'dnsrewrite') {
-            $rv = if ($mod -match '=(.+)$') { $Matches[1] } else { '' }
-            if ($rv -eq 'nxdomain' -or $rv -match '^noerror;a;[\d.]+$' -or $rv -match '^noerror;aaaa;[0:]*$' -or $rv -eq 'noerror;aaaa;::1') { continue }
-            $ret.Decision = "SKIP";
-            $ret.SkipReason = "dnsrewrite-non-block:$rv"; return $ret
-        }
-        $ret.Decision = "SKIP"
-        $ret.SkipReason = "unsupported-modifier:$modName"; return $ret
-    }
-    if ($ret.IsImportant) { $ret.Decision = "IMPORTANT_CONTINUE" }
-    return $ret
-}
-
-$whitelistSubresourceTypes = [System.Collections.Generic.HashSet[string]]@('document','script','image','stylesheet','css','object','xmlhttprequest','xhr','media','font','subdocument','ping','websocket','webrtc','other','object-subrequest')
-
-function Is-ContextConstrainedWhitelist([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { ($_ -split '=')[0].Trim().ToLower() })) {
-        if ($mod -notin @('important','all','reason')) { return $true }
-    }
-    return $false
-}
-
-function Get-WhitelistImportantFlag([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        if ($mod -eq 'important') { return $true }
-    }
-    return $false
-}
-
-function Test-AdblockStrictParseIssue([string]$SkipReason) {
-    # Explicitly understood non-DNS rules may be skipped and counted. Unknown
-    # syntax must stop strict compilation rather than silently lose a rule.
-    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable','unresolvable-wildcard'))
-}
-
-function Is-WhitelistSource([string]$url) {
-    if ($null -eq $script:SourceConfigByUrl) { return $false }
-    if ($script:SourceConfigByUrl.ContainsKey($url)) {
-        return ($script:SourceConfigByUrl[$url].defaultAction -eq 'ALLOW')
-    }
-    return $false
-}
-
-# ── 集中式规则解析函数 ───────────────────────────────────────
-function Parse-Rule {
-    param([string]$line, [bool]$isWhitelistSource = $false)
-
-    $result = [PSCustomObject]@{
-        Action      = "SKIP"
-        Domain      = $null
-        SkipReason  = "unmatched"
-        SourceFormat = "unknown"
-        IsImportant = $false
-        IsWildcard  = $false
-    }
-
-    if (
-        [string]::IsNullOrWhiteSpace($line) -or
-        $line.StartsWith("!") -or
-        $line.StartsWith("#") -or
-        $line.StartsWith("[") -or
-        $line -match '##|#\?#|#@#|#\$#'
-    ) {
-        $result.SkipReason = "comment-or-cosmetic"
-        return $result
-    }
-
-    if ($line -match '^/.+/(\$.*)?$') {
-        $result.SkipReason = "regex-rule"
-        return $result
-    }
-
-    if ($line -match '^\|https?://') {
-        $result.SkipReason = "exact-url-rule"
-        return $result
-    }
-
-    # Adblock 白名单规则
-    if ($line.StartsWith("@@")) {
-        $extractDomain = $null
-        $modPartRaw = $null
-
-        if (
-            $line -match '^@@\|\|([\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?)+)(.*)$'
-        ) {
-            $extractDomain = $Matches[1].ToLower()
-            $afterDomain = $Matches[2]
-
-            if ($afterDomain -match '^[\^]?[/?]') {
-                $result.SkipReason = "whitelist-path-or-query-specific"
-                return $result
-            }
-            $dollarIdx = $afterDomain.IndexOf('$')
-            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
-            if ($beforeMods -notmatch '^\^?\|?$') {
-                $result.SkipReason = "whitelist-pattern-after-domain"
-                return $result
-            }
-
-            if ($dollarIdx -ge 0) {
-                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
-            }
-        }
-        elseif ($line -match '^@@\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(?:\$(.*))?$') {
-            $extractDomain = $Matches[1].ToLower()
-            $modPartRaw = $Matches[2]
-        }
-        elseif ($line -match '^@@([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
-            $extractDomain = $Matches[1].ToLower()
-        }
-
-        if ($null -ne $extractDomain) {
-            if (Is-ContextConstrainedWhitelist $modPartRaw) {
-                $result.SkipReason = "whitelist-context-constrained"
-            }
-            else {
-                $result.Action = "EXCLUDE"
-                $result.Domain = $extractDomain
-                $result.SourceFormat = "adblock-whitelist"
-                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
-            }
-        }
-        else {
-            $result.SkipReason = "whitelist-unparseable"
-        }
-
-        return $result
-    }
-
-    # 精确 URL / AdGuard 精确域名规则
-    if ($line -match '^\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(\$(.+))?$') {
-        $candidate = $Matches[1].ToLower()
-        $modStr = $Matches[3]
-
-        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
-            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
-            if ($exactMods -contains 'badfilter') {
-                $result.Action = 'BADFILTER'
-                $result.Domain = $candidate
-                return $result
-            }
-        }
-
-        $modResult = Resolve-Modifiers $modStr
-
-        if ($modResult.Decision -eq "SKIP") {
-            $result.SkipReason = $modResult.SkipReason
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-exact"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "adguard-exact"
-        }
-
-        $result.Domain = $candidate
-        $result.IsImportant = $modResult.IsImportant
-
-        return $result
-    }
-
-    # Adblock || 域名规则
-    if ($line -match '^\|\|([\p{L}\p{N}*][\p{L}\p{N}*.-]*)(.*)') {
-        $raw = $Matches[1].ToLower()
-        $rest = $Matches[2]
-        $dollarIndex = $rest.IndexOf('$')
-
-        $restBeforeDollar = if ($dollarIndex -ge 0) {
-            $rest.Substring(0, $dollarIndex)
-        }
-        else {
-            $rest
-        }
-
-        if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
-            $result.SkipReason = "path-or-query-specific-rule"
-            return $result
-        }
-
-        # 处理 $badfilter 撤销规则
-        if ($rest -match '^\^?\$(.+)$') {
-            $modList = (
-                $Matches[1] -split ',' |
-                ForEach-Object {
-                    ($_ -split '=')[0].Trim().ToLower()
-                }
-            )
-
-            if ($modList -contains 'badfilter') {
-                $domain = $raw
-
-                if (
-                    $domain -notmatch '\*' -and
-                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
-                ) {
-                    $result.Action = "BADFILTER"
-                    $result.Domain = $domain
-                    return $result
-                }
-            }
-        }
-
-        # 处理其他修饰符
-        if ($rest -match '^\^?\$(.+)$') {
-            $modResult = Resolve-Modifiers $Matches[1]
-
-            if ($modResult.Decision -eq "SKIP") {
-                $result.SkipReason = $modResult.SkipReason
-                return $result
-            }
-
-            $result.IsImportant = $modResult.IsImportant
-        }
-
-        # 解析通配域名
-        $domain = $null
-
-        if ($raw -match '\*') {
-            $domain = Resolve-WildcardDomain $raw
-
-            if ($null -eq $domain) {
-                $result.SkipReason = "unresolvable-wildcard"
-                return $result
-            }
-
-            $result.IsWildcard = $true
-        }
-        else {
-            $domain = $raw
-        }
-
-        # 不将 IP 地址作为域名后缀规则
-        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
-            $result.SkipReason = "ip-address"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-suffix"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "adblock-suffix"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # Hosts 文件规则
-    if (
-        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(\s.*)?$'
-    ) {
-        $domain = $Matches[2].ToLower()
-
-        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
-            $result.SkipReason = "localhost-entry"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-hosts"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "hosts"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq address 规则
-    if ($line -match '^address=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/([^/]*)$') {
-        $domain = $Matches[1].ToLower()
-        $target = $Matches[2].Trim()
-        $isBlock = $false
-
-        switch -Regex ($target) {
-            '^$' {
-                $isBlock = $true
-            }
-            '^0\.0\.0\.0$' {
-                $isBlock = $true
-            }
-            '^127\.0\.0\.1$' {
-                $isBlock = $true
-            }
-            '^::$' {
-                $isBlock = $true
-            }
-            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
-                $isBlock = $true
-            }
-            '^#$' {
-                $isBlock = $false
-            }
-            default {
-                $isBlock = $false
-            }
-        }
-
-        if (-not $isBlock) {
-            $result.SkipReason = "dnsmasq-dns-forward:$target"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-address"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq server 路由规则不作为屏蔽规则
-    if ($line -match '^server=/([\p{L}\p{N}.-]+\.[\p{L}]{2,})/') {
-        $result.SkipReason = "dnsmasq-server-routing"
-        return $result
-    }
-
-    # dnsmasq local 规则
-    if ($line -match '^local=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq-local"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-local"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    # 纯域名规则
-    if ($line -match '^([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-plain"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "plain-domain"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    $result.SkipReason = "no-pattern-match"
-
-    return $result
-}
-Export-ModuleMember -Function @(
-    'Test-AdblockStrictParseIssue',
-    'Get-AdblockRuleIdentity',
-    'Get-AdblockRulePriority',
-    'Test-AdblockSuffixMatch',
-    'Get-AdblockDomainDecision',
-    'Compile-AdblockRules',
-    'Get-PublicSuffix',
-    'Is-PublicSuffix',
-    'Set-AdblockPublicSuffixRules',
-    'Load-AdblockPublicSuffixList',
-    'Invoke-AdblockGeneration'
-)
-) {
-            $result.SkipReason = "path-or-query-specific-rule"
-            return $result
-        }
-
-        # 处理 $badfilter 撤销规则
-        if ($rest -match '^\^?\$(.+)$') {
-            $modList = (
-                $Matches[1] -split ',' |
-                ForEach-Object {
-                    ($_ -split '=')[0].Trim().ToLower()
-                }
-            )
-
-            if ($modList -contains 'badfilter') {
-                $domain = $raw
-
-                if (
-                    $domain -notmatch '\*' -and
-                    $domain -notmatch '^\d{1,3}(\.\d{1,3}){3}$'
-                ) {
-                    $result.Action = "BADFILTER"
-                    $result.Domain = $domain
-                    return $result
-                }
-            }
-        }
-
-        # 处理其他修饰符
-        if ($rest -match '^\^?\$(.+)$') {
-            $modResult = Resolve-Modifiers $Matches[1]
-
-            if ($modResult.Decision -eq "SKIP") {
-                $result.SkipReason = $modResult.SkipReason
-                return $result
-            }
-
-            $result.IsImportant = $modResult.IsImportant
-        }
-
-        # 解析通配域名
-        $domain = $null
-
-        if ($raw -match '\*') {
-            $domain = Resolve-WildcardDomain $raw
-
-            if ($null -eq $domain) {
-                $result.SkipReason = "unresolvable-wildcard"
-                return $result
-            }
-
-            $result.IsWildcard = $true
-        }
-        else {
-            $domain = $raw
-        }
-
-        # 不将 IP 地址作为域名后缀规则
-        if ($domain -match '^\d{1,3}(\.\d{1,3}){3}$') {
-            $result.SkipReason = "ip-address"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-suffix"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "adblock-suffix"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # Hosts 文件规则
-    if (
-        $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(\s.*)?$'
-    ) {
-        $domain = $Matches[2].ToLower()
-
-        if ($domain -in @("localhost", "localhost.localdomain", "local", "broadcasthost")) {
-            $result.SkipReason = "localhost-entry"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-hosts"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "hosts"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq address 规则
-    if ($line -match '^address=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/([^/]*)$') {
-        $domain = $Matches[1].ToLower()
-        $target = $Matches[2].Trim()
-        $isBlock = $false
-
-        switch -Regex ($target) {
-            '^$' {
-                $isBlock = $true
-            }
-            '^0\.0\.0\.0$' {
-                $isBlock = $true
-            }
-            '^127\.0\.0\.1$' {
-                $isBlock = $true
-            }
-            '^::$' {
-                $isBlock = $true
-            }
-            '^(::1|::0|0:0:0:0:0:0:0:0|0:0:0:0:0:0:0:1)$' {
-                $isBlock = $true
-            }
-            '^#$' {
-                $isBlock = $false
-            }
-            default {
-                $isBlock = $false
-            }
-        }
-
-        if (-not $isBlock) {
-            $result.SkipReason = "dnsmasq-dns-forward:$target"
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-address"
-        }
-
-        $result.Domain = $domain
-
-        return $result
-    }
-
-    # dnsmasq server 路由规则不作为屏蔽规则
-    if ($line -match '^server=/([\p{L}\p{N}.-]+\.[\p{L}]{2,})/') {
-        $result.SkipReason = "dnsmasq-server-routing"
-        return $result
-    }
-
-    # dnsmasq local 规则
-    if ($line -match '^local=/([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})/$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-dnsmasq-local"
-        }
-        else {
-            $result.Action = "SUFFIX"
-            $result.SourceFormat = "dnsmasq-local"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    # 纯域名规则
-    if ($line -match '^([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-plain"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "plain-domain"
-        }
-
-        $result.Domain = $Matches[1].ToLower()
-
-        return $result
-    }
-
-    $result.SkipReason = "no-pattern-match"
-
-    return $result
-}
-Export-ModuleMember -Function @(
-    'Test-AdblockStrictParseIssue',
-    'Get-AdblockRuleIdentity',
-    'Get-AdblockRulePriority',
-    'Test-AdblockSuffixMatch',
-    'Get-AdblockDomainDecision',
-    'Compile-AdblockRules',
-    'Get-PublicSuffix',
-    'Is-PublicSuffix',
-    'Set-AdblockPublicSuffixRules',
-    'Load-AdblockPublicSuffixList',
-    'Invoke-AdblockGeneration'
-)
-) {
-            $target = $Matches.target.Trim().Trim('<','>','"',"'")
-            try { $includeUrl = ([Uri]::new([Uri]$SourceUrl,$target)).AbsoluteUri }
-            catch {
-                $issues.Add(('invalid-include-url:{0}:{1}:{2}' -f $SourceUrl,($i + 1),$target))
-                continue
-            }
-            if (-not $Visited.Add($includeUrl)) { continue }
-
-            try {
-                $download = Get-AdblockRemoteText -Client $Client -Url $includeUrl -MaxBytes $MaxBytes -Retries 2 -TimeoutSeconds 75
-                $IncludeManifest.Add([PSCustomObject]@{
-                    Type='include'; Url=$includeUrl; Required=$true; Status='OK'
-                    Bytes=$download.Bytes; Sha256=$download.Sha256
-                })
-                $expanded = Expand-AdblockIncludes -Content $download.Content -SourceUrl $includeUrl -Client $Client -Visited $Visited -IncludeManifest $IncludeManifest -MaxBytes $MaxBytes -Depth ($Depth + 1) -MaxDepth $MaxDepth
-                foreach ($entry in $expanded.Lines) { $lines.Add($entry) }
-                foreach ($issue in $expanded.Issues) { $issues.Add($issue) }
-            }
-            catch {
-                $IncludeManifest.Add([PSCustomObject]@{
-                    Type='include'; Url=$includeUrl; Required=$true; Status='FAILED'; Error=$_.Exception.Message
-                })
-                $issues.Add(('include-download-failed:{0}:{1}' -f $includeUrl,$_.Exception.Message))
-            }
-            continue
-        }
-
-        if ($text -match '^\s*!#') {
-            $issues.Add(('unsupported-preprocessor-directive:{0}:{1}:{2}' -f $SourceUrl,($i + 1),$text))
-            continue
-        }
-        $lines.Add([PSCustomObject]@{ Text=$text; SourceUrl=$SourceUrl; SourceLine=$i + 1 })
-    }
-
-    if ($conditionalDepth -gt 0) { $issues.Add("unclosed-conditional-preprocessor:$SourceUrl") }
-    return [PSCustomObject]@{ Lines=$lines.ToArray(); Issues=$issues.ToArray() }
-}
-
-function Write-AdblockAtomicText {
-    [CmdletBinding()]
-    param([Parameter(Mandatory)][string]$Path,[Parameter(Mandatory)][AllowEmptyString()][string]$Content)
-    $directory = Split-Path -Parent $Path
-    if (-not [string]::IsNullOrWhiteSpace($directory) -and -not (Test-Path -LiteralPath $directory)) {
-        [void](New-Item -ItemType Directory -Path $directory -Force)
-    }
-    $temporaryPath = $Path + '.' + [Guid]::NewGuid().ToString('N') + '.tmp'
-    try {
-        [System.IO.File]::WriteAllText($temporaryPath,$Content,[System.Text.UTF8Encoding]::new($false))
-        Move-Item -LiteralPath $temporaryPath -Destination $Path -Force
-    }
-    finally {
-        if (Test-Path -LiteralPath $temporaryPath) { Remove-Item -LiteralPath $temporaryPath -Force }
-    }
-}
-
-function Get-AdblockSourceConfig {
-    [CmdletBinding()]
-    param([string]$Path = (Join-Path $PSScriptRoot 'sources.json'))
-    if (-not (Test-Path -LiteralPath $Path)) { throw "Source manifest not found: $Path" }
-    $items = @(Get-Content -LiteralPath $Path -Raw -Encoding utf8 | ConvertFrom-Json)
-    if ($items.Count -eq 0) { throw "Source manifest is empty: $Path" }
-
-    $script:SourceConfigByUrl = @{}
-    $seenUrls = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($item in $items) {
-        if ([string]::IsNullOrWhiteSpace([string]$item.url)) { throw 'Every source must declare a URL.' }
-        if ($item.defaultAction -notin @('ALLOW','BLOCK')) { throw "Invalid defaultAction: $($item.url)" }
-        if ($item.syntax -notin @('AUTO','ADBLOCK','HOSTS','DNSMASQ')) { throw "Invalid syntax: $($item.url)" }
-        if ($item.preprocessor -notin @('NONE','UBO')) { throw "Invalid preprocessor: $($item.url)" }
-        if ($item.plainDomainMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid plainDomainMatchType: $($item.url)" }
-        if ($item.hostsMatchType -notin @('EXACT','SUFFIX')) { throw "Invalid hostsMatchType: $($item.url)" }
-        if ($null -eq $item.required -or $item.required -isnot [bool]) { throw "Source must explicitly declare required: $($item.url)" }
-        if ($null -eq $item.enabled -or $item.enabled -isnot [bool]) { throw "Source must explicitly declare enabled: $($item.url)" }
-        if ([long]$item.maxBytes -lt 1) { throw "Invalid maxBytes: $($item.url)" }
-        if ([int]$item.retries -lt 0 -or [int]$item.retries -gt 5) { throw "Invalid retries: $($item.url)" }
-        if ([int]$item.timeoutSeconds -lt 1 -or [int]$item.timeoutSeconds -gt 300) { throw "Invalid timeoutSeconds: $($item.url)" }
-        if ($item.sha256 -and [string]$item.sha256 -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid pinned SHA-256: $($item.url)" }
-
-        try { $uri = [Uri]::new([string]$item.url) }
-        catch { throw "Invalid source URL: $($item.url)" }
-        if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') { throw "Source URL must use HTTPS: $($item.url)" }
-        if (-not $seenUrls.Add([string]$item.url)) { throw "Duplicate source URL: $($item.url)" }
-
-        if ($item.enabled) { $script:SourceConfigByUrl[[string]$item.url] = $item }
-    }
-
-    $enabled = @($items | Where-Object { $_.enabled })
-    if ($enabled.Count -eq 0) { throw 'No enabled upstream sources configured.' }
-    return $enabled
-}
-
-function Invoke-AdblockGeneration {
-    [CmdletBinding()]
-    param(
-        [ValidateSet('yaml','txt','both')]
-        [string]$Format = 'yaml',
-        [bool]$Strict = $true
-    )
-
-    $sources = @(Get-AdblockSourceConfig)
-    $downloadResults = @(
-        $sources | ForEach-Object -Parallel {
-            $source = $_
-            $result = $null
-            $lastError = $null
-
-            for ($attempt = 1; $attempt -le 2; $attempt++) {
-                try {
-                    $response = Invoke-WebRequest -Uri $source.url -TimeoutSec 45 -MaximumRedirection 10 -Headers @{
-                        'User-Agent' = 'AdBlock_Rule_For_Clash/1.0'
-                    } -ErrorAction Stop
-
-                    $body = [string]$response.Content
-                    if ([string]::IsNullOrWhiteSpace($body)) { throw 'Empty response body' }
-                    if ($body -match '^\s*<(?:!doctype\s+html|html)\b') { throw 'Received HTML instead of a filter list' }
-
-                    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($body)
-                    $sha = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
-                    if ($source.sha256 -and $sha -ne ([string]$source.sha256).ToLowerInvariant()) {
-                        throw 'SHA-256 mismatch with pinned source hash'
-                    }
-
-                    $result = [PSCustomObject]@{
-                        Source = $source
-                        Content = $body
-                        Success = $true
-                        Attempts = $attempt
-                        Error = $null
-                        Sha256 = $sha
-                        ByteCount = $bytes.Length
-                    }
-                    break
-                }
-                catch {
-                    $lastError = $_.Exception.Message
-                    if ($attempt -lt 2) { Start-Sleep -Seconds 2 }
-                }
-            }
-
-            if ($null -eq $result) {
-                $result = [PSCustomObject]@{
-                    Source = $source
-                    Content = $null
-                    Success = $false
-                    Attempts = 2
-                    Error = $lastError
-                    Sha256 = $null
-                    ByteCount = 0
-                }
-            }
-            $result
-        } -ThrottleLimit 24
-    )
-
-    $failed = @($downloadResults | Where-Object { -not $_.Success })
-    foreach ($item in $failed) {
-        Write-Warning "Download failed: $($item.Source.url): $($item.Error)"
-    }
-
-    $requiredFailures = @($failed | Where-Object { $_.Source.required })
-    if ($requiredFailures.Count -gt 0) {
-        throw "Strict source acquisition failed: $($requiredFailures.Count) required source(s) unavailable. No output was written."
-    }
-
-    $successfulSources = @($downloadResults | Where-Object { $_.Success } | Sort-Object { $_.Source.url })
-    $fingerprintInput = ($successfulSources | ForEach-Object {
-        "$($_.Source.url)|$($_.Sha256)|$($_.ByteCount)"
-    }) -join [Environment]::NewLine
-    $fingerprintBytes = [System.Text.UTF8Encoding]::new($false).GetBytes($fingerprintInput)
-    $snapshotHash = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($fingerprintBytes)).ToLowerInvariant()
-    Write-Host "Source snapshot SHA-256: $snapshotHash ($($successfulSources.Count) source files)"
-
-    $null = Load-AdblockPublicSuffixList
-    $rawRules = [System.Collections.Generic.List[object]]::new()
-    $badfilterKeys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $preIssues = [System.Collections.Generic.List[object]]::new()
-    $skipStats = [System.Collections.Generic.Dictionary[string,int]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    $stats = @{
-        Parsed = 0
-        Skipped = 0
-        Invalid = 0
-        Badfilter = 0
-        Wildcard = 0
-        PublicSuffix = 0
-        HostsExpanded = 0
-        Preprocessor = 0
-    }
-
-    foreach ($download in $downloadResults) {
-        if (-not $download.Success) { continue }
-
-        $url = [string]$download.Source.url
-        $isWhitelistSource = Is-WhitelistSource $url
-        $lineNumber = 0
-
-        foreach ($line in ($download.Content -split '\r?\n')) {
-            $lineNumber++
-            $sourceLine = $line.Trim()
-
-            # uBlock directives alter the effective source before parsing. Do not
-            # mistake them for comments: without an evaluator they are unresolved.
-            if ($sourceLine -match '^!#') {
-                $stats.Preprocessor++
-                $preIssues.Add([PSCustomObject]@{
-                    Type = 'UNPROCESSED_PREPROCESSOR'
-                    Root = $url
-                    Detail = $sourceLine
-                    Message = "uBlock preprocessor directive requires expansion/context evaluation: $sourceLine"
-                })
-                continue
-            }
-
-            # A hosts line can contain multiple hostnames. Preserve every mapping.
-            $linesToParse = @($sourceLine)
-            if ($sourceLine -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+(.+)$') {
-                $hostsIp = $Matches[1]
-                $hostNamesText = $Matches[2]
-                $hostTokens = @($hostNamesText -split '\s+')
-                if ($hostTokens.Count -gt 1) {
-                    $expanded = [System.Collections.Generic.List[string]]::new()
-                    foreach ($hostName in $hostTokens) {
-                        if (-not $hostName -or $hostName.StartsWith('#')) { break }
-                        $expanded.Add("$hostsIp $hostName")
-                    }
-                    if ($expanded.Count -gt 0) {
-                        $linesToParse = $expanded.ToArray()
-                        $stats.HostsExpanded += $expanded.Count
-                    }
-                }
-            }
-
-            foreach ($rawLine in $linesToParse) {
-                $parsed = Parse-Rule -line $rawLine -isWhitelistSource $isWhitelistSource
-                $stats.Parsed++
-
-                if ($parsed.Action -eq 'SKIP') {
-                    $stats.Skipped++
-                    $reason = [string]$parsed.SkipReason
-                    if (-not $skipStats.ContainsKey($reason)) { $skipStats[$reason] = 0 }
-                    $skipStats[$reason]++
-
-                    if (Test-AdblockStrictParseIssue -SkipReason $reason) {
-                        $preIssues.Add([PSCustomObject]@{
-                            Type = 'UNRECOGNIZED_RULE_SYNTAX'
-                            Root = $url
-                            Detail = $rawLine
-                            Message = "Unrecognized rule syntax in required source '$url' at line ${lineNumber}: $rawLine"
-                        })
-                    }
-                    continue
-                }
-
-                $identity = Get-AdblockRuleIdentity $rawLine
-                if ($parsed.Action -eq 'BADFILTER') {
-                    [void]$badfilterKeys.Add($url + [char]10 + $identity)
-                    $stats.Badfilter++
-                    continue
-                }
-
-                if ($parsed.IsWildcard) {
-                    $stats.Wildcard++
-                    $preIssues.Add([PSCustomObject]@{
-                        Type = 'UNSUPPORTED_WILDCARD'
-                        Root = $parsed.Domain
-                        Detail = $rawLine
-                        Message = "Wildcard pattern cannot be represented losslessly by DOMAIN / DOMAIN-SUFFIX: $rawLine"
-                    })
-                    continue
-                }
-
-                $matchType = Get-AdblockMatchType -Parsed $parsed -RawRule $rawLine
-                $domain = Normalize-Domain ([string]$parsed.Domain)
-                if (-not (Is-ValidDNSDomain $domain)) {
-                    $stats.Invalid++
-                    $preIssues.Add([PSCustomObject]@{
-                        Type = 'INVALID_DOMAIN'
-                        Root = $domain
-                        Detail = $rawLine
-                        Message = "Parsed domain is not a valid DNS rule name: $rawLine"
-                    })
-                    continue
-                }
-
-                $action = if ($parsed.Action -eq 'EXCLUDE') { 'ALLOW' } else { 'BLOCK' }
-                $important = [bool]$parsed.IsImportant
-                $priority = Get-AdblockRulePriority -Action $action -MatchType $matchType -IsImportant $important
-
-                if (Is-PublicSuffix $domain) { $stats.PublicSuffix++ }
-
-                $rawRules.Add([PSCustomObject]@{
-                    Domain = $domain
-                    MatchType = $matchType
-                    Action = $action
-                    Priority = $priority
-                    IsImportant = $important
-                    RawRule = $rawLine
-                    RuleIdentity = $identity
-                    SourceUrl = $url
-                    SourceLine = $lineNumber
-                    SourceFormat = $parsed.SourceFormat
-                })
-            }
-        }
-    }
-
-    # $badfilter is bound to the source subscription and normalized base rule.
-    # Match type and every non-badfilter modifier remain part of rule identity.
-    $activeRules = [System.Collections.Generic.List[object]]::new()
-    foreach ($rule in $rawRules) {
-        $key = $rule.SourceUrl + [char]10 + $rule.RuleIdentity
-        if (-not $badfilterKeys.Contains($key)) {
-            $activeRules.Add($rule)
-        }
-    }
-
-    # Semantic deduplication keeps one diagnostic record per effective rule.
-    $dedup = [System.Collections.Generic.Dictionary[string,object]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    foreach ($rule in $activeRules) {
-        $key = "$($rule.Priority)|$($rule.Action)|$($rule.MatchType)|$($rule.Domain)"
-        if (-not $dedup.ContainsKey($key)) { $dedup.Add($key, $rule) }
-    }
-    $rules = @($dedup.Values)
-
-    $compiled = Compile-AdblockRules -Rules $rules -Strict:$Strict -PreExistingIssues $preIssues.ToArray()
-    $exact = @($compiled.Exact)
-    $suffix = @($compiled.Suffix)
-
-    # Render only the requested positive blacklist syntax.
-    $yamlRules = @($suffix | ForEach-Object { "  - DOMAIN-SUFFIX,$_" }) +
-                 @($exact | ForEach-Object { "  - DOMAIN,$_" })
-    $yamlText = @(
-        '# Generated by AdBlock_Rule_For_Clash'
-        "# DOMAIN: $($exact.Count)"
-        "# DOMAIN-SUFFIX: $($suffix.Count)"
-        'payload:'
-    ) + $yamlRules
-    $txtRules = @($suffix | ForEach-Object { "DOMAIN-SUFFIX,$_" }) +
-                @($exact | ForEach-Object { "DOMAIN,$_" })
-
-    $outputs = @()
-    if ($Format -in @('yaml','both')) {
-        $outputs += @{
-            Path = Join-Path $PSScriptRoot 'adblock_reject.yaml'
-            Text = ($yamlText -join [Environment]::NewLine) + [Environment]::NewLine
-        }
-    }
-    if ($Format -in @('txt','both')) {
-        $outputs += @{
-            Path = Join-Path $PSScriptRoot 'adblock_reject.txt'
-            Text = ($txtRules -join [Environment]::NewLine) + [Environment]::NewLine
-        }
-    }
-
-    # Write only after all acquisition, parsing and semantic checks succeed.
-    foreach ($output in $outputs) {
-        $temp = $output.Path + '.tmp'
-        [System.IO.File]::WriteAllText($temp, $output.Text, [System.Text.UTF8Encoding]::new($false))
-        Move-Item -LiteralPath $temp -Destination $output.Path -Force
-        Write-Host "Generated: $($output.Path)"
-    }
-
-    Write-Host "Sources: $($sources.Count); downloaded: $($downloadResults.Count - $failed.Count); failed optional: $($failed.Count)"
-    Write-Host "Snapshot SHA-256: $snapshotHash"
-    Write-Host "Parsed lines: $($stats.Parsed); active semantic rules: $($rules.Count)"
-    Write-Host "DOMAIN: $($exact.Count); DOMAIN-SUFFIX: $($suffix.Count)"
-    Write-Host "Skipped non-domain rules: $($stats.Skipped); invalid: $($stats.Invalid); wildcard: $($stats.Wildcard)"
-    Write-Host "Public-suffix patterns retained with original match type: $($stats.PublicSuffix); badfilter cancellations: $($stats.Badfilter)"
-    if ($skipStats.Count -gt 0) {
-        Write-Host ("Skip reasons: " + (($skipStats.GetEnumerator() | Sort-Object Name | ForEach-Object { "$($_.Name)=$($_.Value)" }) -join ', '))
-    }
-
-    return [PSCustomObject]@{
-        Sources = $sources.Count
-        Downloaded = $downloadResults.Count - $failed.Count
-        FailedOptional = @($failed | Where-Object { -not $_.Source.required }).Count
-        SnapshotSha256 = $snapshotHash
-        ParsedLines = $stats.Parsed
-        ActiveRules = $rules.Count
-        ExactCount = $exact.Count
-        SuffixCount = $suffix.Count
-        BadfilterCount = $stats.Badfilter
-        SkippedCount = $stats.Skipped
-        InvalidCount = $stats.Invalid
-        UnrepresentableCount = $compiled.Issues.Count
-        IsLossless = $compiled.IsLossless
-    }
-}
-
-$modAllowSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-@('all','reason') | ForEach-Object { $modAllowSet.Add($_) | Out-Null }
-
-function Resolve-Modifiers([string]$modStr) {
-    $ret = [PSCustomObject]@{ Decision = "CONTINUE"; SkipReason = $null; IsImportant = $false }
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $ret }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        $modName = ($mod -split '=')[0]
-        if ($modName -eq 'important') { $ret.IsImportant = $true; continue }
-        if ($modAllowSet.Contains($modName)) { continue }
-        if ($modName -eq 'dnsrewrite') {
-            $rv = if ($mod -match '=(.+)$') { $Matches[1] } else { '' }
-            if ($rv -eq 'nxdomain' -or $rv -match '^noerror;a;[\d.]+$' -or $rv -match '^noerror;aaaa;[0:]*$' -or $rv -eq 'noerror;aaaa;::1') { continue }
-            $ret.Decision = "SKIP";
-            $ret.SkipReason = "dnsrewrite-non-block:$rv"; return $ret
-        }
-        $ret.Decision = "SKIP"
-        $ret.SkipReason = "unsupported-modifier:$modName"; return $ret
-    }
-    if ($ret.IsImportant) { $ret.Decision = "IMPORTANT_CONTINUE" }
-    return $ret
-}
-
-$whitelistSubresourceTypes = [System.Collections.Generic.HashSet[string]]@('document','script','image','stylesheet','css','object','xmlhttprequest','xhr','media','font','subdocument','ping','websocket','webrtc','other','object-subrequest')
-
-function Is-ContextConstrainedWhitelist([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { ($_ -split '=')[0].Trim().ToLower() })) {
-        if ($mod -notin @('important','all','reason')) { return $true }
-    }
-    return $false
-}
-
-function Get-WhitelistImportantFlag([string]$modStr) {
-    if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
-    foreach ($mod in ($modStr -split ',' | ForEach-Object { $_.Trim().ToLower() })) {
-        if ($mod -eq 'important') { return $true }
-    }
-    return $false
-}
-
-function Test-AdblockStrictParseIssue([string]$SkipReason) {
-    # Explicitly understood non-DNS rules may be skipped and counted. Unknown
-    # syntax must stop strict compilation rather than silently lose a rule.
-    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable','unresolvable-wildcard'))
-}
-
-function Is-WhitelistSource([string]$url) {
-    if ($null -eq $script:SourceConfigByUrl) { return $false }
-    if ($script:SourceConfigByUrl.ContainsKey($url)) {
-        return ($script:SourceConfigByUrl[$url].defaultAction -eq 'ALLOW')
-    }
-    return $false
-}
-
-# ── 集中式规则解析函数 ───────────────────────────────────────
-function Parse-Rule {
-    param([string]$line, [bool]$isWhitelistSource = $false)
-
-    $result = [PSCustomObject]@{
-        Action      = "SKIP"
-        Domain      = $null
-        SkipReason  = "unmatched"
-        SourceFormat = "unknown"
-        IsImportant = $false
-        IsWildcard  = $false
-    }
-
-    if (
-        [string]::IsNullOrWhiteSpace($line) -or
-        $line.StartsWith("!") -or
-        $line.StartsWith("#") -or
-        $line.StartsWith("[") -or
-        $line -match '##|#\?#|#@#|#\$#'
-    ) {
-        $result.SkipReason = "comment-or-cosmetic"
-        return $result
-    }
-
-    if ($line -match '^/.+/(\$.*)?$') {
-        $result.SkipReason = "regex-rule"
-        return $result
-    }
-
-    if ($line -match '^\|https?://') {
-        $result.SkipReason = "exact-url-rule"
-        return $result
-    }
-
-    # Adblock 白名单规则
-    if ($line.StartsWith("@@")) {
-        $extractDomain = $null
-        $modPartRaw = $null
-
-        if (
-            $line -match '^@@\|\|([\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?(?:\.[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?)+)(.*)$'
-        ) {
-            $extractDomain = $Matches[1].ToLower()
-            $afterDomain = $Matches[2]
-
-            if ($afterDomain -match '^[\^]?[/?]') {
-                $result.SkipReason = "whitelist-path-or-query-specific"
-                return $result
-            }
-            $dollarIdx = $afterDomain.IndexOf('$')
-            $beforeMods = if ($dollarIdx -ge 0) { $afterDomain.Substring(0, $dollarIdx) } else { $afterDomain }
-            if ($beforeMods -notmatch '^\^?\|?$') {
-                $result.SkipReason = "whitelist-pattern-after-domain"
-                return $result
-            }
-
-            if ($dollarIdx -ge 0) {
-                $modPartRaw = $afterDomain.Substring($dollarIdx + 1)
-            }
-        }
-        elseif ($line -match '^@@\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(?:\$(.*))?$') {
-            $extractDomain = $Matches[1].ToLower()
-            $modPartRaw = $Matches[2]
-        }
-        elseif ($line -match '^@@([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})$') {
-            $extractDomain = $Matches[1].ToLower()
-        }
-
-        if ($null -ne $extractDomain) {
-            if (Is-ContextConstrainedWhitelist $modPartRaw) {
-                $result.SkipReason = "whitelist-context-constrained"
-            }
-            else {
-                $result.Action = "EXCLUDE"
-                $result.Domain = $extractDomain
-                $result.SourceFormat = "adblock-whitelist"
-                $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
-            }
-        }
-        else {
-            $result.SkipReason = "whitelist-unparseable"
-        }
-
-        return $result
-    }
-
-    # 精确 URL / AdGuard 精确域名规则
-    if ($line -match '^\|([\p{L}\p{N}][\p{L}\p{N}.-]*\.[\p{L}]{2,})(?:\^?\|)(\$(.+))?$') {
-        $candidate = $Matches[1].ToLower()
-        $modStr = $Matches[3]
-
-        if (-not [string]::IsNullOrWhiteSpace($modStr)) {
-            $exactMods = @($modStr -split ',' | ForEach-Object { (($_ -split '=')[0]).Trim().ToLower() })
-            if ($exactMods -contains 'badfilter') {
-                $result.Action = 'BADFILTER'
-                $result.Domain = $candidate
-                return $result
-            }
-        }
-
-        $modResult = Resolve-Modifiers $modStr
-
-        if ($modResult.Decision -eq "SKIP") {
-            $result.SkipReason = $modResult.SkipReason
-            return $result
-        }
-
-        if ($isWhitelistSource) {
-            $result.Action = "EXCLUDE"
-            $result.SourceFormat = "whitelist-exact"
-        }
-        else {
-            $result.Action = "EXACT"
-            $result.SourceFormat = "adguard-exact"
-        }
-
-        $result.Domain = $candidate
-        $result.IsImportant = $modResult.IsImportant
-
-        return $result
-    }
-
-    # Adblock || 域名规则
-    if ($line -match '^\|\|([\p{L}\p{N}*][\p{L}\p{N}*.-]*)(.*)') {
-        $raw = $Matches[1].ToLower()
-        $rest = $Matches[2]
-        $dollarIndex = $rest.IndexOf('$')
-
-        $restBeforeDollar = if ($dollarIndex -ge 0) {
-            $rest.Substring(0, $dollarIndex)
-        }
-        else {
-            $rest
         }
 
         if ($raw -match '[/?]' -or $restBeforeDollar -notmatch '^\^?$') {
