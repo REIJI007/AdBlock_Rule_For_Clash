@@ -326,8 +326,8 @@ $urlList = @(
 )
 
 
-# 只接受能够投影为域名级拦截的修饰符；未知或带上下文条件的修饰符一律保守跳过。
-# badfilter 使用规则身份而非域名撤销，避免误删同域的其他规则。
+# 仅处理能够转换为域名级拦截的修饰符；未知修饰符或带有上下文条件的修饰符均保守跳过。
+# 使用完整规则身份处理 badfilter 撤销，避免误删同一域名下的其他规则。
 function Get-RuleIdentity([string]$pattern, [string]$modifierString, [bool]$isWhitelistSource = $false) {
     if ([string]::IsNullOrWhiteSpace($pattern)) { return $null }
 
@@ -361,7 +361,7 @@ function Resolve-Modifiers([string]$modStr) {
         $parts = $mod -split '=', 2
         $modName = $parts[0]
 
-        # $all 扩展到弹窗/文档/内联资源；$reason 依赖 $document，均不是纯域名阻断语义。
+        # $all 会扩展到弹窗、文档和内联资源；$reason 依赖 $document，二者都不属于纯域名拦截语义。
         if ($modName -eq 'important') {
             $ret.IsImportant = $true
             continue
@@ -369,7 +369,7 @@ function Resolve-Modifiers([string]$modStr) {
 
         if ($modName -eq 'dnsrewrite') {
             $rv = if ($parts.Count -gt 1) { $parts[1].Trim().ToLowerInvariant() } else { '' }
-            # 仅将明确的 DNS 黑洞响应视为拦截；真实地址、CNAME 和其他响应不能变成 REJECT。
+            # 仅将明确指向 DNS 黑洞的响应视为拦截；真实 IP 地址、CNAME 和其他响应均不能转换为 REJECT。
             $isDnsBlock = (
                 $rv -eq 'nxdomain' -or
                 $rv -match '^noerror;a;(0\.0\.0\.0|127\.0\.0\.1)$' -or
@@ -411,7 +411,7 @@ function Is-WhitelistSource([string]$url) {
     return $url -match "(?i)allowlist|exclusions|exceptions|whitelist"
 }
 
-# ── 工具函数 ───────────────────────────────────────────────
+# ── 辅助函数 ───────────────────────────────────────────────
 function Normalize-Domain([string]$domain) {
     if ([string]::IsNullOrWhiteSpace($domain)) { return $null }
     $d = $domain.Trim()
@@ -460,7 +460,7 @@ function Get-ParentDomains([string]$domain) {
 
 
 
-# ── 集中式规则解析函数 ───────────────────────────────────────
+# ── 统一规则解析函数 ───────────────────────────────────────
 function Parse-Rule {
     param([string]$line, [bool]$isWhitelistSource = $false)
 
@@ -495,7 +495,7 @@ function Parse-Rule {
         return $result
     }
 
-    # Adblock 例外规则：分离 EXACT 与 SUFFIX。
+    # 广告过滤例外规则：分别处理精确匹配（EXACT）与后缀匹配（SUFFIX）。
     if ($line.StartsWith("@@")) {
         if (
             $line -match '^@@\|\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)(.*)$'
@@ -575,7 +575,7 @@ function Parse-Rule {
         return $result
     }
 
-    # Adblock 精确主机锚定规则：|domain|
+    # 广告过滤语法中的精确主机锚定规则：|domain|。
     if ($line -match '^\|([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\|(\$(.+))?$') {
         $candidate = $Matches[1]
         $modStr = $Matches[3]
@@ -612,7 +612,7 @@ function Parse-Rule {
         return $result
     }
 
-    # 域名锚定规则：路径、查询和通配符不能降级成普通后缀。
+    # 域名锚定规则：包含路径、查询参数或通配符的规则，不能简化为普通后缀匹配。
     if ($line -match '^\|\|([a-zA-Z0-9*][a-zA-Z0-9*.-]*)(.*)') {
         $raw = $Matches[1]
         $rest = $Matches[2]
@@ -665,7 +665,7 @@ function Parse-Rule {
         return $result
     }
 
-    # Hosts 条目按精确主机处理。
+    # hosts 文件中的条目按精确主机名处理。
     if (
         $line -match '^(0\.0\.0\.0|127\.0\.0\.1|::1|::0|::)\s+([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\s.*)?$'
     ) {
@@ -688,7 +688,7 @@ function Parse-Rule {
         return $result
     }
 
-    # dnsmasq address 只在明确返回黑洞地址时视为后缀拦截。
+    # dnsmasq 的 address 指令仅在明确返回黑洞地址时，才视为后缀拦截规则。
     if ($line -match '^address=/([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/([^/]*)$') {
         $domain = $Matches[1]
         $target = $Matches[2].Trim()
@@ -720,13 +720,13 @@ function Parse-Rule {
         return $result
     }
 
-    # dnsmasq server/local 是 DNS 路由或本地权威行为，不等价于拒绝访问。
+    # dnsmasq 的 server/local 指令用于 DNS 转发或本地权威解析，不等同于拒绝访问。
     if ($line -match '^(server|local)=/') {
         $result.SkipReason = "dnsmasq-routing-not-block"
         return $result
     }
 
-    # 裸域名沿用项目原有约定：EXACT；具体来源的其他语义需由其文件格式定义。
+    # 裸域名沿用项目原有约定，按精确匹配（EXACT）处理；其他语义由各来源的文件格式决定。
     if ($line -match '^([a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$') {
         $domain = $Matches[1]
         if ($isWhitelistSource) {
@@ -753,7 +753,7 @@ $parsedRulesByKey = [System.Collections.Generic.Dictionary[string, object]]::new
 $skipStats = [System.Collections.Generic.Dictionary[string,int]]::new()
 $formatStats = [System.Collections.Generic.Dictionary[string,int]]::new()
 
-# 并行下载阶段：保持 URL 顺序，逐项收集下载结果。
+# 并行下载阶段：保持来源 URL 的原始顺序，并逐项收集下载结果。
 $httpClient = [System.Net.Http.HttpClient]::new()
 $httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 
@@ -773,7 +773,7 @@ $urlContents = $downloadTasks | ForEach-Object {
 }
 $httpClient.Dispose()
 
-# 第一遍只解析并收集规则身份；badfilter 可以出现在原规则之前或之后。
+# 第一遍仅解析规则并收集规则身份；badfilter 撤销规则可以出现在原规则之前或之后。
 foreach ($item in $urlContents) {
     $url = $item.Url
     Write-Host "正在处理: $url"
@@ -833,7 +833,7 @@ foreach ($item in $urlContents) {
     }
 }
 
-# 第二遍应用 badfilter，再构建彼此独立的精确/后缀黑白名单集合。
+# 第二遍应用 badfilter 撤销结果，再分别构建互相独立的精确匹配与后缀匹配黑白名单集合。
 $uniqueSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $uniqueExactRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $excludedExactDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -888,11 +888,11 @@ foreach ($parsed in $parsedRulesByKey.Values) {
     $formatStats[$parsed.SourceFormat]++
 }
 
-# ── 过滤阶段 + 白名单抑制 + 冲突索引 + 父域剪枝 ─────────────
+# ── 过滤阶段 + 白名单抑制 + 冲突索引 + 父域冗余剪枝 ─────────────
 $validSuffixRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $validExactRules = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 
-# 匹配粒度由上游规则决定；不能因为域名属于 PSL 就把 SUFFIX 改写成 EXACT。
+# 匹配范围完全由上游规则决定；本脚本不会基于公共后缀列表（PSL）擅自改变匹配范围。
 foreach ($d in $uniqueSuffixRules) {
     if (Is-ValidDNSDomain $d) { $validSuffixRules.Add($d) | Out-Null }
 }
@@ -900,13 +900,13 @@ foreach ($d in $uniqueExactRules) {
     if (Is-ValidDNSDomain $d) { $validExactRules.Add($d) | Out-Null }
 }
 
-# 保留项目现有的优先级策略，同时严格区分 EXACT 与 SUFFIX 的继承范围。
+# 保留项目现有的优先级策略，同时严格区分精确匹配（EXACT）与后缀匹配（SUFFIX）的继承范围。
 function Get-EffectiveStatus([string]$domain) {
     $domain = Normalize-Domain $domain
     if ([string]::IsNullOrWhiteSpace($domain)) { return "UNKNOWN" }
     $labels = $domain -split '\.'
 
-    # P0：重要白名单。精确例外不向子域继承，后缀例外向子域继承。
+    # P0：重要白名单。精确例外仅作用于自身域名；后缀例外会向子域继承。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
@@ -914,7 +914,7 @@ function Get-EffectiveStatus([string]$domain) {
         if ($importantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST_P0" }
     }
 
-    # P1：重要黑名单。重要精确规则只匹配当前主机，重要后缀规则向下继承。
+    # P1：重要黑名单。重要精确规则仅匹配当前主机；重要后缀规则会向下级子域继承。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
@@ -922,7 +922,7 @@ function Get-EffectiveStatus([string]$domain) {
         if ($importantSuffixDomains.Contains($current)) { return "BLACKLIST_P1" }
     }
 
-    # P2-P4：最近层级优先，同一层级先判断例外，再判断拦截。
+    # P2–P4：优先采用距离当前域名最近的规则；同一层级先判断例外，再判断拦截。
     $current = $domain
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
         $current = ($labels[$i..($labels.Length-1)] -join '.')
@@ -942,13 +942,13 @@ $allWhitelists.UnionWith($excludedSuffixDomains)
 $allWhitelists.UnionWith($importantWhitelistExactDomains)
 $allWhitelists.UnionWith($importantWhitelistSuffixDomains)
 
-# 方案 A：只投影本轮上游中显式存在且经优先级消解后仍有效的黑名单候选域名。
-# 父后缀存在有效子域例外时，仅将该父候选降级为 DOMAIN；已知子域候选仍按自身有效 EXACT / SUFFIX 粒度输出。
-# 不枚举 DNS 命名空间，也不合成上游未提供的未知子域；上游更新后由下一轮重新投影。
+# 方案 A：仅投影本轮上游中明确列出、且经优先级处理后仍然有效的黑名单候选域名。
+# 父级后缀规则存在有效的子域例外时，仅将该父级候选降级为 DOMAIN；已知子域候选仍按其自身有效的 EXACT / SUFFIX 匹配范围输出。
+# 不枚举整个 DNS 命名空间，也不补造上游未提供的未知子域；上游规则更新后，在下一轮重新执行投影。
 foreach ($w in $allWhitelists) {
     if ((Get-EffectiveStatus $w) -notlike "WHITELIST*") { continue }
 
-    # 同域 EXACT 白名单只豁免 Apex，但后缀黑名单仍可能覆盖其子域。
+    # 同域的 EXACT 白名单仅豁免域名本身（根域名），后缀黑名单仍可能覆盖其子域。
     if (
         $validSuffixRules.Contains($w) -and
         ($excludedExactDomains.Contains($w) -or $importantWhitelistExactDomains.Contains($w))
@@ -980,7 +980,7 @@ foreach ($d in $allBlacklists) {
     }
 }
 
-# 只删除被有效父后缀完全覆盖的规则；不跨越存在例外冲突的父域做剪枝。
+# 仅删除已被有效父级后缀规则完全覆盖的规则；存在例外冲突的父域不参与跨层级剪枝。
 Write-Host "正在执行语义安全的冗余剪枝..."
 $classSuffixBlocks = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($d in $rawSuffixSet) {
@@ -1012,18 +1012,18 @@ $ruleCount    = $classExactBlocks.Count + $classSuffixBlocks.Count
 $generateTime = (Get-Date -AsUTC).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss")
 
 $allLines = [System.Collections.Generic.List[string]]::new()
-$allLines.Add("# Title: AdBlock_Rule_For_Clash")
-$allLines.Add("# Description: 适用于Clash的域名拦截规则集，每20分钟更新一次，确保即时同步上游")
-$allLines.Add("# Homepage: https://github.com/REIJI007/AdBlock_Rule_For_Clash")
-$allLines.Add("# LICENSE1: GPL-3.0")
-$allLines.Add("# LICENSE2: CC-BY-NC-SA 4.0")
-$allLines.Add("# Generated Time: $generateTime")
-$allLines.Add("# Total Rules: $ruleCount")
-$allLines.Add("# DOMAIN : $($classExactBlocks.Count)")
-$allLines.Add("# DOMAIN-SUFFIX : $($classSuffixBlocks.Count)")
-$allLines.Add("# Whitelist : $($classWhitelist.Count)")
-$allLines.Add("# Projection Mode : Scheme A - current upstream explicit domain-rule projection")
-$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) parent suffix candidates narrowed to DOMAIN due to effective descendant exceptions")
+$allLines.Add("# 标题：AdBlock_Rule_For_Clash")
+$allLines.Add("# 说明：适用于 Clash 的域名拦截规则集，每 20 分钟更新一次，以同步上游规则")
+$allLines.Add("# 项目主页：https://github.com/REIJI007/AdBlock_Rule_For_Clash")
+$allLines.Add("# 开源协议 1：GPL-3.0")
+$allLines.Add("# 开源协议 2：CC-BY-NC-SA 4.0")
+$allLines.Add("# 生成时间：$generateTime")
+$allLines.Add("# 规则总数：$ruleCount")
+$allLines.Add("# 精确域名规则（DOMAIN）：$($classExactBlocks.Count)")
+$allLines.Add("# 后缀域名规则（DOMAIN-SUFFIX）：$($classSuffixBlocks.Count)")
+$allLines.Add("# 白名单规则数：$($classWhitelist.Count)")
+$allLines.Add("# 投影模式：方案 A——仅投影当前上游中明确列出的域名规则")
+$allLines.Add("# 语义提示：因存在有效的子域例外，$($suffixConflictExactDomains.Count) 个父级后缀候选已收窄为精确域名规则（DOMAIN）")
 $allLines.Add("")
 
 $allLines.Add("payload:")
@@ -1034,7 +1034,7 @@ foreach ($d in ($classSuffixBlocks | Sort-Object)) {
 }
 
 foreach ($d in ($classExactBlocks | Sort-Object)) {
-    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [SEMANTIC-LOSS] $($d): suffix scope narrowed to exact due to an exception") }
+    if ($suffixConflictExactDomains.Contains($d)) { $allLines.Add("  # [语义损失] $($d)：由于存在例外，后缀匹配范围已收窄为精确域名匹配（DOMAIN）") }
     $allLines.Add("  - DOMAIN,$d")
 }
 
