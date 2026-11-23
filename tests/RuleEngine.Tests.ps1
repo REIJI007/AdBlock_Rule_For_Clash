@@ -313,7 +313,7 @@ Describe 'AdGuard SDNS internal exclusion scope' {
 
         InModuleScope AdBlockRuleEngine {
             $active = @(Get-AdblockSourceConfig)
-            ($active | Where-Object { $_.id -eq 'source-236' }).Count | Should -Be 0
+            @($active | Where-Object { $_.id -eq 'source-236' }).Count | Should -Be 0
         }
     }
 
