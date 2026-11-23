@@ -71,6 +71,6 @@ rules:
 
 - YAML：Clash/Mihomo classical provider，`behavior: classical`、`format: yaml`。
 - TXT：Clash/Mihomo classical provider，`behavior: classical`、`format: text`。
-- MRS：由 Mihomo 将 `adblock_reject_domain.yaml` 转换为 `domain` behavior 二进制规则集。
+- MRS：由独立的 MRS 工作流从上游源重新编译规则，生成仅供本次转换使用的临时 domain-behavior YAML，再由 Mihomo 转换为二进制规则集。该临时输入不会作为 YAML 订阅产物发布，也不依赖 YAML 工作流的执行结果。
 
-**YAML 与 TXT 是两条独立生成链路**：YAML workflow 只运行 YAML 入口并更新 `adblock_reject.yaml` 与 `adblock_reject_domain.yaml`；TXT workflow 只运行 TXT 入口并更新 `adblock_reject.txt`。两条链路可复用同一规则引擎，但触发、执行、诊断文件和提交目标彼此独立。MRS 只由 YAML workflow 成功后触发。两个发布 workflow 共享 Git 发布互斥锁，仅用于避免并发更新同一 `main` 分支，不合并生成流程。
+**YAML、TXT 与 MRS 是三条彼此独立的生成链路**：YAML workflow 只运行 YAML 入口并更新 `adblock_reject.yaml`；TXT workflow 只运行 TXT 入口并更新 `adblock_reject.txt`；MRS workflow 只运行 MRS 入口，独立下载和编译上游源，生成临时转换输入，再由 Mihomo 输出 `adblock_reject.mrs`。MRS 不监听、不等待 YAML/TXT workflow，也不读取它们生成的文件。三条链路可复用同一规则引擎，但触发、执行、诊断文件和提交目标各自独立。三个 workflow 使用各自独立的并发组，不会因其他格式的生成任务而排队等待；发布时各自通过 Git fetch/rebase 重试处理 `main` 分支上的并发更新。

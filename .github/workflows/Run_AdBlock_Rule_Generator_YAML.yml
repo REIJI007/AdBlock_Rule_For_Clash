@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: adblock-main-artifact-publisher
+  group: adblock-yaml-publisher
   cancel-in-progress: false
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
       - name: Verify PowerShell
         run: pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
 
-      - name: Generate YAML and its MRS input only
+      - name: Generate YAML only
         shell: pwsh
         run: ./adblock_rule_generator_yaml.ps1
 
@@ -52,10 +52,19 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- adblock_reject.yaml adblock_reject_domain.yaml adblock_sources_manifest_yaml.json adblock_build_report_yaml.json
+          git add -- adblock_reject.yaml adblock_sources_manifest_yaml.json adblock_build_report_yaml.json
           if git diff --cached --quiet; then
             echo "YAML artifacts are unchanged."
             exit 0
           fi
           git commit -m "chore: update generated YAML adblock rules"
-          git push origin HEAD:refs/heads/main
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git rebase origin/main
+            if git push origin HEAD:refs/heads/main; then
+              exit 0
+            fi
+            echo "YAML publish push failed on attempt $attempt; retrying after fetching main."
+          done
+          echo "YAML publish failed after 3 attempts."
+          exit 1
