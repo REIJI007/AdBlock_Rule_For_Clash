@@ -1,0 +1,51 @@
+name: Test Rule Engine
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - 'refactor/**'
+      - 'fix/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check PowerShell
+        run: pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()'
+
+      - name: Run domain rule-engine tests
+        run: pwsh -NoLogo -NoProfile -File ./tests/Run-Tests.ps1
+
+      - name: Validate explicit upstream configuration
+        shell: pwsh
+        run: |
+          $config = Get-Content ./config/upstream-sources.json -Raw | ConvertFrom-Json
+          if ($config.schemaVersion -ne 1) { throw 'Unsupported source config schema' }
+          if ($config.sources.Count -lt 300) { throw 'Unexpectedly few upstream sources' }
+          $seen = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+          foreach ($source in $config.sources) {
+            if (-not $source.url -or $source.defaultAction -notin @('BLOCK','ALLOW') -or $null -eq $source.required) {
+              throw "Invalid source config entry: $($source.url)"
+            }
+            if ($source.syntax -notin @('AUTO','ADBLOCK','HOSTS','DNSMASQ') -or $source.preprocessor -notin @('NONE','UBO') -or $source.plainDomainMatchType -notin @('EXACT','SUFFIX') -or $source.hostsMatchType -notin @('EXACT','SUFFIX')) {
+              throw "Invalid syntax/preprocessor metadata: $($source.url)"
+            }
+            if ($source.timeoutSeconds -lt 1 -or $source.timeoutSeconds -gt 300 -or $source.maxBytes -lt 1 -or $source.retries -lt 0 -or $source.retries -gt 5) {
+              throw "Invalid download limits: $($source.url)"
+            }
+            if (-not $seen.Add($source.url)) { throw "Duplicate upstream URL: $($source.url)" }
+            try { $uri = [Uri]::new([string]$source.url) }
+            catch { throw "Invalid upstream URL: $($source.url)" }
+            if (-not $uri.IsAbsoluteUri -or $uri.Scheme -ne 'https') {
+              throw "Upstream URL must be absolute HTTPS: $($source.url)"
+            }
+          }
