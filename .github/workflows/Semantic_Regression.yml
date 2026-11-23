@@ -1,0 +1,38 @@
+name: 域名语义回归测试
+
+on:
+  pull_request:
+    paths:
+      - adblock_rule_generator_yaml.ps1
+      - adblock_rule_generator_txt.ps1
+      - tests/**
+      - .github/workflows/Semantic_Regression.yml
+  push:
+    paths:
+      - adblock_rule_generator_yaml.ps1
+      - adblock_rule_generator_txt.ps1
+      - tests/**
+      - .github/workflows/Semantic_Regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-regression:
+    runs-on: windows-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 运行语义回归测试
+        shell: pwsh
+        run: ./tests/Invoke-SemanticRegression.ps1 -TargetFormat clash
+
+      - name: 上传机器可读指标
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-regression-clash
+          path: tests/TestResults/semantic-metrics.json
+          if-no-files-found: warn
