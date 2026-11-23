@@ -328,7 +328,7 @@ $urlList = @(
 
 # 只接受能够投影为域名级拦截的修饰符；未知或带上下文条件的修饰符一律保守跳过。
 # badfilter 使用规则身份而非域名撤销，避免误删同域的其他规则。
-function Get-RuleIdentity([string]$pattern, [string]$modifierString) {
+function Get-RuleIdentity([string]$pattern, [string]$modifierString, [bool]$isWhitelistSource = $false) {
     if ([string]::IsNullOrWhiteSpace($pattern)) { return $null }
 
     $normalized = [System.Collections.Generic.List[string]]::new()
@@ -343,7 +343,8 @@ function Get-RuleIdentity([string]$pattern, [string]$modifierString) {
 
     $items = $normalized.ToArray()
     [System.Array]::Sort($items, [System.StringComparer]::Ordinal)
-    return ($pattern.Trim().ToLowerInvariant() + '$' + ($items -join ','))
+    $sourceClass = if ($isWhitelistSource) { 'ALLOWLIST-SOURCE' } else { 'FILTER-SOURCE' }
+    return ($sourceClass + '|' + $pattern.Trim().ToLowerInvariant() + '$' + ($items -join ','))
 }
 
 function Resolve-Modifiers([string]$modStr) {
@@ -520,7 +521,7 @@ function Parse-Rule {
                 $result.Action = "BADFILTER"
                 $result.Domain = $extractDomain
                 $result.SourceFormat = "adblock-whitelist-badfilter"
-                $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw
+                $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw $isWhitelistSource
                 $result.IsFilterRule = $true
                 return $result
             }
@@ -533,7 +534,7 @@ function Parse-Rule {
             $result.Domain = $extractDomain
             $result.SourceFormat = if ($beforeMods -match '\|') { "whitelist-exact" } else { "whitelist-suffix" }
             $result.IsImportant = Get-WhitelistImportantFlag $modPartRaw
-            $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw
+            $result.RuleKey = Get-RuleIdentity $patternText $modPartRaw $isWhitelistSource
             $result.IsFilterRule = $true
             return $result
         }
@@ -546,7 +547,7 @@ function Parse-Rule {
                 $result.Action = "BADFILTER"
                 $result.Domain = $candidate
                 $result.SourceFormat = "adblock-whitelist-badfilter"
-                $result.RuleKey = Get-RuleIdentity $patternText $modStr
+                $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
                 $result.IsFilterRule = $true
                 return $result
             }
@@ -559,7 +560,7 @@ function Parse-Rule {
             $result.Domain = $candidate
             $result.SourceFormat = "whitelist-exact"
             $result.IsImportant = Get-WhitelistImportantFlag $modStr
-            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
             $result.IsFilterRule = $true
             return $result
         }
@@ -567,7 +568,7 @@ function Parse-Rule {
             $result.Action = "EXCLUDE"
             $result.Domain = $Matches[1]
             $result.SourceFormat = "whitelist-plain"
-            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $Matches[1]) ""
+            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $Matches[1]) "" $isWhitelistSource
             return $result
         }
 
@@ -585,7 +586,7 @@ function Parse-Rule {
             $result.Action = "BADFILTER"
             $result.Domain = $candidate
             $result.SourceFormat = "adblock-exact-badfilter"
-            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
             $result.IsFilterRule = $true
             return $result
         }
@@ -607,7 +608,7 @@ function Parse-Rule {
 
         $result.Domain = $candidate
         $result.IsImportant = $modResult.IsImportant
-        $result.RuleKey = Get-RuleIdentity $patternText $modStr
+        $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
         $result.IsFilterRule = $true
         return $result
     }
@@ -634,7 +635,7 @@ function Parse-Rule {
             $result.Action = "BADFILTER"
             $result.Domain = $raw
             $result.SourceFormat = "adblock-suffix-badfilter"
-            $result.RuleKey = Get-RuleIdentity $patternText $modStr
+            $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
             $result.IsFilterRule = $true
             return $result
         }
@@ -660,7 +661,7 @@ function Parse-Rule {
 
         $result.Domain = $raw
         $result.IsImportant = $modResult.IsImportant
-        $result.RuleKey = Get-RuleIdentity $patternText $modStr
+        $result.RuleKey = Get-RuleIdentity $patternText $modStr $isWhitelistSource
         $result.IsFilterRule = $true
         return $result
     }
@@ -684,7 +685,7 @@ function Parse-Rule {
             $result.SourceFormat = "hosts"
         }
         $result.Domain = $domain
-        $result.RuleKey = Get-RuleIdentity ("hosts:" + $domain) ""
+        $result.RuleKey = Get-RuleIdentity ("hosts:" + $domain) "" $isWhitelistSource
         return $result
     }
 
@@ -716,7 +717,7 @@ function Parse-Rule {
             $result.SourceFormat = "dnsmasq-address"
         }
         $result.Domain = $domain
-        $result.RuleKey = Get-RuleIdentity ("dnsmasq-address:" + $domain) ""
+        $result.RuleKey = Get-RuleIdentity ("dnsmasq-address:" + $domain) "" $isWhitelistSource
         return $result
     }
 
@@ -732,12 +733,12 @@ function Parse-Rule {
         if ($isWhitelistSource) {
             $result.Action = "EXCLUDE"
             $result.SourceFormat = "whitelist-plain"
-            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $domain) ""
+            $result.RuleKey = Get-RuleIdentity ("whitelist-plain:" + $domain) "" $isWhitelistSource
         }
         else {
             $result.Action = "EXACT"
             $result.SourceFormat = "plain-domain"
-            $result.RuleKey = Get-RuleIdentity ("plain-domain:" + $domain) ""
+            $result.RuleKey = Get-RuleIdentity ("plain-domain:" + $domain) "" $isWhitelistSource
         }
         $result.Domain = $domain
         return $result
