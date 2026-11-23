@@ -693,7 +693,7 @@ $whitelistSubresourceTypes = [System.Collections.Generic.HashSet[string]]@('docu
 function Is-ContextConstrainedWhitelist([string]$modStr) {
     if ([string]::IsNullOrWhiteSpace($modStr)) { return $false }
     foreach ($mod in ($modStr -split ',' | ForEach-Object { ($_ -split '=')[0].Trim().ToLower() })) {
-        if ($mod -notin @('important','all')) { return $true }
+        if ($mod -notin @('important','all','reason')) { return $true }
     }
     return $false
 }

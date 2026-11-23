@@ -55,6 +55,13 @@ Describe 'Five-tier priority evaluation' {
             $importantAllow.Action | Should -Be 'EXCLUDE'
             $importantAllow.IsImportant | Should -BeTrue
 
+            $reasonAllow = Parse-Rule -line '@@||api.taboola.com^$reason=known-breakage'
+            $reasonAllow.Action | Should -Be 'EXCLUDE'
+            $reasonAllow.IsImportant | Should -BeFalse
+
+            $contextAllow = Parse-Rule -line '@@||api.taboola.com^$script'
+            $contextAllow.Action | Should -Be 'SKIP'
+
             $block = Parse-Rule -line '|api.taboola.com^|'
             $block.Action | Should -Be 'EXACT'
             $block.Domain | Should -Be 'api.taboola.com'
