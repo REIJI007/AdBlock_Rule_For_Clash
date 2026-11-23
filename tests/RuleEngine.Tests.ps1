@@ -301,6 +301,7 @@ Describe 'Explicit source semantics and ingestion safeguards' {
 }
 
     
+Describe 'AdGuard SDNS internal exclusion scope' {
     It 'does not compile AdGuard SDNS internal exclusions as a global allowlist' {
         $manifestPath = Join-Path $PSScriptRoot '../sources.json'
         $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
@@ -315,3 +316,5 @@ Describe 'Explicit source semantics and ingestion safeguards' {
             ($active | Where-Object { $_.id -eq 'source-236' }).Count | Should -Be 0
         }
     }
+
+}
