@@ -13,6 +13,7 @@ on:
     branches:
       - 'refactor/**'
       - 'fix/**'
+      - 'upgrade/**'
   workflow_dispatch:
 
 permissions:
@@ -38,7 +39,7 @@ jobs:
       - name: Validate upstream manifest contract
         shell: pwsh
         run: |
-          $sources = @(Get-Content ./sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
+          $sources = @(Get-Content ./config/upstream-sources.json -Raw -Encoding UTF8 | ConvertFrom-Json)
           if ($sources.Count -ne 317) { throw "Expected 317 configured sources, found $($sources.Count)." }
           if (@($sources | Where-Object enabled).Count -ne 316) { throw 'Expected 316 enabled source records.' }
           if (@($sources | Where-Object { $_.enabled -and $_.required }).Count -ne 315) { throw 'Expected 315 enabled required sources.' }
