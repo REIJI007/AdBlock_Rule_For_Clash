@@ -539,7 +539,7 @@ function Parse-Rule {
         }
         elseif ($line -match '^@@\|([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+)\|(\$(.+))?$') {
             $candidate = $Matches[1]
-            $modStr = $Matches[6]
+            $modStr = $Matches[5]
             $patternText = "@@|$candidate|"
 
             if ($null -ne $modStr -and $modStr -match '(?i)(^|,)badfilter(,|$)') {
@@ -608,7 +608,7 @@ function Parse-Rule {
         $result.Domain = $candidate
         $result.IsImportant = $modResult.IsImportant
         $result.RuleKey = Get-RuleIdentity $patternText $modStr
-        $result.IsFilterRule = -not $isWhitelistSource
+        $result.IsFilterRule = $true
         return $result
     }
 
@@ -661,7 +661,7 @@ function Parse-Rule {
         $result.Domain = $raw
         $result.IsImportant = $modResult.IsImportant
         $result.RuleKey = Get-RuleIdentity $patternText $modStr
-        $result.IsFilterRule = -not $isWhitelistSource
+        $result.IsFilterRule = $true
         return $result
     }
 
@@ -942,8 +942,9 @@ $allWhitelists.UnionWith($excludedSuffixDomains)
 $allWhitelists.UnionWith($importantWhitelistExactDomains)
 $allWhitelists.UnionWith($importantWhitelistSuffixDomains)
 
-# 后缀黑名单内部存在有效例外时，纯正向域名规则无法完整表达该排除区域。
-# 父后缀降级为 DOMAIN 只保留父域本身；其他明确有效的子域规则仍按自身类型输出。
+# 方案 A：只投影本轮上游中显式存在且经优先级消解后仍有效的黑名单候选域名。
+# 父后缀存在有效子域例外时，仅将该父候选降级为 DOMAIN；已知子域候选仍按自身有效 EXACT / SUFFIX 粒度输出。
+# 不枚举 DNS 命名空间，也不合成上游未提供的未知子域；上游更新后由下一轮重新投影。
 foreach ($w in $allWhitelists) {
     if ((Get-EffectiveStatus $w) -notlike "WHITELIST*") { continue }
 
@@ -961,7 +962,7 @@ foreach ($w in $allWhitelists) {
         }
     }
 }
-Write-Host "冲突检测完成，共有 $($suffixConflictExactDomains.Count) 个 SUFFIX 规则无法无损表达，将按 DOMAIN 近似保留"
+Write-Host "冲突检测完成：$($suffixConflictExactDomains.Count) 个父 SUFFIX 候选降级为 DOMAIN；显式子域黑名单候选仍独立保留"
 
 $rawSuffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $rawExactSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
@@ -1021,7 +1022,8 @@ $allLines.Add("# Total Rules: $ruleCount")
 $allLines.Add("# DOMAIN : $($classExactBlocks.Count)")
 $allLines.Add("# DOMAIN-SUFFIX : $($classSuffixBlocks.Count)")
 $allLines.Add("# Whitelist : $($classWhitelist.Count)")
-$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) suffix/exception conflicts cannot be represented exactly by positive DOMAIN rules")
+$allLines.Add("# Projection Mode : Scheme A - current upstream explicit domain-rule projection")
+$allLines.Add("# Semantic Warning : $($suffixConflictExactDomains.Count) parent suffix candidates narrowed to DOMAIN due to effective descendant exceptions")
 $allLines.Add("")
 
 $allLines.Add("payload:")
@@ -1045,7 +1047,7 @@ Write-Host "===== 生成完成 ====="
 Write-Host "生成时间: $generateTime"
 Write-Host "总规则数: $ruleCount (DOMAIN: $($classExactBlocks.Count) | DOMAIN-SUFFIX: $($classSuffixBlocks.Count))"
 Write-Host "白名单放行: $($classWhitelist.Count)"
-Write-Host "后缀/例外不可表达冲突数: $($suffixConflictExactDomains.Count)（输出为保守近似）"
+Write-Host "方案 A 父后缀降级数: $($suffixConflictExactDomains.Count)"
 Write-Host "提示: DOMAIN / DOMAIN-SUFFIX 只能表达正向域名集合，无法完整表示父后缀内的子域例外"
 Write-Host "文件路径: $outputPath"
 Write-Host "=== 文件前 20 行预览 ==="
