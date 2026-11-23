@@ -39,4 +39,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore: update generated adblock TXT rules"
-          git push origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"

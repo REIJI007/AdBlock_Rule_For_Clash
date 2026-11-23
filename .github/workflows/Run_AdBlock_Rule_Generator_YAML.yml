@@ -10,7 +10,7 @@ on:
       - 'adblock_rule_generator_*.ps1'
       - 'sources.json'
       - 'tests/**'
-      - '.github/workflows/Run_AdBlock_Rule_Generator_YAML.yml'
+      - '.github/workflows/**'
 
 permissions:
   contents: write
@@ -56,4 +56,4 @@ jobs:
             exit 0
           fi
           git commit -m "chore: update generated adblock rules"
-          git push origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
