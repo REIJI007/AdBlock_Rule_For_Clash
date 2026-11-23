@@ -22,39 +22,6 @@ function Assert-True {
     if (-not $Condition) { throw "断言失败：$Context" }
 }
 
-function Test-ArtifactBlocksDomain {
-    param(
-        [string]$Domain,
-        [string[]]$ExactDomains,
-        [string[]]$SuffixDomains,
-        [string]$Format
-    )
-
-    foreach ($exact in $ExactDomains) {
-        if ([string]::Equals($Domain, $exact, [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $true
-        }
-    }
-
-    foreach ($suffix in $SuffixDomains) {
-        if ([string]::IsNullOrWhiteSpace($suffix)) { continue }
-
-        # sing-box 1.9.0 起，不带前导点的 domain_suffix 匹配根域及其点分隔子域。
-        if ($Format -eq "sing-box" -and $suffix.StartsWith(".")) {
-            $suffixRoot = $suffix.Substring(1)
-            if (
-                -not [string]::Equals($Domain, $suffixRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
-                $Domain.EndsWith("." + $suffixRoot, [System.StringComparison]::OrdinalIgnoreCase)
-            ) { return $true }
-        }
-        elseif (
-            [string]::Equals($Domain, $suffix, [System.StringComparison]::OrdinalIgnoreCase) -or
-            $Domain.EndsWith("." + $suffix, [System.StringComparison]::OrdinalIgnoreCase)
-        ) { return $true }
-    }
-
-    return $false
-}
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $fixturePath = Join-Path $PSScriptRoot "fixtures/semantic-cases.json"
@@ -305,43 +272,6 @@ try {
         Assert-True ($classSuffixBlocks.Contains($domain)) "产物后缀规则 [$domain] 必须来自最终后缀规则集合"
     }
 
-    $truePositive = 0
-    $falsePositive = 0
-    $trueNegative = 0
-    $falseNegative = 0
-    $falsePositiveCases = [System.Collections.Generic.List[object]]::new()
-    $falseNegativeCases = [System.Collections.Generic.List[object]]::new()
-
-    foreach ($probe in $fixture.probes) {
-        $actualBlocked = Test-ArtifactBlocksDomain -Domain $probe.domain -ExactDomains $artifactExactDomains -SuffixDomains $artifactSuffixDomains -Format $TargetFormat
-        if ($probe.expectedBlocked -and $actualBlocked) {
-            $truePositive++
-        }
-        elseif (-not $probe.expectedBlocked -and -not $actualBlocked) {
-            $trueNegative++
-        }
-        elseif (-not $probe.expectedBlocked -and $actualBlocked) {
-            $falsePositive++
-            $falsePositiveCases.Add([PSCustomObject]@{ domain = $probe.domain; reason = $probe.reason })
-        }
-        else {
-            $falseNegative++
-            $falseNegativeCases.Add([PSCustomObject]@{ domain = $probe.domain; reason = $probe.reason })
-        }
-    }
-
-    $probeCount = @($fixture.probes).Count
-    $agreementPercent = [math]::Round(100.0 * ($truePositive + $trueNegative) / $probeCount, 2)
-    $precisionPercent = if (($truePositive + $falsePositive) -gt 0) {
-        [math]::Round(100.0 * $truePositive / ($truePositive + $falsePositive), 2)
-    } else { 100.0 }
-    $recallPercent = if (($truePositive + $falseNegative) -gt 0) {
-        [math]::Round(100.0 * $truePositive / ($truePositive + $falseNegative), 2)
-    } else { 100.0 }
-    $f1Percent = if (($precisionPercent + $recallPercent) -gt 0) {
-        [math]::Round(2 * $precisionPercent * $recallPercent / ($precisionPercent + $recallPercent), 2)
-    } else { 0.0 }
-
     $report = [ordered]@{
         project = $projectName
         target_format = $TargetFormat
@@ -357,44 +287,31 @@ try {
         emitted_exact_rules = @($artifactExactDomains).Count
         emitted_suffix_rules = @($artifactSuffixDomains).Count
         suffix_conflicts_narrowed = $suffixConflictExactDomains.Count
-        probes = $probeCount
-        confusion_matrix = [ordered]@{
-            true_positive = $truePositive
-            false_positive = $falsePositive
-            true_negative = $trueNegative
-            false_negative = $falseNegative
-        }
-        metrics_percent = [ordered]@{
-            semantic_agreement = $agreementPercent
-            precision = $precisionPercent
-            recall = $recallPercent
-            f1 = $f1Percent
-        }
-        false_positive_cases = @($falsePositiveCases)
-        false_negative_cases = @($falseNegativeCases)
+        artifact_structure_valid = $true
         artifact_path = $outputFileName
-        scope_note = "固定语义样本上的回归指标，不代表当前实时上游源的全量命中率。"
+        scope_note = "该脚本只验证解析器边界、规则集合来源和产物结构，不使用固定 34 个探针估计总体性能。全量语义一致率、Precision、Recall、F1 与 TP/FP/TN/FN 由 Invoke-UpstreamSemanticAudit.ps1 基于完整上游域名规则边界计算。"
     }
 
     $resultsDirectory = Join-Path $PSScriptRoot "TestResults"
     New-Item -ItemType Directory -Path $resultsDirectory -Force | Out-Null
-    $reportPath = Join-Path $resultsDirectory "semantic-metrics.json"
+    $reportPath = Join-Path $resultsDirectory "parser-regression.json"
     $report | ConvertTo-Json -Depth 10 | Out-File -LiteralPath $reportPath -Encoding utf8
 
     $summary = @(
-        "## 域名语义回归结果（$TargetFormat）",
+        "## 解析器与产物结构回归结果（$TargetFormat）",
         "",
         "| 指标 | 结果 |",
         "|---|---:|",
-        "| 语义一致率 | $agreementPercent% |",
-        "| Precision | $precisionPercent% |",
-        "| Recall | $recallPercent% |",
-        "| F1 | $f1Percent% |",
-        "| TP / FP / TN / FN | $truePositive / $falsePositive / $trueNegative / $falseNegative |",
+        "| 规则解析样本 | $(@($fixture.rules).Count) |",
+        "| 解析断言 | $script:assertionCount |",
+        "| 非域名级跳过样本 | $skipCaseCount |",
+        "| badfilter 样本 | $badfilterCaseCount |",
+        "| Hosts 展开条目 | $hostsParsedCount |",
+        "| 产物 DOMAIN 条目 | $(@($artifactExactDomains).Count) |",
+        "| 产物 DOMAIN-SUFFIX 条目 | $(@($artifactSuffixDomains).Count) |",
         "| 父后缀冲突降级数 | $($suffixConflictExactDomains.Count) |",
-        "| 被跳过的非域名级规则样本 | $skipCaseCount |",
         "",
-        "语义一致率按固定探针域名计算；因方案 A 降级而产生的漏拦截计入 FN。"
+        "总体语义指标不由固定探针计算；请查看 upstream-semantic-metrics.json。"
     ) -join [Environment]::NewLine
 
     if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
@@ -405,11 +322,8 @@ try {
     Write-Host $summary
     Write-Host "详细机器可读报告：$reportPath"
 
-    Assert-True ($agreementPercent -ge $fixture.minimums.semanticAgreementPercent) "语义一致率不得低于基线 $($fixture.minimums.semanticAgreementPercent)%"
-    Assert-True ($precisionPercent -ge $fixture.minimums.precisionPercent) "Precision 不得低于基线 $($fixture.minimums.precisionPercent)%"
-    Assert-True ($recallPercent -ge $fixture.minimums.recallPercent) "Recall 不得低于基线 $($fixture.minimums.recallPercent)%"
 
-    Write-Host "全部语义回归断言通过。断言总数：$script:assertionCount"
+    Write-Host "全部解析器与产物结构回归断言通过。断言总数：$script:assertionCount"
 }
 finally {
     if (Test-Path -LiteralPath $tempOutputPath) {

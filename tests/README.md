@@ -1,68 +1,71 @@
-# 域名语义回归测试
+# 域名语义回归与全量上游评估
 
 ## 执行方式
 
 在仓库根目录运行：
 
-```powershell
-# Clash 仓库
+\`\`\`powershell
 pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat clash
-
-# sing-box 仓库
-pwsh -NoProfile -File ./tests/Invoke-SemanticRegression.ps1 -TargetFormat sing-box
-```
-
-固定样本回归测试不执行生产脚本的网络下载流程。它从被测生成器的 PowerShell AST 中载入真实解析函数，准备固定输入样本，然后执行生产脚本中的真实方案 A 投影区段和真实产物输出区段。另一个全量审计会执行完整生产生成器以抓取全部上游源并取得有效规则状态，再直接解析和核对仓库检出版本中的正式产物文件；生成器自身的输出重定向到临时目录，不会覆盖正式产物。
-
-## 测试覆盖
-
-- EXACT / SUFFIX 规则及其继承边界
-- 精确白名单、后缀白名单与父子域冲突
-- important 白名单 / 黑名单优先级回归
-- badfilter 按完整规则身份撤销，而非按域名撤销
-- NXDOMAIN、黑洞 IP、真实 IP 和 CNAME DNS 重写
-- Hosts 一行多个主机名
-- dnsmasq address / server / local
-- 路径、通配符、资源类型及 domain context 约束规则的保守跳过
-- 实际生成的 Clash YAML 或 sing-box JSON 结构与域名匹配行为
-
-## 指标口径
-
-本项目将两种不同问题分开报告，避免把固定探针准确度误当作产物条目遵循上游语义的比例。
-
-### 全量上游语义一致率（本次需求指标）
-
-- **语义一致率** = 产物中遵循上游规则语义的条数 / 产物域名条目总数 × 100%
-- 每条唯一的 `DOMAIN` / `DOMAIN-SUFFIX` 产物规则计为一个条目。
-- `DOMAIN` 只有在完整上游规则经优先级与白名单处理后，对应的有效规则类型仍为精确匹配时才计入分子；若上游后缀规则因子域例外被收窄为精确域名，则不计入分子。
-- `DOMAIN-SUFFIX` 只有在上游存在对应后缀规则、该规则有效，且其覆盖范围内没有有效白名单例外时才计入分子。
-- 不可证明与上游匹配范围一致的条目计入分母但不计入分子；分母为实际产物中的唯一规则条目，不是上游源规则数或探针数。
-- 审计直接使用生成器内的完整 `urlList`（当前为 317 个 URL），执行生产解析、优先级、白名单冲突与投影代码；所有上游源必须成功下载，否则报告状态为 `incomplete` 且不计算百分比。
-- 审计逐个计算上游源内容的 SHA-256，并将 URL 与内容哈希组合为聚合快照 SHA-256，报告保存聚合哈希以区分不同时间的上游数据快照。
-
-执行：
-
-```powershell
 pwsh -NoProfile -File ./tests/Invoke-UpstreamSemanticAudit.ps1 -TargetFormat clash
-```
+\`\`\`
 
-机器可读报告为 `tests/TestResults/upstream-semantic-metrics.json`，由 GitHub Actions 上传。
+第一项是离线解析器与产物结构回归，不执行网络下载；第二项抓取生成器列出的全部上游源，并基于完整有效域名规则集合评估仓库中已提交的正式产物。审计不会覆盖正式产物，生成器临时输出和日志均重定向到临时目录。
 
-### 固定探针回归指标
+## 主指标：完整上游域名规则边界评估
 
-对固定探针域名集计算混淆矩阵：
+总体语义一致率、Precision、Recall、F1 以及 TP / FP / TN / FN 均由 \`Invoke-UpstreamSemanticAudit.ps1\` 计算。**不再使用 34 个固定探针估算总体性能。**
 
-- **语义一致率** = (TP + TN) / 全部探针
-- **Precision** = TP / (TP + FP)，衡量产物规则的误拦截风险
-- **Recall** = TP / (TP + FN)，衡量上游应拦截域名的覆盖率
-- **F1** = Precision 与 Recall 的调和平均数
+评估语料从所有成功抓取、经生产解析器解析、badfilter 撤销及优先级处理后的域名级规则构建，包含：
 
-所有例外样本的预期阻断状态由人工标注，不使用被测程序自身的结果生成预期值。因方案 A 将父后缀降级为精确域名而导致的未列举子域漏拦截，会作为 FN 计入；不会把这类语义损失伪装成成功。
+- 有效精确黑名单域名（EXACT）
+- 有效后缀黑名单域名（SUFFIX）
+- 有效精确白名单域名
+- 有效后缀白名单域名
+- 正式产物中的全部 DOMAIN / DOMAIN-SUFFIX 条目，以便识别产物独有的误拦截
 
-不适用于域名级输出的规则（例如仅限 script 的资源规则、路径规则、上下文规则、无法等价表达的通配符和非黑洞 DNS Rewrite）单独断言为 SKIP，不混入域名探针二分类分母。
+为了表示精确匹配和后缀匹配的有限规则树，审计会把每个唯一规则域名及其所有父域作为语义边界。对每个边界评估两个代表点：边界域名本身，以及一个与任何已知规则域不冲突的代表性子域。所有显式规则域及其父域均纳入边界，因此每个代表子域覆盖相应的、未被更具体规则分割的后代区域。
 
-测试报告写入 `tests/TestResults/semantic-metrics.json`，GitHub Actions 同时显示摘要并上传 JSON 工件。
+对每个代表点：
 
-## 重要边界
+- 上游预期行为由生产生成器的 \`Get-EffectiveStatus\` 计算，BLACKLIST 为应拦截，WHITELIST / UNKNOWN 为应放行。
+- 实际行为由已提交产物的 DOMAIN 精确匹配与 DOMAIN-SUFFIX 后缀匹配计算。
+- TP：上游要求拦截，产物也拦截。
+- FN：上游要求拦截，产物未拦截。
+- TN：上游要求放行，产物也放行。
+- FP：上游要求放行，产物却拦截。
 
-固定样本探针仍只是有限回归基准，不代表互联网域名总体上的误拦截率或漏拦截率。全量上游语义一致率衡量的是**产物条目本身是否保留上游规则的匹配范围**，不等同于对所有潜在域名执行混淆矩阵所得的 Recall / Precision。两类指标回答不同问题，应分别解读。
+公式：
+
+\`\`\`text
+语义一致率 = (TP + TN) / (TP + FP + TN + FN) × 100%
+Precision = TP / (TP + FP) × 100%
+Recall = TP / (TP + FN) × 100%
+F1 = 2 × Precision × Recall / (Precision + Recall)
+\`\`\`
+
+此方法覆盖完整上游规则集合中可由域名级精确 / 后缀规则表达的全部规则边界。它同时将产物漏掉的源规则计入 FN，并将产物额外覆盖的域名区域计入 FP。
+
+### 统计边界
+
+- 必须全部上游源成功下载且内容非空，才会输出百分比；任一源失败时报告标记为 \`incomplete\`，所有总体指标均为 null。
+- 路径、资源类型、上下文、正则、通配符及非黑洞 DNS Rewrite 等不能等价表达为域名规则的上游行，不强行纳入域名二分类，而是在报告中独立计入跳过数。
+- 代表点按规则边界等权，不按真实互联网流量、注册域名数量或域名空间体积加权。因此这些指标衡量的是完整有限规则边界上的语义一致性，不是现实用户的广告拦截命中率。
+- 这是一种对 EXACT / SUFFIX 规则树的有限等价类评估：每个显式边界及其父域被检查，另用一个未占用的子域代表该边界下未被更具体规则分割的后代区域。
+- 报告保存上游源 URL + SHA-256 聚合快照、产物 SHA-256、有效规则域名数、边界节点数、评估点数、混淆矩阵和最多 100 条 FP/FN 样本。
+
+机器可读报告：\`tests/TestResults/upstream-semantic-metrics.json\`。
+
+## 离线解析器回归
+
+\`tests/fixtures/semantic-cases.json\` 和 \`Invoke-SemanticRegression.ps1\` 保留固定规则样本，用于验证：
+
+- EXACT / SUFFIX 及其继承语义
+- 精确白名单、后缀白名单与 important 优先级
+- badfilter 按完整规则身份撤销
+- NXDOMAIN、黑洞 IP、真实 IP 和 CNAME DNS Rewrite
+- Hosts 多主机名解析
+- dnsmasq address / server / local
+- 路径、通配符、资源类型和上下文约束规则的保守跳过
+- 输出规则必须来自生成器最终规则集合，YAML 结构合法
+
+该离线测试只报告解析与结构断言，不生成 Accuracy / Precision / Recall / F1，也不把固定样本当作总体估计。机器可读报告：\`tests/TestResults/parser-regression.json\`。

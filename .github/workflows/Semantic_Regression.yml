@@ -1,4 +1,4 @@
-name: 域名语义回归测试
+name: 全量上游规则语义评估与解析回归
 
 on:
   pull_request:
@@ -25,13 +25,13 @@ jobs:
       - name: 检出仓库
         uses: actions/checkout@v4
 
-      - name: 运行语义回归测试
+      - name: 运行离线解析器与产物结构回归
         shell: pwsh
         run: ./tests/Invoke-SemanticRegression.ps1 -TargetFormat clash
 
-      - name: 基于完整上游源计算产物语义一致率
+      - name: 基于完整上游域名规则边界计算语义指标
         shell: pwsh
-        timeout-minutes: 30
+        timeout-minutes: 60
         run: ./tests/Invoke-UpstreamSemanticAudit.ps1 -TargetFormat clash
 
       - name: 上传机器可读指标
@@ -40,6 +40,6 @@ jobs:
         with:
           name: semantic-regression-clash
           path: |
-            tests/TestResults/semantic-metrics.json
+            tests/TestResults/parser-regression.json
             tests/TestResults/upstream-semantic-metrics.json
           if-no-files-found: warn

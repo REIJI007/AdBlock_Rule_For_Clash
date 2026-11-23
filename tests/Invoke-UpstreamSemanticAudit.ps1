@@ -76,7 +76,7 @@ $sourceBytes = [int64]0
 $sourceLineCount = [int64]0
 
 foreach ($item in $state.UrlContents) {
-    if ($null -eq $item.Content) {
+    if ([string]::IsNullOrWhiteSpace([string]$item.Content)) {
         $failedUrls.Add([string]$item.Url)
         continue
     }
@@ -113,38 +113,75 @@ if ($failedUrls.Count -gt 0 -or $state.UrlContents.Count -ne $state.UrlList.Coun
     throw "上游源抓取不完整，详情见 $reportPath"
 }
 
-function Get-AuditEffectiveRuleKind {
+function Add-AuditBoundaryAndParents {
+    param(
+        [Parameter(Mandatory)][string]$Domain,
+        [Parameter(Mandatory)][System.Collections.Generic.HashSet[string]]$Boundaries
+    )
+
+    $normalized = Normalize-Domain $Domain
+    if (-not (Is-ValidDNSDomain $normalized)) {
+        throw "上游或产物包含无法参与域名语义评估的域名：$Domain"
+    }
+
+    $Boundaries.Add($normalized) | Out-Null
+    $labels = $normalized -split '\.'
+    for ($i = 1; $i -lt $labels.Length - 1; $i++) {
+        $parent = ($labels[$i..($labels.Length - 1)] -join '.')
+        $Boundaries.Add($parent) | Out-Null
+    }
+}
+
+function Test-AuditArtifactBlocksDomain {
     param([Parameter(Mandatory)][string]$Domain)
 
+    if ($artifactExactSet.Contains($Domain)) { return $true }
+
+    # Clash DOMAIN-SUFFIX 命中根域本身及其任意点分隔子域。
     $labels = $Domain -split '\.'
-    $current = $Domain
-
-    # P0：重要白名单优先。
     for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length - 1)] -join '.')
-        if ($i -eq 0 -and $state.ImportantWhitelistExactDomains.Contains($current)) { return "WHITELIST" }
-        if ($state.ImportantWhitelistSuffixDomains.Contains($current)) { return "WHITELIST" }
+        $candidate = ($labels[$i..($labels.Length - 1)] -join '.')
+        if ($artifactSuffixSet.Contains($candidate)) { return $true }
     }
 
-    # P1：重要黑名单优先。
-    $current = $Domain
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length - 1)] -join '.')
-        if ($i -eq 0 -and $state.ImportantExactDomains.Contains($current)) { return "EXACT" }
-        if ($state.ImportantSuffixDomains.Contains($current)) { return "SUFFIX" }
-    }
+    return $false
+}
 
-    # P2-P4：距离当前域名最近的规则优先，同一层级先检查例外。
-    $current = $Domain
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $current = ($labels[$i..($labels.Length - 1)] -join '.')
-        if ($i -eq 0 -and $state.ExcludedExactDomains.Contains($current)) { return "WHITELIST" }
-        if ($state.ExcludedSuffixDomains.Contains($current)) { return "WHITELIST" }
-        if ($i -eq 0 -and $state.ValidExactRules.Contains($current)) { return "EXACT" }
-        if ($state.ValidSuffixRules.Contains($current)) { return "SUFFIX" }
-    }
+function Add-AuditProbeResult {
+    param([Parameter(Mandatory)][string]$Domain)
 
-    return "UNKNOWN"
+    $upstreamStatus = Get-EffectiveStatus $Domain
+    $expectedBlocked = $upstreamStatus -like "BLACKLIST*"
+    $actualBlocked = Test-AuditArtifactBlocksDomain $Domain
+
+    if ($expectedBlocked -and $actualBlocked) {
+        $auditCounts.TP++
+    }
+    elseif ($expectedBlocked -and -not $actualBlocked) {
+        $auditCounts.FN++
+        if ($falseNegativeExamples.Count -lt $maxMismatchExamples) {
+            $falseNegativeExamples.Add([PSCustomObject]@{
+                domain = $Domain
+                upstreamStatus = $upstreamStatus
+                artifactBlocked = $false
+                reason = "完整上游有效规则要求拦截，但正式产物未命中"
+            })
+        }
+    }
+    elseif (-not $expectedBlocked -and $actualBlocked) {
+        $auditCounts.FP++
+        if ($falsePositiveExamples.Count -lt $maxMismatchExamples) {
+            $falsePositiveExamples.Add([PSCustomObject]@{
+                domain = $Domain
+                upstreamStatus = $upstreamStatus
+                artifactBlocked = $true
+                reason = "完整上游有效规则未要求拦截，但正式产物发生了拦截"
+            })
+        }
+    }
+    else {
+        $auditCounts.TN++
+    }
 }
 
 $artifactPath = Join-Path $repoRoot $artifactName
@@ -163,10 +200,10 @@ if ($TargetFormat -eq "clash") {
             $artifactHeaderGeneratedAt = $Matches[1].Trim()
         }
         elseif ($line -match '^\s*-\s+DOMAIN,([^,\s]+)\s*$') {
-            $artifactExactDomains.Add($Matches[1])
+            $artifactExactDomains.Add((Normalize-Domain $Matches[1]))
         }
         elseif ($line -match '^\s*-\s+DOMAIN-SUFFIX,([^,\s]+)\s*$') {
-            $artifactSuffixDomains.Add($Matches[1])
+            $artifactSuffixDomains.Add((Normalize-Domain $Matches[1]))
         }
     }
 }
@@ -179,103 +216,145 @@ else {
         throw "sing-box domain 与 domain_suffix 必须为 JSON 数组"
     }
     foreach ($domain in $json.rules[0].domain) {
-        $artifactExactDomains.Add([string]$domain)
+        $artifactExactDomains.Add((Normalize-Domain ([string]$domain)))
     }
     foreach ($domain in $json.rules[0].domain_suffix) {
-        $artifactSuffixDomains.Add([string]$domain)
+        $artifactSuffixDomains.Add((Normalize-Domain ([string]$domain)))
     }
 }
 
-$exactSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$suffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-foreach ($domain in $artifactExactDomains) { $exactSet.Add($domain) | Out-Null }
-foreach ($domain in $artifactSuffixDomains) { $suffixSet.Add($domain) | Out-Null }
-
-if (
-    $exactSet.Count -ne $artifactExactDomains.Count -or
-    $suffixSet.Count -ne $artifactSuffixDomains.Count
-) {
-    throw "仓库产物包含重复的精确域名或后缀域名条目"
-}
-
-$consistentEntries = 0
-$mismatchedEntries = [System.Collections.Generic.List[object]]::new()
-$mismatchCounts = [ordered]@{
-    exactOutputButEffectiveSuffixSource = 0
-    exactOutputWithoutEffectiveExactSource = 0
-    suffixOutputWithoutEffectiveSuffixSource = 0
-    suffixOutputWithEffectiveWhitelistException = 0
-}
-
-# DOMAIN 保留精确匹配语义：上游在该域名上的有效规则必须为 EXACT。
+$artifactExactSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$artifactSuffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 foreach ($domain in $artifactExactDomains) {
-    $kind = Get-AuditEffectiveRuleKind -Domain $domain
-    if ($kind -eq "EXACT") {
-        $consistentEntries++
-        continue
-    }
-
-    if ($kind -eq "SUFFIX") {
-        $mismatchCounts.exactOutputButEffectiveSuffixSource++
-        $reason = "上游有效规则为后缀匹配，产物却收窄为精确域名"
-    }
-    else {
-        $mismatchCounts.exactOutputWithoutEffectiveExactSource++
-        $reason = "产物精确域名没有对应的有效上游精确规则"
-    }
-
-    $mismatchedEntries.Add([PSCustomObject]@{
-        type = "DOMAIN"
-        domain = $domain
-        effectiveUpstreamRuleKind = $kind
-        reason = $reason
-    })
+    if (-not (Is-ValidDNSDomain $domain)) { throw "产物包含无效 DOMAIN：$domain" }
+    if (-not $artifactExactSet.Add($domain)) { throw "产物包含重复的 DOMAIN：$domain" }
 }
-
-# DOMAIN-SUFFIX 保留后缀匹配语义：必须有有效上游后缀规则，且无例外冲突。
 foreach ($domain in $artifactSuffixDomains) {
-    $hasSourceSuffix = $state.ValidSuffixRules.Contains($domain)
-    $hasEffectiveWhitelistException = $state.SuffixConflictExactDomains.Contains($domain)
-    $isEffectivelyBlocked = (Get-EffectiveStatus $domain) -like "BLACKLIST*"
-
-    if ($hasSourceSuffix -and -not $hasEffectiveWhitelistException -and $isEffectivelyBlocked) {
-        $consistentEntries++
-        continue
-    }
-
-    if ($hasSourceSuffix -and $hasEffectiveWhitelistException) {
-        $mismatchCounts.suffixOutputWithEffectiveWhitelistException++
-        $reason = "产物后缀范围覆盖了上游有效白名单例外"
-    }
-    else {
-        $mismatchCounts.suffixOutputWithoutEffectiveSuffixSource++
-        $reason = "产物后缀规则没有对应的有效上游后缀规则"
-    }
-
-    $mismatchedEntries.Add([PSCustomObject]@{
-        type = "DOMAIN-SUFFIX"
-        domain = $domain
-        effectiveUpstreamRuleKind = $kind
-        reason = $reason
-    })
+    if (-not (Is-ValidDNSDomain $domain)) { throw "产物包含无效 DOMAIN-SUFFIX：$domain" }
+    if (-not $artifactSuffixSet.Add($domain)) { throw "产物包含重复的 DOMAIN-SUFFIX：$domain" }
 }
-
-$totalEntries = $artifactExactDomains.Count + $artifactSuffixDomains.Count
-if ($totalEntries -le 0) {
+if ($artifactExactSet.Count + $artifactSuffixSet.Count -le 0) {
     throw "产物没有可审计的域名条目"
 }
 
-$agreementPercent = [math]::Round(($consistentEntries / [double]$totalEntries) * 100, 6)
-$skippedRuleCount = 0
+# 评估语料由所有成功抓取、经生产解析器解析、badfilter 撤销及优先级处理后的域名级规则构成。
+$upstreamRuleDomains = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+foreach ($domain in $state.ValidExactRules) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
+foreach ($domain in $state.ValidSuffixRules) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
+foreach ($domain in $state.ExcludedExactDomains) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
+foreach ($domain in $state.ExcludedSuffixDomains) { $upstreamRuleDomains.Add((Normalize-Domain $domain)) | Out-Null }
+
+if ($upstreamRuleDomains.Count -le 0) {
+    throw "完整上游源没有产生可评估的有效域名级规则"
+}
+
+$evaluationBoundaries = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+foreach ($domain in $upstreamRuleDomains) {
+    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
+}
+# 将产物独有条目及其父域也纳入，以识别没有上游依据的额外拦截。
+foreach ($domain in $artifactExactDomains) {
+    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
+}
+foreach ($domain in $artifactSuffixDomains) {
+    Add-AuditBoundaryAndParents -Domain $domain -Boundaries $evaluationBoundaries
+}
+
+# 所有显式域名及其父域均构成规则树边界；每个边界使用根域和一个未占用的代表子域。
+$evaluationDomainList = [System.Collections.Generic.List[string]]::new()
+foreach ($domain in $evaluationBoundaries) { $evaluationDomainList.Add($domain) }
+$evaluationDomainList.Sort([System.StringComparer]::OrdinalIgnoreCase)
+
+$auditCounts = [PSCustomObject]@{
+    TP = [int64]0
+    FP = [int64]0
+    TN = [int64]0
+    FN = [int64]0
+}
+$falsePositiveExamples = [System.Collections.Generic.List[object]]::new()
+$falseNegativeExamples = [System.Collections.Generic.List[object]]::new()
+$maxMismatchExamples = 100
+$representativeSubdomainCount = [int64]0
+$unrepresentableSubdomainBoundaryCount = [int64]0
+$processedBoundaryCount = [int64]0
+
+foreach ($domain in $evaluationDomainList) {
+    Add-AuditProbeResult -Domain $domain
+
+    # 域名最长为 253 字符；若无法再添加子域标签，只评估根域并明确计数。
+    if ($domain.Length -le 251) {
+        $probeLabel = "q"
+        $probeDomain = "$probeLabel.$domain"
+        $probeIndex = 0
+        while ($evaluationBoundaries.Contains($probeDomain)) {
+            $probeIndex++
+            $probeLabel = "q$probeIndex"
+            if ($probeLabel.Length -gt 63) {
+                $probeDomain = $null
+                break
+            }
+            $probeDomain = "$probeLabel.$domain"
+            if ($probeDomain.Length -gt 253) {
+                $probeDomain = $null
+                break
+            }
+        }
+
+        if ($null -ne $probeDomain) {
+            Add-AuditProbeResult -Domain $probeDomain
+            $representativeSubdomainCount++
+        }
+        else {
+            $unrepresentableSubdomainBoundaryCount++
+        }
+    }
+    else {
+        $unrepresentableSubdomainBoundaryCount++
+    }
+
+    $processedBoundaryCount++
+    if (($processedBoundaryCount % 50000) -eq 0) {
+        Write-Host "已评估 $processedBoundaryCount / $($evaluationDomainList.Count) 个域名边界..."
+    }
+}
+
+$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN
+if ($evaluationPointCount -le 0) {
+    throw "全量上游语义评估没有生成任何有效评估点"
+}
+
+$agreementPercent = [math]::Round(
+    100.0 * ($auditCounts.TP + $auditCounts.TN) / $evaluationPointCount,
+    6
+)
+$precisionPercent = if (($auditCounts.TP + $auditCounts.FP) -gt 0) {
+    [math]::Round(100.0 * $auditCounts.TP / ($auditCounts.TP + $auditCounts.FP), 6)
+} else { $null }
+$recallPercent = if (($auditCounts.TP + $auditCounts.FN) -gt 0) {
+    [math]::Round(100.0 * $auditCounts.TP / ($auditCounts.TP + $auditCounts.FN), 6)
+} else { $null }
+$f1Percent = if (
+    $null -ne $precisionPercent -and
+    $null -ne $recallPercent -and
+    ($precisionPercent + $recallPercent) -gt 0
+) {
+    [math]::Round(
+        2 * $precisionPercent * $recallPercent / ($precisionPercent + $recallPercent),
+        6
+    )
+} else { $null }
+
+$skippedRuleCount = [int64]0
 if ($state.SkipStats.Count -gt 0) {
-    $skippedRuleCount = [int](($state.SkipStats.Values | Measure-Object -Sum).Sum)
+    $skippedRuleCount = [int64](($state.SkipStats.Values | Measure-Object -Sum).Sum)
 }
 
 $metrics = [ordered]@{
-    schemaVersion = "1.0.0"
+    schemaVersion = "2.0.0"
     status = "complete"
     generatedAtUtc = [DateTime]::UtcNow.ToString("o")
     targetFormat = $TargetFormat
+    evaluationMethod = "all-upstream-domain-rule-boundaries"
     artifactSource = "checked-in repository artifact"
     artifactFileSha256 = $artifactFileSha256
     artifactHeaderGeneratedAt = $artifactHeaderGeneratedAt
@@ -286,33 +365,70 @@ $metrics = [ordered]@{
     sourceLineCount = $sourceLineCount
     sourceSnapshotSha256 = $snapshotHash
     uniqueParsedRuleIdentityCount = $state.ParsedRuleCount
-    skippedRuleCount = $skippedRuleCount
+    activeExactBlacklistDomainCount = $state.ValidExactRules.Count
+    activeSuffixBlacklistDomainCount = $state.ValidSuffixRules.Count
+    activeExactWhitelistDomainCount = $state.ExcludedExactDomains.Count
+    activeSuffixWhitelistDomainCount = $state.ExcludedSuffixDomains.Count
+    uniqueUpstreamDomainRuleDomainCount = $upstreamRuleDomains.Count
+    evaluationBoundaryDomainCount = $evaluationBoundaries.Count
+    representativeSubdomainCount = $representativeSubdomainCount
+    unrepresentableSubdomainBoundaryCount = $unrepresentableSubdomainBoundaryCount
+    evaluationPointCount = $evaluationPointCount
+    skippedNonDomainOrUnsupportedRuleCount = $skippedRuleCount
     artifactExactEntryCount = $artifactExactDomains.Count
     artifactSuffixEntryCount = $artifactSuffixDomains.Count
-    artifactEntryTotal = $totalEntries
-    semanticallyConsistentEntryCount = $consistentEntries
-    semanticMismatchEntryCount = $mismatchedEntries.Count
-    semanticAgreementPercent = $agreementPercent
-    semanticMismatchBreakdown = $mismatchCounts
-    semanticMismatches = @($mismatchedEntries)
-    formula = "semanticallyConsistentEntryCount / artifactEntryTotal * 100"
-    methodology = "Each checked-in DOMAIN entry counts only when the effective upstream rule at that hostname is EXACT. Each checked-in DOMAIN-SUFFIX entry counts only when an upstream suffix rule exists, the root domain is effectively blocked, and no effective whitelist exception is projected beneath that suffix. Unproven scope-equivalence remains in the denominator and is not counted in the numerator."
+    artifactEntryTotal = $artifactExactDomains.Count + $artifactSuffixDomains.Count
+    confusionMatrix = [ordered]@{
+        truePositive = $auditCounts.TP
+        falsePositive = $auditCounts.FP
+        trueNegative = $auditCounts.TN
+        falseNegative = $auditCounts.FN
+    }
+    metricsPercent = [ordered]@{
+        semanticAgreement = $agreementPercent
+        precision = $precisionPercent
+        recall = $recallPercent
+        f1 = $f1Percent
+    }
+    falsePositiveCount = $auditCounts.FP
+    falseNegativeCount = $auditCounts.FN
+    falsePositiveExamples = @($falsePositiveExamples)
+    falseNegativeExamples = @($falseNegativeExamples)
+    mismatchExamplesLimit = $maxMismatchExamples
+    methodology = "The evaluation corpus is derived from every active, successfully parsed upstream domain-level exact/suffix blacklist and whitelist domain, plus every domain in the checked-in artifact. Each rule domain and every ancestor boundary is evaluated at the boundary itself and at one collision-free representative child domain. The upstream expected decision comes from the generator's effective-priority resolver; the observed decision comes from the checked-in DOMAIN/DOMAIN-SUFFIX artifact. This represents every distinguishable region in the finite exact/suffix rule-boundary tree. Unsupported URL-, path-, resource-, regex-, wildcard- and context-specific rules are not coerced into domain semantics; they are counted separately as skipped."
+    scopeNote = "Precision, recall, F1 and semantic agreement are weighted over deterministic rule-boundary representative points, not Internet traffic, unique registrable domains, or every possible DNS name. The 34 fixed probes are not used to estimate these metrics."
 }
 
-$metrics | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $reportPath -Encoding utf8
+$metrics | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $reportPath -Encoding utf8
 
+$precisionText = if ($null -eq $precisionPercent) { "N/A" } else { "$precisionPercent%" }
+$recallText = if ($null -eq $recallPercent) { "N/A" } else { "$recallPercent%" }
+$f1Text = if ($null -eq $f1Percent) { "N/A" } else { "$f1Percent%" }
+$summary = @(
+    "## 全量上游规则语义评估（$TargetFormat）",
+    "",
+    "| 指标 | 结果 |",
+    "|---|---:|",
+    "| 上游源成功数 | $($sourceDigestLines.Count) / $($state.UrlList.Count) |",
+    "| 唯一上游域名规则域名 | $($upstreamRuleDomains.Count) |",
+    "| 语义边界域名节点 | $($evaluationBoundaries.Count) |",
+    "| 评估点（根域 + 代表子域） | $evaluationPointCount |",
+    "| TP / FP / TN / FN | $($auditCounts.TP) / $($auditCounts.FP) / $($auditCounts.TN) / $($auditCounts.FN) |",
+    "| 语义一致率 | $agreementPercent% |",
+    "| Precision | $precisionText |",
+    "| Recall | $recallText |",
+    "| F1 | $f1Text |",
+    "| 非域名级 / 不支持规则跳过数 | $skippedRuleCount |",
+    "",
+    "评估语料由全部有效上游域名规则及其规则边界构造；固定 34 个探针不参与总体指标计算。",
+    "上游快照 SHA-256：$snapshotHash",
+    "机器可读报告：$reportPath"
+) -join [Environment]::NewLine
+
+if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
+    Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $summary -Encoding utf8
+}
 Write-Host ""
-Write-Host "===== 完整上游语义一致率 ====="
-Write-Host "上游源：$($sourceDigestLines.Count)/$($state.UrlList.Count) 成功"
-Write-Host "产物条目：$totalEntries（DOMAIN $($artifactExactDomains.Count)，DOMAIN-SUFFIX $($artifactSuffixDomains.Count)）"
-Write-Host "语义一致：$consistentEntries"
-Write-Host "语义不一致：$($mismatchedEntries.Count)"
-Write-Host "语义一致率：$agreementPercent%"
-Write-Host "产物 SHA-256：$artifactFileSha256"
-Write-Host "上游快照 SHA-256：$snapshotHash"
-Write-Host "机器可读报告：$reportPath"
-
-if ($mismatchedEntries.Count -gt 0) {
-    Write-Host "不一致分类：$(($mismatchCounts | ConvertTo-Json -Compress))"
-    Write-Host "不一致样本：$(($mismatchedEntries | Select-Object -First 20 | ConvertTo-Json -Compress))"
-}
+Write-Host $summary
+Write-Host "误拦截样本（最多 $maxMismatchExamples 条）：$(($falsePositiveExamples | ConvertTo-Json -Compress -Depth 5))"
+Write-Host "漏拦截样本（最多 $maxMismatchExamples 条）：$(($falseNegativeExamples | ConvertTo-Json -Compress -Depth 5))"
