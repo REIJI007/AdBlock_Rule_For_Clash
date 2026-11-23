@@ -3,10 +3,10 @@
 # 项目主页：https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # 开源协议 1：GPL-3.0
 # 开源协议 2：CC-BY-NC-SA 4.0
-# 生成时间：2026-11-23 14:00:48
-# 规则总数：656877
+# 生成时间：2026-11-23 14:10:20
+# 规则总数：656881
 # 精确域名规则（DOMAIN）：2478
-# 后缀域名规则（DOMAIN-SUFFIX）：654399
+# 后缀域名规则（DOMAIN-SUFFIX）：654403
 # 白名单规则数：906
 
 payload:
@@ -38030,6 +38030,7 @@ payload:
   - DOMAIN-SUFFIX,akv2-br-cdn.kwai.net.iberostar.com
   - DOMAIN-SUFFIX,akviv.snagtights.eu
   - DOMAIN-SUFFIX,akvlgenevpivg.online
+  - DOMAIN-SUFFIX,akvnwoxruo.in
   - DOMAIN-SUFFIX,akvosbllbxzkx.online
   - DOMAIN-SUFFIX,akwiqx.jdsports.be
   - DOMAIN-SUFFIX,akxmxr.lazzulijoias.com.br
@@ -44909,6 +44910,7 @@ payload:
   - DOMAIN-SUFFIX,apihmg.sistemasubsolar.com.br
   - DOMAIN-SUFFIX,apihog.creatorinsights.in
   - DOMAIN-SUFFIX,apihorizon.nnmtools.com
+  - DOMAIN-SUFFIX,apilinagglespuddy.cfd
   - DOMAIN-SUFFIX,apiloans.skyblue.com.br
   - DOMAIN-SUFFIX,apilog-web.acfun.cn
   - DOMAIN-SUFFIX,apilog.app.acfun.cn
@@ -544887,6 +544889,7 @@ payload:
   - DOMAIN-SUFFIX,rrogfhs.cn
   - DOMAIN-SUFFIX,rrpaafci9i.com
   - DOMAIN-SUFFIX,rrpbdjwpvqovf.online
+  - DOMAIN-SUFFIX,rrpbonj6pfzv2b6z.cfd
   - DOMAIN-SUFFIX,rrpcc.sokolovelaw.com
   - DOMAIN-SUFFIX,rrpcjhtacwgki.space
   - DOMAIN-SUFFIX,rrpsjnegulocc.site
@@ -644661,6 +644664,7 @@ payload:
   - DOMAIN-SUFFIX,xhivjkfghj.com
   - DOMAIN-SUFFIX,xhjfdc.elevatione.com
   - DOMAIN-SUFFIX,xhjvmqkfftkys.com
+  - DOMAIN-SUFFIX,xhkrpifrcjayt.website
   - DOMAIN-SUFFIX,xhkvff.cn
   - DOMAIN-SUFFIX,xhl161.com
   - DOMAIN-SUFFIX,xhlsj.com
