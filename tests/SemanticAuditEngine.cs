@@ -25,8 +25,14 @@ public static class SemanticAuditEngine
         public long EvaluationPointCount { get { return TP + FP + TN + FN; } }
         public double BoundaryBuildDurationSeconds { get; set; }
         public double SemanticEvaluationDurationSeconds { get; set; }
-        public List<Mismatch> FalsePositiveExamples { get; } = new List<Mismatch>();
-        public List<Mismatch> FalseNegativeExamples { get; } = new List<Mismatch>();
+        public List<Mismatch> FalsePositiveExamples { get; private set; }
+        public List<Mismatch> FalseNegativeExamples { get; private set; }
+
+        public Result()
+        {
+            FalsePositiveExamples = new List<Mismatch>();
+            FalseNegativeExamples = new List<Mismatch>();
+        }
     }
 
     private static void AddBoundaryAndParents(string domain, HashSet<string> boundaries)
