@@ -363,7 +363,7 @@ function Import-AdblockPublicSuffixList {
     try {
         $client.Timeout=[TimeSpan]::FromSeconds(45)
         $client.DefaultRequestHeaders.UserAgent.ParseAdd('AdBlock_Rule_For_Clash/2.0')
-        Write-AdblockConsole -Level INFO -Message ("正在下载 PSL 公共后缀列表：{0}" -f $Uri)
+        Write-AdblockConsole -Level INFO -Message ("正在加载 PSL 公共后缀列表：{0}" -f $Uri)
     $download=Get-AdblockRemoteText -Client $client -Url $Uri -MaxBytes 5000000 -Retries 2 -TimeoutSeconds 45
     } finally { $client.Dispose() }
     $count=Set-AdblockPublicSuffixRules -Rules ($download.Content -split '\r?\n')
@@ -469,7 +469,6 @@ function Invoke-AdblockSourceDownloads {
             $pending = [System.Collections.Generic.List[object]]::new()
             foreach ($source in $batch) {
                 $sourceIndex = $offset + $pending.Count + 1
-                Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在发起上游下载：{2}" -f $sourceIndex,$Sources.Count,$source.url)
                 $timeout = [Math]::Max(1,[Math]::Min(300,[int]$source.timeoutSeconds))
                 $cts = [System.Threading.CancellationTokenSource]::new([TimeSpan]::FromSeconds($timeout))
                 $task = $client.GetAsync([string]$source.url,[System.Net.Http.HttpCompletionOption]::ResponseHeadersRead,$cts.Token)
@@ -518,7 +517,6 @@ function Invoke-AdblockSourceDownloads {
                 }
                 $contents[[string]$source.url]=$download.Content
                 $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='OK';Attempts=$attempts;HttpStatus=$download.StatusCode;Bytes=$download.Bytes;Sha256=$download.Sha256})
-                Write-AdblockConsole -Level SUCCESS -Message ("[{0}/{1}] 下载完成：HTTP {2}，{3:N1} KB，{4} 次尝试，耗时 {5:N1}s：{6}" -f $sourceIndex,$Sources.Count,$download.StatusCode,($download.Bytes/1KB),$attempts,$sourceTimer.Elapsed.TotalSeconds,$source.url)
             }
         }
     }
@@ -567,10 +565,9 @@ function Expand-AdblockIncludes {
             }
             if (-not $Visited.Add($includeUrl)) { continue }
             try {
-                Write-AdblockConsole -Level INFO -Message ("    正在下载 uBO Include：{0}" -f $includeUrl)
+                Write-AdblockConsole -Level INFO -Message ("正在处理: {0}" -f $includeUrl)
                 $download=Get-AdblockRemoteText -Client $Client -Url $includeUrl -MaxBytes $MaxBytes -Retries 2 -TimeoutSeconds 75
                 $IncludeManifest.Add([PSCustomObject]@{Type='include';Url=$includeUrl;Required=$true;Status='OK';Bytes=$download.Bytes;Sha256=$download.Sha256})
-                Write-AdblockConsole -Level SUCCESS -Message ("    uBO Include 下载完成：{0:N1} KB：{1}" -f ($download.Bytes/1KB),$includeUrl)
                 $expanded=Expand-AdblockIncludes -Content $download.Content -SourceUrl $includeUrl -Client $Client -Visited $Visited -IncludeManifest $IncludeManifest -MaxBytes $MaxBytes -Depth ($Depth+1) -MaxDepth $MaxDepth
                 foreach ($entry in $expanded.Lines) { $lines.Add($entry) }
                 foreach ($issue in $expanded.Issues) { $issues.Add($issue) }
@@ -666,11 +663,8 @@ function Invoke-AdblockGeneration {
     $sources=@(Get-AdblockSourceConfig -Path $SourceListPath)
     Write-AdblockConsole -Level SUCCESS -Message ("已加载 {0} 个上游链接，全部按规则内容自动识别语法和动作。" -f $sources.Count)
 
-    Write-AdblockConsole -Level STAGE -Message ("阶段 2/6：下载上游规则源（每批最多 12 个并发请求，共 {0} 个）" -f $sources.Count)
+    Write-AdblockConsole -Level STAGE -Message '阶段 2/6：获取上游规则源内容（每批最多 12 个并发请求）'
     $downloads=Invoke-AdblockSourceDownloads -Sources $sources
-    $downloadedCount=@($downloads.Manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'OK' }).Count
-    $failedCount=@($downloads.Manifest | Where-Object { $_.Type -eq 'source' -and $_.Status -eq 'FAILED' }).Count
-    Write-AdblockConsole -Level INFO -Message ("上游下载汇总：成功 {0}，失败 {1}，总计 {2}" -f $downloadedCount,$failedCount,$sources.Count)
     $manifest=[System.Collections.Generic.List[object]]::new()
     foreach ($item in $downloads.Manifest) { $manifest.Add($item) }
 
@@ -693,7 +687,7 @@ function Invoke-AdblockGeneration {
     $pslRuleCount=Import-AdblockPublicSuffixList
     Write-AdblockConsole -Level SUCCESS -Message ("PSL 加载完成，共 {0} 条规则。" -f $pslRuleCount)
 
-    Write-AdblockConsole -Level STAGE -Message '阶段 4/6：解析上游规则、展开 Hosts 和 uBO Include'
+    Write-AdblockConsole -Level STAGE -Message '阶段 4/6：处理上游规则、展开 Hosts 和 uBO Include'
     $preIssues=[System.Collections.Generic.List[object]]::new()
     $preprocessorIssues=[System.Collections.Generic.List[string]]::new()
     $includeManifest=[System.Collections.Generic.List[object]]::new()
@@ -705,18 +699,13 @@ function Invoke-AdblockGeneration {
     $includeClient.Timeout=[TimeSpan]::FromMilliseconds(-1)
     $includeClient.DefaultRequestHeaders.UserAgent.ParseAdd('AdBlock_Rule_For_Clash/2.0')
     try {
-        $sourceIndex=0
         foreach ($source in $sources) {
-            $sourceIndex++
             $subscriptionUrl=[string]$source.url
-            $parsedBefore=$stats.Parsed
-            $skippedBefore=$stats.Skipped
-            $rulesBefore=$rawRules.Count
+            Write-AdblockConsole -Level INFO -Message ("正在处理: {0}" -f $subscriptionUrl)
             if (-not $downloads.Contents.ContainsKey($subscriptionUrl)) {
-                Write-AdblockConsole -Level WARNING -Message ("[{0}/{1}] 下载内容缺失，跳过解析：{2}" -f $sourceIndex,$sources.Count,$subscriptionUrl)
+                Write-AdblockConsole -Level WARNING -Message ("下载失败，已跳过：{0}" -f $subscriptionUrl)
                 continue
             }
-            Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在解析上游规则：{2}" -f $sourceIndex,$sources.Count,$subscriptionUrl)
             if ($downloads.Contents[$subscriptionUrl] -match '(?im)^\s*!#') {
                 $visited=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
                 [void]$visited.Add($subscriptionUrl)
@@ -800,7 +789,6 @@ function Invoke-AdblockGeneration {
                     })
                 }
             }
-            Write-AdblockConsole -Level SUCCESS -Message ("[{0}/{1}] 来源解析完成：解析 {2} 行，提取候选规则 {3} 条，跳过 {4} 行。" -f $sourceIndex,$sources.Count,($stats.Parsed-$parsedBefore),($rawRules.Count-$rulesBefore),($stats.Skipped-$skippedBefore))
         }
     } finally { $includeClient.Dispose() }
 
@@ -896,7 +884,6 @@ function Invoke-AdblockGeneration {
     Write-Host ''
     Write-AdblockConsole -Level STAGE -Message ("========== AdBlock {0} 规则生成完成 ==========" -f $Format.ToUpperInvariant())
     Write-AdblockConsole -Level SUCCESS -Message ("总规则数：{0}（DOMAIN：{1}；DOMAIN-SUFFIX：{2}）" -f ($exact.Count+$suffix.Count),$exact.Count,$suffix.Count)
-    Write-AdblockConsole -Level INFO -Message ("上游来源：{0}；下载成功：{1}；下载失败：{2}" -f $sources.Count,$successfulSources.Count,$failedCount)
     Write-AdblockConsole -Level INFO -Message ("解析行数：{0}；有效规则：{1}；ALLOW：{2}；BLOCK：{3}" -f $stats.Parsed,$rules.Count,$allowCount,$blockCount)
     Write-AdblockConsole -Level INFO -Message ("跳过：{0}；无效域名：{1}；通配符：{2}；badfilter：{3}；Hosts 展开：{4}" -f $totalSkipped,$stats.Invalid,$stats.Wildcard,$stats.Badfilter,$stats.HostsExpanded)
     Write-AdblockConsole -Level INFO -Message ("PSL 规则：{0}；uBO Include：{1}；构建问题：{2}" -f $pslRuleCount,$includeManifest.Count,$compiled.Issues.Count)
