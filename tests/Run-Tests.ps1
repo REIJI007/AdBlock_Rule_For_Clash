@@ -91,6 +91,10 @@ $covered = Get-AdblockCompilation -Rules @($allowParent,$coveredChild)
 Assert-Equal $covered.Status 'EXACT' 'higher priority parent allow fully suppresses ordinary suffix block'
 Assert-Equal $covered.OutputRules.Count 0 'fully covered blacklist omitted'
 
+# The suffix coverage helper accepts an empty set as the initial compiler state.
+$emptySuffixSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+Assert-Equal (Test-AdblockCoveredBySuffixSet -Domain 'api.example.com' -SuffixSet $emptySuffixSet) $false 'empty suffix set covers no domain'
+
 $disjointBlock = New-AdblockRule -Domain 'bad.example.com' -MatchType SUFFIX -Action BLOCK
 $disjointAllow = New-AdblockRule -Domain 'safe.other.net' -MatchType SUFFIX -Action ALLOW
 $disjoint = Get-AdblockCompilation -Rules @($disjointBlock,$disjointAllow)

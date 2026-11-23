@@ -363,7 +363,7 @@ function Get-AdblockDecision {
 function Test-AdblockCoveredBySuffixSet {
     param(
         [Parameter(Mandatory)][string]$Domain,
-        [Parameter(Mandatory)][System.Collections.Generic.HashSet[string]]$SuffixSet
+        [Parameter(Mandatory)][AllowEmptyCollection()][System.Collections.Generic.HashSet[string]]$SuffixSet
     )
     $labels=$Domain.Split('.')
     for ($i=0; $i -lt $labels.Length; $i++) {
