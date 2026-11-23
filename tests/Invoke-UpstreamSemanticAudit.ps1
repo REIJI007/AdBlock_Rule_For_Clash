@@ -150,10 +150,15 @@ function Add-AuditBoundaryAndParents {
     }
 
     $Boundaries.Add($normalized) | Out-Null
-    $labels = $normalized -split '\.'
-    for ($i = 1; $i -lt $labels.Length - 1; $i++) {
-        $parent = ($labels[$i..($labels.Length - 1)] -join '.')
-        $Boundaries.Add($parent) | Out-Null
+
+    # 仅枚举至少含两个标签的父域，避免 Split 与数组 Join 的重复分配。
+    $dot = $normalized.IndexOf('.')
+    while ($dot -ge 0) {
+        $parentStart = $dot + 1
+        $nextDot = $normalized.IndexOf('.', $parentStart)
+        if ($nextDot -lt 0) { break }
+        $Boundaries.Add($normalized.Substring($parentStart)) | Out-Null
+        $dot = $nextDot
     }
 }
 
@@ -163,10 +168,15 @@ function Test-AuditArtifactBlocksDomain {
     if ($artifactExactSet.Contains($Domain)) { return $true }
 
     # Clash DOMAIN-SUFFIX 命中根域本身及其任意点分隔子域。
-    $labels = $Domain -split '\.'
-    for ($i = 0; $i -lt $labels.Length - 1; $i++) {
-        $candidate = ($labels[$i..($labels.Length - 1)] -join '.')
-        if ($artifactSuffixSet.Contains($candidate)) { return $true }
+    if ($artifactSuffixSet.Contains($Domain)) { return $true }
+
+    $dot = $Domain.IndexOf('.')
+    while ($dot -ge 0) {
+        $suffixStart = $dot + 1
+        $nextDot = $Domain.IndexOf('.', $suffixStart)
+        if ($nextDot -lt 0) { break } # 不把顶级域名单独作为后缀候选
+        if ($artifactSuffixSet.Contains($Domain.Substring($suffixStart))) { return $true }
+        $dot = $nextDot
     }
 
     return $false
