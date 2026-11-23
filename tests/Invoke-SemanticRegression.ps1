@@ -234,6 +234,44 @@ foreach ($parentCase in $parentDomainCases) {
     Assert-Equal $parentCase.Expected ((Get-ParentDomains $parentCase.Domain) -join ",") "域名 [$($parentCase.Domain)] 的父域提取"
 }
 
+# 编译版全量审计引擎的独立小语料回归，验证混淆矩阵与域名继承语义。
+$enginePath = Join-Path $PSScriptRoot "SemanticAuditEngine.cs"
+if (-not (Test-Path -LiteralPath $enginePath)) { throw "找不到语义审计引擎：$enginePath" }
+if (-not ("SemanticAuditEngine" -as [type])) { Add-Type -Path $enginePath -ErrorAction Stop }
+
+$engineUpstream = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineUpstream.UnionWith(@("blocked.example.test", "safe.blocked.example.test", "exact.example.test"))
+$engineArtifactExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineArtifactExact.UnionWith(@("exact.example.test", "ghost.example.test"))
+$engineArtifactSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineArtifactSuffix.Add("blocked.example.test") | Out-Null
+$engineImportantWhitelistExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineImportantWhitelistSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineImportantExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineImportantSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineExcludedExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineExcludedSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineExcludedSuffix.Add("safe.blocked.example.test") | Out-Null
+$engineValidExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineValidExact.Add("exact.example.test") | Out-Null
+$engineValidSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+$engineValidSuffix.Add("blocked.example.test") | Out-Null
+
+$engineResult = [SemanticAuditEngine]::Evaluate(
+    $engineUpstream, $engineArtifactExact, $engineArtifactSuffix,
+    $engineImportantWhitelistExact, $engineImportantWhitelistSuffix,
+    $engineImportantExact, $engineImportantSuffix,
+    $engineExcludedExact, $engineExcludedSuffix,
+    $engineValidExact, $engineValidSuffix, 10
+)
+Assert-Equal ([long]5) $engineResult.BoundaryCount "编译引擎必须生成五个边界节点"
+Assert-Equal ([long]10) $engineResult.EvaluationPointCount "编译引擎必须评估全部边界与代表子域"
+Assert-Equal ([long]3) $engineResult.TP "编译引擎 TP"
+Assert-Equal ([long]3) $engineResult.FP "编译引擎 FP"
+Assert-Equal ([long]4) $engineResult.TN "编译引擎 TN"
+Assert-Equal ([long]0) $engineResult.FN "编译引擎 FN"
+Assert-Equal 3 $engineResult.FalsePositiveExamples.Count "编译引擎必须保留三个误拦截样本"
+
 # 执行生产脚本中的真实方案 A 投影代码，而非在测试中另写替代实现。
 $generatorSource = [System.IO.File]::ReadAllText($generatorPath)
 $projectionStartMatch = [regex]::Match($generatorSource, '(?m)^\$suffixConflictExactDomains\s*=')
