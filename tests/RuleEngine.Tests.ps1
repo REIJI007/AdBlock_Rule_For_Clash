@@ -306,11 +306,12 @@ Describe 'Explicit source semantics and ingestion safeguards' {
 }
 
 
-Describe 'Excluded upstream inputs' {
+Describe 'Complete upstream inputs' {
     It 'retains all original upstream URLs, including the optional antiadblock and SDNS exclusions sources' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
         $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        @($urls | Where-Object { $_ -match '/Filters/exclusions\.txt
+        @($urls | Where-Object { $_ -match '/Filters/exclusions\.txt$' }).Count | Should -Be 1
+        $urls | Should -Contain 'https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt'
     }
 
 }
