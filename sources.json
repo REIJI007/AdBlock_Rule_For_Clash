@@ -1210,9 +1210,10 @@
     "url": "https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt",
     "syntax": "AUTO",
     "defaultAction": "BLOCK",
-    "required": true,
+    "required": false,
     "enabled": true,
-    "sha256": null
+    "sha256": null,
+    "notes": "Upstream Git blob is currently empty; keep optional so a future populated file is included without blocking generation."
   },
   {
     "id": "source-136",
