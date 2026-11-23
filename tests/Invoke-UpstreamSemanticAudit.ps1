@@ -366,7 +366,7 @@ $semanticEvaluationStopwatch.Stop()
 $semanticEvaluationDurationSeconds = [math]::Round($semanticEvaluationStopwatch.Elapsed.TotalSeconds, 2)
 Write-Host "语义边界逐点评估耗时：$semanticEvaluationDurationSeconds 秒；评估点数：$($auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN)"
 
-$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FP + $auditCounts.FN
+$evaluationPointCount = $auditCounts.TP + $auditCounts.FP + $auditCounts.TN + $auditCounts.FN
 if ($evaluationPointCount -le 0) {
     throw "全量上游语义评估没有生成任何有效评估点"
 }
