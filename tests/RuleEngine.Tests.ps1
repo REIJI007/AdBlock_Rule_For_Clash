@@ -278,6 +278,9 @@ Describe 'Explicit source semantics and ingestion safeguards' {
         $manifestPath = Join-Path $PSScriptRoot '../sources.json'
         $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
         $sources.Count | Should -Be 317
+        (@($sources | Where-Object enabled).Count) | Should -Be 316
+        (@($sources | Where-Object { $_.enabled -and $_.required }).Count) | Should -Be 315
+        (@($sources | Where-Object { $_.enabled -and $_.defaultAction -eq 'ALLOW' }).Count) | Should -Be 35
         (@($sources | Select-Object -ExpandProperty url -Unique)).Count | Should -Be 317
         (@($sources | Where-Object defaultAction -eq 'ALLOW')).Count | Should -Be 36
         (@($sources | Where-Object preprocessor -eq 'UBO')).Count | Should -Be 33
