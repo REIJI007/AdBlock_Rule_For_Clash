@@ -1,5 +1,11 @@
 BeforeAll {
-    Import-Module (Join-Path $PSScriptRoot '../AdBlockRuleEngine.psm1') -Force
+    $generatorPath = Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1'
+    $testModule = New-Module -Name AdBlockRuleEngineTestHarness -ArgumentList $generatorPath -ScriptBlock {
+        param($GeneratorPath)
+        . $GeneratorPath -TestMode
+        Export-ModuleMember -Function *
+    }
+    Import-Module $testModule -Force
     function New-Rule {
         param([string]$Domain,[ValidateSet('EXACT','SUFFIX')][string]$MatchType,[ValidateSet('ALLOW','BLOCK')][string]$Action,[ValidateRange(0,4)][int]$Priority)
         [PSCustomObject]@{ Domain=$Domain; MatchType=$MatchType; Action=$Action; Priority=$Priority }
@@ -46,7 +52,7 @@ Describe 'Five-tier priority evaluation' {
         Test-AdblockSuffixMatch 'example.com' 'example.com' | Should -BeTrue
     }
     It 'parses exact domain exception anchors with caret-pipe delimiters' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $allow = Parse-Rule -line '@@|api.taboola.com^|'
             $allow.Action | Should -Be 'EXCLUDE'
             $allow.Domain | Should -Be 'api.taboola.com'
@@ -68,7 +74,7 @@ Describe 'Five-tier priority evaluation' {
         }
     }
     It 'normalizes Unicode IDN domain rules to Punycode' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $parsed = Parse-Rule -line '||例子.测试^'
             $parsed.Action | Should -Be 'SUFFIX'
             (Normalize-Domain $parsed.Domain) | Should -Be 'xn--fsqu00a.xn--0zwm56d'
@@ -182,22 +188,21 @@ Describe 'Trie and reference evaluator consistency' {
 
 
 Describe 'Explicit source semantics and ingestion safeguards' {
-    It 'uses per-source plain-domain and hosts matching metadata' {
-        InModuleScope AdBlockRuleEngine {
-            $plainBlock = Parse-Rule -line 'ads.example.com'
-            (Get-AdblockMatchType -Parsed $plainBlock -RawRule 'ads.example.com' -PlainDomainMatchType EXACT -HostsMatchType EXACT) | Should -Be 'EXACT'
-            (Get-AdblockMatchType -Parsed $plainBlock -RawRule 'ads.example.com' -PlainDomainMatchType SUFFIX -HostsMatchType EXACT) | Should -Be 'SUFFIX'
+    It 'does not classify source action by URL and recognizes rule-level ALLOW syntax' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            $block = Parse-Rule -line '||ads.example.com^'
+            $block.Action | Should -Be 'SUFFIX'
 
-            $plainAllow = Parse-Rule -line 'safe.example.com' -isWhitelistSource $true
-            (Get-AdblockMatchType -Parsed $plainAllow -RawRule 'safe.example.com' -PlainDomainMatchType SUFFIX -HostsMatchType EXACT) | Should -Be 'SUFFIX'
+            $allow = Parse-Rule -line '@@||safe.example.com^'
+            $allow.Action | Should -Be 'EXCLUDE'
 
-            $hosts = Parse-Rule -line '0.0.0.0 tracker.example.com'
-            (Get-AdblockMatchType -Parsed $hosts -RawRule '0.0.0.0 tracker.example.com' -PlainDomainMatchType EXACT -HostsMatchType SUFFIX) | Should -Be 'SUFFIX'
+            $plain = Parse-Rule -line 'safe.example.com'
+            $plain.Action | Should -Be 'EXACT'
         }
     }
 
     It 'does not widen an unbounded domain anchor into a suffix rule' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $block = Parse-Rule -line '||example.com'
             $block.Action | Should -Be 'SKIP'
             $block.SkipReason | Should -Be 'unbounded-domain-anchor'
@@ -209,7 +214,7 @@ Describe 'Explicit source semantics and ingestion safeguards' {
     }
 
     It 'reads bounded HTTP responses and computes the hash from original bytes' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $response = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::OK)
             try {
                 $body = '||example.com^' + [Environment]::NewLine
@@ -227,7 +232,7 @@ Describe 'Explicit source semantics and ingestion safeguards' {
     }
 
     It 'rejects oversized and HTML error responses' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $oversized = [System.Net.Http.HttpResponseMessage]::new([System.Net.HttpStatusCode]::OK)
             try {
                 $oversized.Content = [System.Net.Http.StringContent]::new(('x' * 100))
@@ -249,7 +254,7 @@ Describe 'Explicit source semantics and ingestion safeguards' {
     }
 
     It 'expands known-safe lines while failing closed on conditional uBO directives' {
-        InModuleScope AdBlockRuleEngine {
+        InModuleScope AdBlockRuleEngineTestHarness {
             $client = [System.Net.Http.HttpClient]::new()
             $visited = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
             $manifest = [System.Collections.Generic.List[object]]::new()
@@ -274,74 +279,58 @@ Describe 'Explicit source semantics and ingestion safeguards' {
         }
     }
 
-    It 'keeps the 317-source manifest complete and validates all operational metadata' {
-        $manifestPath = Join-Path $PSScriptRoot '../config/upstream-sources.json'
-        $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        $sources.Count | Should -Be 317
-        (@($sources | Where-Object enabled).Count) | Should -Be 316
-        (@($sources | Where-Object { $_.enabled -and $_.required }).Count) | Should -Be 315
-        (@($sources | Where-Object { $_.enabled -and $_.defaultAction -eq 'ALLOW' }).Count) | Should -Be 35
-        (@($sources | Select-Object -ExpandProperty url -Unique)).Count | Should -Be 317
-        (@($sources | Where-Object defaultAction -eq 'ALLOW')).Count | Should -Be 36
-        (@($sources | Where-Object preprocessor -eq 'UBO')).Count | Should -Be 33
+    It 'keeps one compact root-level URL list with unique HTTPS entries' {
+        $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
+        $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $urls.Count | Should -Be 315
+        (@($urls | Select-Object -Unique)).Count | Should -Be 315
 
-        foreach ($source in $sources) {
-            $source.syntax | Should -BeIn @('AUTO','ADBLOCK','HOSTS','DNSMASQ')
-            $source.preprocessor | Should -BeIn @('NONE','UBO')
-            $source.plainDomainMatchType | Should -BeIn @('EXACT','SUFFIX')
-            $source.hostsMatchType | Should -BeIn @('EXACT','SUFFIX')
-            $source.required | Should -BeOfType ([bool])
-            $source.enabled | Should -BeOfType ([bool])
-            $source.maxBytes | Should -BeGreaterThan 0
-            $source.retries | Should -BeIn @(0,1,2,3,4,5)
-            $source.timeoutSeconds | Should -BeIn @(30,45,60,75,90,120,180,240,300)
-            ([Uri]$source.url).Scheme | Should -Be 'https'
+        foreach ($url in $urls) {
+            $url | Should -BeOfType ([string])
+            ([Uri]$url).Scheme | Should -Be 'https'
         }
+    }
     }
 }
 
     
-Describe 'AdGuard SDNS internal exclusion scope' {
-    It 'does not compile AdGuard SDNS internal exclusions as a global allowlist' {
-        $manifestPath = Join-Path $PSScriptRoot '../config/upstream-sources.json'
-        $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        $internalExclusions = $sources | Where-Object { $_.id -eq 'source-236' }
-        $internalExclusions.Count | Should -Be 1
-        $internalExclusions.url | Should -Match '/Filters/exclusions\.txt$'
-        $internalExclusions.enabled | Should -BeFalse
-        $internalExclusions.required | Should -BeFalse
-
-        InModuleScope AdBlockRuleEngine {
-            $active = @(Get-AdblockSourceConfig)
-            @($active | Where-Object { $_.id -eq 'source-236' }).Count | Should -Be 0
-        }
+Describe 'Excluded upstream inputs' {
+    It 'does not treat AdGuard SDNS internal exclusions as a global allowlist source' {
+        $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
+        $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        @($urls | Where-Object { $_ -match '/Filters/exclusions\.txt$' }).Count | Should -Be 0
     }
 
 }
 
 
-Describe 'YAML and TXT generation with YAML-dependent MRS conversion' {
-    It 'pins the YAML wrapper to YAML-only output' {
+Describe 'Independent embedded YAML and TXT generators with YAML-dependent MRS conversion' {
+    It 'embeds the shared processing core in the YAML generator' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+        $scriptText | Should -Match 'function Invoke-AdblockGeneration'
+        $scriptText | Should -Match 'function Parse-Rule'
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'yaml'"
-        $scriptText | Should -Match "config/upstream-sources\.json"
-        $scriptText | Should -Not -Match "Format 'txt'"
+        $scriptText | Should -Match "upstream-sources\.json"
+        $scriptText | Should -Not -Match 'Import-Module.*AdBlockRuleEngine'
     }
 
-    It 'pins the TXT wrapper to TXT-only output' {
+    It 'embeds the shared processing core in the TXT generator' {
         $scriptPath = Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1'
         $scriptText = Get-Content -LiteralPath $scriptPath -Raw
+        $scriptText | Should -Match 'function Invoke-AdblockGeneration'
+        $scriptText | Should -Match 'function Parse-Rule'
         $scriptText | Should -Match "Invoke-AdblockGeneration -Format 'txt'"
-        $scriptText | Should -Match "config/upstream-sources\.json"
-        $scriptText | Should -Not -Match "Format 'yaml'"
+        $scriptText | Should -Match "upstream-sources\.json"
+        $scriptText | Should -Not -Match 'Import-Module.*AdBlockRuleEngine'
     }
 
-    It 'limits the shared engine to YAML and TXT compilation' {
-        $moduleText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../AdBlockRuleEngine.psm1') -Raw
-        $moduleText | Should -Match "ValidateSet\('yaml','txt'\)"
-        $moduleText | Should -Not -Match "Format -eq 'mrs'"
-        $moduleText | Should -Not -Match 'adblock_reject_mrs_input\.yaml'
+    It 'keeps both embedded cores synchronized apart from the output format' {
+        $yamlText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_yaml.ps1') -Raw
+        $txtText = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../adblock_rule_generator_txt.ps1') -Raw
+        $yamlCore = $yamlText -replace "Invoke-AdblockGeneration -Format 'yaml'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $txtCore = $txtText -replace "Invoke-AdblockGeneration -Format 'txt'", "Invoke-AdblockGeneration -Format 'FORMAT'"
+        $yamlCore | Should -Be $txtCore
     }
 
     It 'runs MRS after successful YAML generation or explicit manual dispatch' {
@@ -353,9 +342,7 @@ Describe 'YAML and TXT generation with YAML-dependent MRS conversion' {
         $mrsWorkflow | Should -Match "github.event.workflow_run.conclusion == 'success'"
         $mrsWorkflow | Should -Match 'workflow_dispatch:'
         $mrsWorkflow | Should -Not -Match '(?m)^\s*schedule:'
-        $mrsWorkflow | Should -Not -Match 'adblock_rule_generator_mrs\.ps1'
         $mrsWorkflow | Should -Not -Match 'upstream-sources\.json'
-        $mrsWorkflow | Should -Not -Match 'AdBlockRuleEngine\.psm1'
     }
 
     It 'converts the committed YAML artifact and publishes only the MRS binary' {
@@ -371,42 +358,31 @@ Describe 'YAML and TXT generation with YAML-dependent MRS conversion' {
 }
 
 
-Describe 'Original upstream list preservation' {
-    It 'preserves all original 317 URLs in their original order' {
-        $manifestPath = Join-Path $PSScriptRoot '../config/upstream-sources.json'
-        $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-        $urls = @($sources | ForEach-Object { [string]$_.url })
-        $urls.Count | Should -Be 317
-        (@($urls | Select-Object -Unique)).Count | Should -Be 317
-        (@($sources | Select-Object -ExpandProperty id -Unique)).Count | Should -Be 317
-
-        $joined = $urls -join "`n"
-        $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($joined)
-        $digest = [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
-        $digest | Should -Be '8684e12ff1a44c987cc33f4e4daa7395ada5a85fc615a576e302cc87df37a8e4'
+Describe 'Root upstream list integrity' {
+    It 'contains the active required upstream URLs once, in a single JSON array' {
+        $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
+        $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $urls.Count | Should -Be 315
+        (@($urls | Select-Object -Unique)).Count | Should -Be 315
+        foreach ($url in $urls) {
+            $url | Should -BeOfType ([string])
+            ([Uri]$url).Scheme | Should -Be 'https'
+        }
     }
 }
 
 
-Describe 'Declared source syntax handling' {
-    It 'enforces explicit HOSTS and DNSMASQ declarations while AUTO detects formats' {
-        InModuleScope AdBlockRuleEngine {
-            $hosts = Parse-Rule -line '0.0.0.0 ads.example.com' -SourceSyntax HOSTS
-            $hosts.Action | Should -Be 'EXACT'
-            $wrongHosts = Parse-Rule -line '||ads.example.com^' -SourceSyntax HOSTS
-            $wrongHosts.SkipReason | Should -Be 'syntax-mismatch'
 
-            $dnsmasq = Parse-Rule -line 'address=/ads.example.com/0.0.0.0' -SourceSyntax DNSMASQ
-            $dnsmasq.Action | Should -Be 'SUFFIX'
-            $wrongDnsmasq = Parse-Rule -line 'ads.example.com' -SourceSyntax DNSMASQ
-            $wrongDnsmasq.SkipReason | Should -Be 'syntax-mismatch'
 
-            $adblock = Parse-Rule -line '||ads.example.com^' -SourceSyntax ADBLOCK
-            $adblock.Action | Should -Be 'SUFFIX'
-            $wrongAdblock = Parse-Rule -line '0.0.0.0 ads.example.com' -SourceSyntax ADBLOCK
-            $wrongAdblock.SkipReason | Should -Be 'syntax-mismatch'
-            (Parse-Rule -line '||ads.example.com^' -SourceSyntax AUTO).Action | Should -Be 'SUFFIX'
-            Test-AdblockStrictParseIssue 'syntax-mismatch' | Should -BeTrue
+
+Describe 'Automatic rule syntax detection' {
+    It 'detects Hosts, DNSMASQ, AdBlock and plain-domain rules without source metadata' {
+        InModuleScope AdBlockRuleEngineTestHarness {
+            (Parse-Rule -line '0.0.0.0 ads.example.com').Action | Should -Be 'EXACT'
+            (Parse-Rule -line 'address=/ads.example.com/0.0.0.0').Action | Should -Be 'SUFFIX'
+            (Parse-Rule -line '||ads.example.com^').Action | Should -Be 'SUFFIX'
+            (Parse-Rule -line 'ads.example.com').Action | Should -Be 'EXACT'
+            (Parse-Rule -line '@@||safe.example.com^').Action | Should -Be 'EXCLUDE'
         }
     }
 }
