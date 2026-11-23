@@ -528,7 +528,7 @@ Describe 'Console progress and build diagnostics' {
 
 
 Describe 'Root upstream list integrity' {
-    It 'contains the active required upstream URLs once, in a single JSON array' {
+    It 'contains all 317 original upstream URLs once, in a single JSON array' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
         $urls = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
         $urls.Count | Should -Be 317
