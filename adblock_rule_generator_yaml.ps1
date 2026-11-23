@@ -1314,7 +1314,7 @@ if (-not $TestMode) {
         Write-Host $Message
         return
     }
-    if ($Message -match '上游下载失败|uBO Include 下载失败') {
+    if ($Message -match '下载 .+ 时出错|uBO Include 下载失败') {
         Write-Host $Message
         return
     }
