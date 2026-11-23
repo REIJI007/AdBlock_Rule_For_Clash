@@ -18,7 +18,7 @@ on:
 
 # PR 分支推送只由 pull_request 事件触发；同一 PR 的旧提交自动取消。
 concurrency:
-  group: semantic-regression-\${{ github.event.pull_request.number || github.ref }}
+  group: semantic-regression-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
