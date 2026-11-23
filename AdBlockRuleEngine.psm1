@@ -517,6 +517,15 @@ function Invoke-AdblockGeneration {
                     $reason = [string]$parsed.SkipReason
                     if (-not $skipStats.ContainsKey($reason)) { $skipStats[$reason] = 0 }
                     $skipStats[$reason]++
+
+                    if (Test-AdblockStrictParseIssue -SkipReason $reason) {
+                        $preIssues.Add([PSCustomObject]@{
+                            Type = 'UNRECOGNIZED_RULE_SYNTAX'
+                            Root = $url
+                            Detail = $rawLine
+                            Message = "Unrecognized rule syntax in required source '$url' at line $lineNumber: $rawLine"
+                        })
+                    }
                     continue
                 }
 
@@ -695,6 +704,12 @@ function Get-WhitelistImportantFlag([string]$modStr) {
         if ($mod -eq 'important') { return $true }
     }
     return $false
+}
+
+function Test-AdblockStrictParseIssue([string]$SkipReason) {
+    # Explicitly understood non-DNS rules may be skipped and counted. Unknown
+    # syntax must stop strict compilation rather than silently lose a rule.
+    return ($SkipReason -in @('no-pattern-match','whitelist-unparseable'))
 }
 
 function Is-WhitelistSource([string]$url) {
@@ -1034,6 +1049,7 @@ function Parse-Rule {
     return $result
 }
 Export-ModuleMember -Function @(
+    'Test-AdblockStrictParseIssue',
     'Get-AdblockRuleIdentity',
     'Get-AdblockRulePriority',
     'Test-AdblockSuffixMatch',

@@ -76,6 +76,19 @@ Describe 'Five-tier priority evaluation' {
     }
 }
 
+Describe 'Strict parser accounting' {
+    It 'fails closed for unknown or unparseable rule syntax' {
+        Test-AdblockStrictParseIssue 'no-pattern-match' | Should -BeTrue
+        Test-AdblockStrictParseIssue 'whitelist-unparseable' | Should -BeTrue
+    }
+
+    It 'allows explicitly classified non-DNS rules to be counted as skipped' {
+        Test-AdblockStrictParseIssue 'comment-or-cosmetic' | Should -BeFalse
+        Test-AdblockStrictParseIssue 'unsupported-modifier:script' | Should -BeFalse
+        Test-AdblockStrictParseIssue 'path-or-query-specific-rule' | Should -BeFalse
+    }
+}
+
 Describe 'Lossless positive-rule compilation' {
     It 'fails when a suffix block contains a suffix allow hole' {
         $rules = @((New-Rule 'example.com' SUFFIX BLOCK 4),(New-Rule 'safe.example.com' SUFFIX ALLOW 2))
