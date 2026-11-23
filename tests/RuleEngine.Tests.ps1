@@ -374,7 +374,7 @@ Describe 'Console progress and build diagnostics' {
     It 'prints timestamped console messages with severity labels' {
         InModuleScope AdBlockRuleEngineTestHarness {
             $consoleOutput = Write-AdblockConsole -Level INFO -Message '正在下载上游规则源' 6>&1
-            ($consoleOutput | Out-String) | Should -Match '\\[INFO\\]'
+            ($consoleOutput | Out-String).Contains('[INFO') | Should -BeTrue
             ($consoleOutput | Out-String) | Should -Match '正在下载上游规则源'
         }
     }
