@@ -497,7 +497,11 @@ function Invoke-AdblockSourceDownloads {
                     }
                     catch {
                         $errorText=$_.Exception.Message
-                        if ($attempt -lt [int]$source.retries) { Start-Sleep -Seconds ([Math]::Min(2*($attempt+1),8)) }
+                        if ($attempt -lt [int]$source.retries) {
+                            $retryDelay=[Math]::Min(2*($attempt+1),8)
+                            Write-AdblockConsole -Level WARNING -Message ("[{0}/{1}] 下载失败，将在 {2}s 后重试（{3}/{4}）：{5}；原因：{6}" -f $sourceIndex,$Sources.Count,$retryDelay,($attempt+1),([int]$source.retries+1),$source.url,$errorText)
+                            Start-Sleep -Seconds $retryDelay
+                        }
                     }
                     finally {
                         if ($null -ne $response) { $response.Dispose(); $response=$null }
