@@ -505,7 +505,7 @@ function Invoke-AdblockSourceDownloads {
                 $item.Cancellation.Dispose()
                 $sourceTimer.Stop()
                 if ($null -eq $download) {
-                    Write-AdblockConsole -Level ERROR -Message ("[{0}/{1}] 上游下载失败（尝试 {2} 次，耗时 {3:N1}s）：{4}；原因：{5}" -f $sourceIndex,$Sources.Count,$attempts,$sourceTimer.Elapsed.TotalSeconds,$source.url,$errorText)
+                    Write-AdblockConsole -Level $(if([bool]$source.required){'ERROR'}else{'WARNING'}) -Message ("下载 {0} 时出错: {1}" -f $source.url,$errorText)
                     $manifest.Add([PSCustomObject]@{Type='source';Url=[string]$source.url;Required=[bool]$source.required;Status='FAILED';Attempts=$attempts;Error=$errorText})
                     if ([bool]$source.required) { $failedRequired.Add(([string]$source.url+': '+$errorText)) }
                     continue
@@ -708,7 +708,7 @@ function Invoke-AdblockGeneration {
                 Write-AdblockConsole -Level WARNING -Message ("[{0}/{1}] 下载内容缺失，跳过解析：{2}" -f $sourceIndex,$enabledSources.Count,$subscriptionUrl)
                 continue
             }
-            Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在解析上游规则：{2}" -f $sourceIndex,$sources.Count,$subscriptionUrl)
+            Write-AdblockConsole -Level INFO -Message ("[{0}/{1}] 正在解析上游规则：{2}" -f $sourceIndex,$enabledSources.Count,$subscriptionUrl)
             if ($downloads.Contents[$subscriptionUrl] -match '(?im)^\s*!#') {
                 $visited=[System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
                 [void]$visited.Add($subscriptionUrl)
