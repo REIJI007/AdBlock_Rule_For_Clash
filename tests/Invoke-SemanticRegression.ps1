@@ -240,9 +240,12 @@ if (-not (Test-Path -LiteralPath $enginePath)) { throw "找不到语义审计引
 if (-not ("SemanticAuditEngine" -as [type])) { Add-Type -Path $enginePath -ErrorAction Stop }
 
 $engineUpstream = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$engineUpstream.UnionWith(@("blocked.example.test", "safe.blocked.example.test", "exact.example.test"))
+$engineUpstream.Add("blocked.example.test") | Out-Null
+$engineUpstream.Add("safe.blocked.example.test") | Out-Null
+$engineUpstream.Add("exact.example.test") | Out-Null
 $engineArtifactExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-$engineArtifactExact.UnionWith(@("exact.example.test", "ghost.example.test"))
+$engineArtifactExact.Add("exact.example.test") | Out-Null
+$engineArtifactExact.Add("ghost.example.test") | Out-Null
 $engineArtifactSuffix = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
 $engineArtifactSuffix.Add("blocked.example.test") | Out-Null
 $engineImportantWhitelistExact = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
