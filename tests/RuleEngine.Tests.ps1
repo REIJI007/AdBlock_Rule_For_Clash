@@ -296,3 +296,19 @@ Describe 'Explicit source semantics and ingestion safeguards' {
         }
     }
 }
+
+    
+    It 'does not compile AdGuard SDNS internal exclusions as a global allowlist' {
+        $manifestPath = Join-Path $PSScriptRoot '../sources.json'
+        $sources = @(Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
+        $internalExclusions = $sources | Where-Object { $_.id -eq 'source-236' }
+        $internalExclusions.Count | Should -Be 1
+        $internalExclusions.url | Should -Match '/Filters/exclusions\.txt$'
+        $internalExclusions.enabled | Should -BeFalse
+        $internalExclusions.required | Should -BeFalse
+
+        InModuleScope AdBlockRuleEngine {
+            $active = @(Get-AdblockSourceConfig)
+            ($active | Where-Object { $_.id -eq 'source-236' }).Count | Should -Be 0
+        }
+    }
