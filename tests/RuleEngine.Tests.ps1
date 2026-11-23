@@ -3,7 +3,19 @@ BeforeAll {
     $testModule = New-Module -Name AdBlockRuleEngineTestHarness -ArgumentList $generatorPath -ScriptBlock {
         param($GeneratorPath)
         . $GeneratorPath -TestMode
-        Export-ModuleMember -Function *
+        Export-ModuleMember -Function @(
+            'Test-AdblockStrictParseIssue',
+            'Get-AdblockRuleIdentity',
+            'Get-AdblockRulePriority',
+            'Test-AdblockSuffixMatch',
+            'Get-AdblockDomainDecision',
+            'Convert-AdblockRules',
+            'Get-PublicSuffix',
+            'Test-PublicSuffix',
+            'Set-AdblockPublicSuffixRules',
+            'Import-AdblockPublicSuffixList',
+            'Invoke-AdblockGeneration'
+        )
     }
     Import-Module $testModule -Force
     function New-Rule {
@@ -106,15 +118,15 @@ Describe 'Strict parser accounting' {
 Describe 'Lossless positive-rule compilation' {
     It 'fails when a suffix block contains a suffix allow hole' {
         $rules = @((New-Rule 'example.com' SUFFIX BLOCK 4),(New-Rule 'safe.example.com' SUFFIX ALLOW 2))
-        { Compile-AdblockRules -Rules $rules -Strict $true } | Should -Throw '*PARTIAL_OVERLAP*'
+        { Convert-AdblockRules -Rules $rules -Strict $true } | Should -Throw '*PARTIAL_OVERLAP*'
     }
     It 'fails when a suffix block contains an exact allow hole' {
         $rules = @((New-Rule 'example.com' SUFFIX BLOCK 4),(New-Rule 'safe.example.com' EXACT ALLOW 2))
-        { Compile-AdblockRules -Rules $rules -Strict $true } | Should -Throw '*PARTIAL_OVERLAP*'
+        { Convert-AdblockRules -Rules $rules -Strict $true } | Should -Throw '*PARTIAL_OVERLAP*'
     }
     It 'removes a blacklisted exact name fully covered by a suffix allow' {
         $rules = @((New-Rule 'example.com' SUFFIX ALLOW 2),(New-Rule 'ads.example.com' EXACT BLOCK 3))
-        $result = Compile-AdblockRules -Rules $rules -Strict $true
+        $result = Convert-AdblockRules -Rules $rules -Strict $true
         $result.Exact.Count | Should -Be 0
         $result.Suffix.Count | Should -Be 0
         $result.IsLossless | Should -BeTrue
@@ -125,19 +137,19 @@ Describe 'Lossless positive-rule compilation' {
             (New-Rule 'ads.example.com' SUFFIX BLOCK 4),
             (New-Rule 'tracker.ads.example.com' EXACT BLOCK 3)
         )
-        $result = Compile-AdblockRules -Rules $rules -Strict $true
+        $result = Convert-AdblockRules -Rules $rules -Strict $true
         $result.Suffix.Count | Should -Be 1
         $result.Suffix | Should -Contain 'example.com'
         $result.Exact.Count | Should -Be 0
     }
     It 'keeps a child suffix block below a parent allow and prunes exact duplicates' {
         $rules = @((New-Rule 'example.com' SUFFIX ALLOW 2),(New-Rule 'ads.example.com' SUFFIX BLOCK 1),(New-Rule 'api.ads.example.com' EXACT BLOCK 3))
-        $result = Compile-AdblockRules -Rules $rules -Strict $true
+        $result = Convert-AdblockRules -Rules $rules -Strict $true
         $result.Suffix | Should -Contain 'ads.example.com'
         $result.Exact.Count | Should -Be 0
     }
     It 'preserves a top-level suffix rule as a suffix rule' {
-        $result = Compile-AdblockRules -Rules @((New-Rule 'com' SUFFIX BLOCK 4)) -Strict $true
+        $result = Convert-AdblockRules -Rules @((New-Rule 'com' SUFFIX BLOCK 4)) -Strict $true
         $result.Suffix | Should -Contain 'com'
         $result.Exact.Count | Should -Be 0
     }
@@ -156,8 +168,8 @@ Describe 'Rule identity and Public Suffix List' {
         Get-PublicSuffix 'www.example.co.uk' | Should -Be 'co.uk'
         Get-PublicSuffix 'a.b.ck' | Should -Be 'b.ck'
         Get-PublicSuffix 'www.ck' | Should -Be 'ck'
-        Is-PublicSuffix 'co.uk' | Should -BeTrue
-        Is-PublicSuffix 'example.co.uk' | Should -BeFalse
+        Test-PublicSuffix 'co.uk' | Should -BeTrue
+        Test-PublicSuffix 'example.co.uk' | Should -BeFalse
     }
 }
 
@@ -290,10 +302,9 @@ Describe 'Explicit source semantics and ingestion safeguards' {
             ([Uri]$url).Scheme | Should -Be 'https'
         }
     }
-    }
 }
 
-    
+
 Describe 'Excluded upstream inputs' {
     It 'does not treat AdGuard SDNS internal exclusions as a global allowlist source' {
         $manifestPath = Join-Path $PSScriptRoot '../upstream-sources.json'
