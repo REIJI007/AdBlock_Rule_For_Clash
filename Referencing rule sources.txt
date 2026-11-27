@@ -1,0 +1,827 @@
+引用上游规则列表如下：
+
+1. https://adaway.org/hosts.txt
+
+2. https://filters.adavoid.org/ultimate-ad-filter.txt
+
+3. https://filters.adavoid.org/ultimate-privacy-filter.txt
+
+4. https://filters.adavoid.org/ultimate-security-filter.txt
+
+5. https://secure.fanboy.co.nz/fanboy-annoyance.txt
+
+6. https://secure.fanboy.co.nz/fanboy-annoyance_ubo.txt
+
+7. https://secure.fanboy.co.nz/fanboy-cookiemonster.txt
+
+8. https://secure.fanboy.co.nz/fanboy-problematic-sites.txt
+
+9. https://easylist.to/easylist/easylist.txt
+
+10. https://easylist.to/easylist/easyprivacy.txt
+
+11. https://easylist.to/easylist/fanboy-social.txt
+
+12. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_adservers.txt
+
+13. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_adservers_popup.txt
+
+14. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_allowlist.txt
+
+15. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_allowlist_dimensions.txt
+
+16. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_allowlist_general_hide.txt
+
+17. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_allowlist_popup.txt
+
+18. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_general_block.txt
+
+19. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_general_block_dimensions.txt
+
+20. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_general_block_popup.txt
+
+21. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_general_hide.txt
+
+22. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_specific_block.txt
+
+23. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_specific_block_popup.txt
+
+24. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_specific_hide.txt
+
+25. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_specific_hide_abp.txt
+
+26. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_thirdparty.txt
+
+27. https://raw.githubusercontent.com/easylist/easylist/master/easylist/easylist_thirdparty_popup.txt
+
+28. https://raw.githubusercontent.com/easylist/easylistchina/master/easylistchina.txt
+
+29. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_allowlist.txt
+
+30. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_allowlist_international.txt
+
+31. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_general.txt
+
+32. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_general_emailtrackers.txt
+
+33. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific.txt
+
+34. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_abp.txt
+
+35. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_a8net.txt
+
+36. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_acton.txt
+
+37. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_ad-ebis.txt
+
+38. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_adobe.txt
+
+39. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_at-internet.txt
+
+40. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_branch.txt
+
+41. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_commanders-act.txt
+
+42. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_criteo.txt
+
+43. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_dataunlocker.txt
+
+44. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_eulerian.txt
+
+45. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_ingenious-technologies.txt
+
+46. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_keyade.txt
+
+47. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_lead-forensics.txt
+
+48. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_np6.txt
+
+49. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_oracle.txt
+
+50. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_otto.txt
+
+51. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_plausible.txt
+
+52. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_tracedock.txt
+
+53. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_webtrekk.txt
+
+54. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_cname_wizaly.txt
+
+55. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_international.txt
+
+56. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_perimeterx.txt
+
+57. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_specific_uBO.txt
+
+58. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_thirdparty.txt
+
+59. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_thirdparty_international.txt
+
+60. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers.txt
+
+61. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_admiral.txt
+
+62. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_general.txt
+
+63. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_international.txt
+
+64. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_mining.txt
+
+65. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_notifications.txt
+
+66. https://raw.githubusercontent.com/easylist/easylist/master/easyprivacy/easyprivacy_trackingservers_thirdparty.txt
+
+67. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_allowlist.txt
+
+68. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_allowlist_general_hide.txt
+
+69. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_general_block.txt
+
+70. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_general_hide.txt
+
+71. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_international_specific_block.txt
+
+72. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_international_specific_hide.txt
+
+73. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_specific_ABP.txt
+
+74. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_specific_block.txt
+
+75. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_specific_hide.txt
+
+76. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_specific_uBO.txt
+
+77. https://raw.githubusercontent.com/easylist/easylist/master/easylist_cookie/easylist_cookie_thirdparty.txt
+
+78. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_allowlist.txt
+
+79. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_general_block.txt
+
+80. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_general_hide.txt
+
+81. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_specific_block.txt
+
+82. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_specific_hide.txt
+
+83. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_specific_uBO.txt
+
+84. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_agegate_thirdparty.txt
+
+85. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_ai_suggestions.txt
+
+86. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_allowlist.txt
+
+87. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_allowlist_general_hide.txt
+
+88. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_general_block.txt
+
+89. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_general_hide.txt
+
+90. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_international.txt
+
+91. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_specific_ABP.txt
+
+92. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_specific_block.txt
+
+93. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_specific_hide.txt
+
+94. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_specific_uBO.txt
+
+95. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_annoyance_thirdparty.txt
+
+96. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_antifonts.txt
+
+97. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_chatapps_third-party.txt
+
+98. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_allowlist.txt
+
+99. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_allowlist_general_hide.txt
+
+100. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_general_block.txt
+
+101. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_general_hide.txt
+
+102. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_international_block.txt
+
+103. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_international_hide.txt
+
+104. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_allowlist.txt
+
+105. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_allowlist_general_hide.txt
+
+106. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_specific_ABP.txt
+
+107. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_specific_block.txt
+
+108. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_specific_hide.txt
+
+109. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_shopping_specific_uBO.txt
+
+110. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_specific_ABP.txt
+
+111. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_specific_block.txt
+
+112. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_specific_hide.txt
+
+113. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_specific_uBO.txt
+
+114. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_newsletter_thirdparty.txt
+
+115. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_allowlist.txt
+
+116. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_allowlist_general_hide.txt
+
+117. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_general_block.txt
+
+118. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_general_hide.txt
+
+119. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_specific_ABP.txt
+
+120. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_specific_block.txt
+
+121. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_specific_hide.txt
+
+122. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_specific_uBO.txt
+
+123. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_notifications_thirdparty.txt
+
+124. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_allowlist.txt
+
+125. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_allowlist_general_hide.txt
+
+126. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_general_block.txt
+
+127. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_general_hide.txt
+
+128. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_international.txt
+
+129. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_specific_ABP.txt
+
+130. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_specific_block.txt
+
+131. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_specific_hide.txt
+
+132. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_specific_uBO.txt
+
+133. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_social_thirdparty.txt
+
+134. https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_sounds_thirdparty.txt
+
+135. https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_chinese.txt
+
+136. https://raw.githubusercontent.com/easylist/antiadblockfilters/master/antiadblockfilters/antiadblock_english.txt
+
+137. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/adservers.txt
+
+138. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/adservers_firstparty.txt
+
+139. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/allowlist.txt
+
+140. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/allowlist_stealth.txt
+
+141. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/banner_sizes.txt
+
+142. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/content_blocker.txt
+
+143. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/cryptominers.txt
+
+144. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/general_elemhide.txt
+
+145. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/general_url.txt
+
+146. https://adguardteam.github.io/AdguardFilters/BaseFilter/sections/replace.txt
+
+147. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/adservers.txt
+
+148. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/adservers_firstparty.txt
+
+149. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/allowlist.txt
+
+150. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/antiadblock.txt
+
+151. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/general_elemhide.txt
+
+152. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/general_extensions.txt
+
+153. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/general_url.txt
+
+154. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/replace.txt
+
+155. https://adguardteam.github.io/AdguardFilters/ChineseFilter/sections/specific.txt
+
+156. https://adguardteam.github.io/AdguardFilters/MailTrackingFilter/sections/allowlist.txt
+
+157. https://adguardteam.github.io/AdguardFilters/MailTrackingFilter/sections/general_url.txt
+
+158. https://adguardteam.github.io/AdguardFilters/MailTrackingFilter/sections/specific.txt
+
+159. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Cookies/sections/cookies_allowlist.txt
+
+160. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Cookies/sections/cookies_general.txt
+
+161. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/MobileApp/sections/mobile-app_allowlist.txt
+
+162. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/MobileApp/sections/mobile-app_general.txt
+
+163. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Other/sections/annoyances.txt
+
+164. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Other/sections/tweaks.txt
+
+165. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/antiadblock.txt
+
+166. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/popups_allowlist.txt
+
+167. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/popups_general.txt
+
+168. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/push-notifications_allowlist.txt
+
+169. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/push-notifications_general.txt
+
+170. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/push-notifications_specific.txt
+
+171. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/subscriptions_allowlist.txt
+
+172. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Popups/sections/subscriptions_general.txt
+
+173. https://adguardteam.github.io/AdguardFilters/AnnoyancesFilter/Widgets/sections/widgets.txt
+
+174. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/adservers.txt
+
+175. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/allowlist_app.txt
+
+176. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/allowlist_web.txt
+
+177. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/antiadblock.txt
+
+178. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/general_elemhide.txt
+
+179. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/general_extensions.txt
+
+180. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/general_url.txt
+
+181. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/replace.txt
+
+182. https://adguardteam.github.io/AdguardFilters/MobileFilter/sections/specific_app.txt
+
+183. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/allowlist.txt
+
+184. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/general_elemhide.txt
+
+185. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/general_extensions.txt
+
+186. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/general_url.txt
+
+187. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/popups.txt
+
+188. https://adguardteam.github.io/AdguardFilters/SocialFilter/sections/social_trackers.txt
+
+189. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/allowlist.txt
+
+190. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/cookies_allowlist.txt
+
+191. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/cookies_general.txt
+
+192. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/cookies_specific.txt
+
+193. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/general_elemhide.txt
+
+194. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/general_extensions.txt
+
+195. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/general_url.txt
+
+196. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/mobile.txt
+
+197. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/mobile_allowlist.txt
+
+198. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/specific.txt
+
+199. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/tracking_servers.txt
+
+200. https://adguardteam.github.io/AdguardFilters/SpywareFilter/sections/tracking_servers_firstparty.txt
+
+201. https://adguardteam.github.io/AdguardFilters/TrackParamFilter/sections/allowlist.txt
+
+202. https://adguardteam.github.io/AdguardFilters/TrackParamFilter/sections/general_url.txt
+
+203. https://adguardteam.github.io/AdguardFilters/TrackParamFilter/sections/specific.txt
+
+204. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt
+
+205. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt
+
+206. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt
+
+207. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt
+
+208. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt
+
+209. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt
+
+210. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt
+
+211. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_18_Annoyances_Cookies/filter.txt
+
+212. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_19_Annoyances_Popups/filter.txt
+
+213. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_20_Annoyances_MobileApp/filter.txt
+
+214. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_21_Annoyances_Other/filter.txt
+
+215. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_22_Annoyances_Widgets/filter.txt
+
+216. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt
+
+217. https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_25_Mail_Tracking_Protection/filter.txt
+
+218. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Cookies/sections/cookies_allowlist.txt
+
+219. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Cookies/sections/cookies_general.txt
+
+220. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Cookies/sections/cookies_specific.txt
+
+221. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/MobileApp/sections/mobile-app_allowlist.txt
+
+222. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/MobileApp/sections/mobile-app_general.txt
+
+223. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/MobileApp/sections/mobile-app_specific.txt
+
+224. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Other/sections/annoyances.txt
+
+225. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Other/sections/self-promo.txt
+
+226. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Other/sections/tweaks.txt
+
+227. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/antiadblock.txt
+
+228. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/popups_allowlist.txt
+
+229. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/popups_general.txt
+
+230. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/popups_specific.txt
+
+231. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_allowlist.txt
+
+232. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_general.txt
+
+233. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/push-notifications_specific.txt
+
+234. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_allowlist.txt
+
+235. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_general.txt
+
+236. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Popups/sections/subscriptions_specific.txt
+
+237. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/AnnoyancesFilter/Widgets/sections/widgets.txt
+
+238. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/adservers.txt
+
+239. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/adservers_firstparty.txt
+
+240. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/allowlist.txt
+
+241. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/allowlist_stealth.txt
+
+242. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/antiadblock.txt
+
+243. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/banner_sizes.txt
+
+244. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/content_blocker.txt
+
+245. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/cryptominers.txt
+
+246. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/foreign.txt
+
+247. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/general_elemhide.txt
+
+248. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/general_extensions.txt
+
+249. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/general_url.txt
+
+250. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/replace.txt
+
+251. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/BaseFilter/sections/specific.txt
+
+252. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/adservers.txt
+
+253. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/adservers_firstparty.txt
+
+254. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/allowlist.txt
+
+255. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/antiadblock.txt
+
+256. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/general_elemhide.txt
+
+257. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/general_extensions.txt
+
+258. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/general_url.txt
+
+259. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/replace.txt
+
+260. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/ChineseFilter/sections/specific.txt
+
+261. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt
+
+262. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/allowlist_app.txt
+
+263. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/allowlist_web.txt
+
+264. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/antiadblock.txt
+
+265. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/general_elemhide.txt
+
+266. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/general_extensions.txt
+
+267. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/general_url.txt
+
+268. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/replace.txt
+
+269. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/specific_app.txt
+
+270. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/specific_web.txt
+
+271. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/allowlist.txt
+
+272. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/general_elemhide.txt
+
+273. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/general_extensions.txt
+
+274. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/general_url.txt
+
+275. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/popups.txt
+
+276. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/social_trackers.txt
+
+277. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SocialFilter/sections/specific.txt
+
+278. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/allowlist.txt
+
+279. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/cookies_allowlist.txt
+
+280. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/cookies_general.txt
+
+281. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/cookies_specific.txt
+
+282. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/general_elemhide.txt
+
+283. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/general_extensions.txt
+
+284. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/general_url.txt
+
+285. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/mobile.txt
+
+286. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/mobile_allowlist.txt
+
+287. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/specific.txt
+
+288. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/tracking_servers.txt
+
+289. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/SpywareFilter/sections/tracking_servers_firstparty.txt
+
+290. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/TrackParamFilter/sections/allowlist.txt
+
+291. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/TrackParamFilter/sections/general_url.txt
+
+292. https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/TrackParamFilter/sections/specific.txt
+
+293. https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exceptions.txt
+
+294. https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/exclusions.txt
+
+295. https://raw.githubusercontent.com/AdguardTeam/ADguardSDNSFilter/master/Filters/rules.txt
+
+296. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_ads.txt
+
+297. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_clickthroughs.txt
+
+298. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_mail_trackers.txt
+
+299. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_microsites.txt
+
+300. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_disguised_trackers.txt
+
+301. https://raw.githubusercontent.com/AdguardTeam/cname-trackers/master/data/combined_original_trackers.txt
+
+302. https://filters.adtidy.org/extension/chromium/filters/2.txt
+
+303. https://filters.adtidy.org/extension/chromium/filters/3.txt
+
+304. https://filters.adtidy.org/extension/chromium/filters/4.txt
+
+305. https://filters.adtidy.org/extension/chromium/filters/11.txt
+
+306. https://filters.adtidy.org/extension/chromium/filters/14.txt
+
+307. https://filters.adtidy.org/extension/chromium/filters/15.txt
+
+308. https://filters.adtidy.org/extension/chromium/filters/17.txt
+
+309. https://filters.adtidy.org/extension/chromium/filters/18.txt
+
+310. https://filters.adtidy.org/extension/chromium/filters/19.txt
+
+311. https://filters.adtidy.org/extension/chromium/filters/20.txt
+
+312. https://filters.adtidy.org/extension/chromium/filters/21.txt
+
+313. https://filters.adtidy.org/extension/chromium/filters/22.txt
+
+314. https://filters.adtidy.org/extension/chromium/filters/25.txt
+
+315. https://filters.adtidy.org/extension/firefox/filters/2.txt
+
+316. https://filters.adtidy.org/extension/firefox/filters/3.txt
+
+317. https://filters.adtidy.org/extension/firefox/filters/4.txt
+
+318. https://filters.adtidy.org/extension/firefox/filters/11.txt
+
+319. https://filters.adtidy.org/extension/firefox/filters/14.txt
+
+320. https://filters.adtidy.org/extension/firefox/filters/15.txt
+
+321. https://filters.adtidy.org/extension/firefox/filters/17.txt
+
+322. https://filters.adtidy.org/extension/firefox/filters/18.txt
+
+323. https://filters.adtidy.org/extension/firefox/filters/19.txt
+
+324. https://filters.adtidy.org/extension/firefox/filters/20.txt
+
+325. https://filters.adtidy.org/extension/firefox/filters/21.txt
+
+326. https://filters.adtidy.org/extension/firefox/filters/22.txt
+
+327. https://filters.adtidy.org/extension/firefox/filters/25.txt
+
+328. https://filters.adtidy.org/extension/ublock/filters/2.txt
+
+329. https://filters.adtidy.org/extension/ublock/filters/3.txt
+
+330. https://filters.adtidy.org/extension/ublock/filters/4.txt
+
+331. https://filters.adtidy.org/extension/ublock/filters/11.txt
+
+332. https://filters.adtidy.org/extension/ublock/filters/14.txt
+
+333. https://filters.adtidy.org/extension/ublock/filters/15.txt
+
+334. https://filters.adtidy.org/extension/ublock/filters/17.txt
+
+335. https://filters.adtidy.org/extension/ublock/filters/18.txt
+
+336. https://filters.adtidy.org/extension/ublock/filters/19.txt
+
+337. https://filters.adtidy.org/extension/ublock/filters/20.txt
+
+338. https://filters.adtidy.org/extension/ublock/filters/21.txt
+
+339. https://filters.adtidy.org/extension/ublock/filters/22.txt
+
+340. https://filters.adtidy.org/extension/ublock/filters/25.txt
+
+341. https://filters.adtidy.org/android/filters/2_optimized.txt
+
+342. https://filters.adtidy.org/android/filters/3_optimized.txt
+
+343. https://filters.adtidy.org/android/filters/4_optimized.txt
+
+344. https://filters.adtidy.org/android/filters/11_optimized.txt
+
+345. https://filters.adtidy.org/android/filters/14_optimized.txt
+
+346. https://filters.adtidy.org/android/filters/15_optimized.txt
+
+347. https://filters.adtidy.org/android/filters/17_optimized.txt
+
+348. https://filters.adtidy.org/android/filters/18_optimized.txt
+
+349. https://filters.adtidy.org/android/filters/19_optimized.txt
+
+350. https://filters.adtidy.org/android/filters/20_optimized.txt
+
+351. https://filters.adtidy.org/android/filters/21_optimized.txt
+
+352. https://filters.adtidy.org/android/filters/22_optimized.txt
+
+353. https://filters.adtidy.org/android/filters/25_optimized.txt
+
+354. https://filters.adtidy.org/ios/filters/2_optimized.txt
+
+355. https://filters.adtidy.org/ios/filters/3_optimized.txt
+
+356. https://filters.adtidy.org/ios/filters/4_optimized.txt
+
+357. https://filters.adtidy.org/ios/filters/11_optimized.txt
+
+358. https://filters.adtidy.org/ios/filters/14_optimized.txt
+
+359. https://filters.adtidy.org/ios/filters/15_optimized.txt
+
+360. https://filters.adtidy.org/ios/filters/18_optimized.txt
+
+361. https://filters.adtidy.org/ios/filters/19_optimized.txt
+
+362. https://filters.adtidy.org/ios/filters/20_optimized.txt
+
+363. https://filters.adtidy.org/ios/filters/21_optimized.txt
+
+364. https://filters.adtidy.org/ios/filters/22_optimized.txt
+
+365. https://filters.adtidy.org/ios/filters/25_optimized.txt
+
+366. https://ublockorigin.github.io/uAssets/filters/filters.min.txt
+
+367. https://ublockorigin.github.io/uAssets/filters/privacy.min.txt
+
+368. https://ublockorigin.github.io/uAssets/filters/badware.txt
+
+369. https://ublockorigin.github.io/uAssets/filters/quick-fixes.txt
+
+370. https://ublockorigin.github.io/uAssets/filters/unbreak.txt
+
+371. https://ublockorigin.github.io/uAssets/filters/annoyances.txt
+
+372. https://ublockorigin.github.io/uAssets/thirdparties/easylist.txt
+
+373. https://ublockorigin.github.io/uAssets/thirdparties/easyprivacy.txt
+
+374. https://ublockorigin.github.io/uAssets/thirdparties/easylist-annoyances.txt
+
+375. https://ublockorigin.github.io/uAssets/thirdparties/easylist-cookies.txt
+
+376. https://ublockorigin.github.io/uAssets/thirdparties/easylist-social.txt
+
+377. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt
+
+378. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-general.txt
+
+379. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-mobile.txt
+
+380. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt
+
+381. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy-removeparam.txt
+
+382. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt
+
+383. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-cookies.txt
+
+384. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-others.txt
+
+385. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt
+
+386. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt
+
+387. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/legacy.txt
+
+388. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/ubol-filters.txt
+
+389. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/ubo-link-shorteners.txt
+
+390. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist.txt
+
+391. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easyprivacy.txt
+
+392. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-ai.txt
+
+393. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-annoyances.txt
+
+394. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-chat.txt
+
+395. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-cookies.txt
+
+396. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-newsletters.txt
+
+397. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-notifications.txt
+
+398. https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/thirdparties/easylist/easylist-social.txt
+
+399. https://malware-filter.gitlab.io/malware-filter/phishing-filter.txt
+
+400. https://malware-filter.gitlab.io/malware-filter/phishing-filter-ag.txt
+
+401. https://malware-filter.gitlab.io/malware-filter/phishing-filter-agh.txt
+
+402. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts-online.txt
+
+403. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts.txt
+
+404. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-online.txt
+
+405. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter.txt
+
+406. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-ag-online.txt
+
+407. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-ag.txt
+
+408. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt
+
+409. https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh.txt
+
+410. https://malware-filter.gitlab.io/malware-filter/botnet-filter.txt
+
+411. https://malware-filter.gitlab.io/malware-filter/botnet-filter-ag.txt
+
+412. https://malware-filter.gitlab.io/malware-filter/botnet-filter-agh.txt
+
+413. https://malware-filter.gitlab.io/malware-filter/tracking-filter.txt
