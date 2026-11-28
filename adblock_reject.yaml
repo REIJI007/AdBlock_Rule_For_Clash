@@ -3,10 +3,10 @@
 # 项目主页：https://github.com/REIJI007/AdBlock_Rule_For_Clash
 # 开源协议 1：GPL-3.0
 # 开源协议 2：CC-BY-NC-SA 4.0
-# 生成时间：2026-11-28 08:41:46
-# 规则总数：703046
-# 精确域名规则（DOMAIN）：88465
-# 后缀域名规则（DOMAIN-SUFFIX）：614581
+# 生成时间：2026-11-28 09:46:00
+# 规则总数：703060
+# 精确域名规则（DOMAIN）：88453
+# 后缀域名规则（DOMAIN-SUFFIX）：614607
 # 白名单规则数：774
 
 payload:
@@ -226,6 +226,7 @@ payload:
   - DOMAIN-SUFFIX,0d9063412c.com
   - DOMAIN-SUFFIX,0db65504c2.012dadaa06.com
   - DOMAIN-SUFFIX,0dc37bcda5.429d3f5a6e.com
+  - DOMAIN-SUFFIX,0dc4e2d682.com
   - DOMAIN-SUFFIX,0ddf.pandasuite.io
   - DOMAIN-SUFFIX,0de7e3b709.com
   - DOMAIN-SUFFIX,0dy3evz6x.com
@@ -33520,7 +33521,6 @@ payload:
   - DOMAIN-SUFFIX,adspygl.xyz
   - DOMAIN-SUFFIX,adspyglass.8qw.ru
   - DOMAIN-SUFFIX,adspyglass.com
-  - DOMAIN-SUFFIX,adspyglass.semuadisini.xyz
   - DOMAIN-SUFFIX,adsquash.info
   - DOMAIN-SUFFIX,adsquasher.com
   - DOMAIN-SUFFIX,adsquasher.pro
@@ -35335,6 +35335,7 @@ payload:
   - DOMAIN-SUFFIX,aggiornamentosicuro.com
   - DOMAIN-SUFFIX,aggle.net
   - DOMAIN-SUFFIX,aggqycnisxtgx.website
+  - DOMAIN-SUFFIX,aggrateepilobe.com
   - DOMAIN-SUFFIX,aggravatingchicken.pro
   - DOMAIN-SUFFIX,aggravatingoil.com
   - DOMAIN-SUFFIX,aggregatedcompetitivefrock.com
@@ -35880,6 +35881,7 @@ payload:
   - DOMAIN-SUFFIX,aitrades.com
   - DOMAIN-SUFFIX,aitrejydphpbl.website
   - DOMAIN-SUFFIX,aitugmtvcanxdh.com
+  - DOMAIN-SUFFIX,aitygyoncwrcm.space
   - DOMAIN-SUFFIX,aiuaraudkcpjp.online
   - DOMAIN-SUFFIX,aiuxwxlnsoitj.website
   - DOMAIN-SUFFIX,aivali.openapp.link
@@ -38059,6 +38061,7 @@ payload:
   - DOMAIN-SUFFIX,ambrmotchecks.vercel.app
   - DOMAIN-SUFFIX,ambrosialsummit.com
   - DOMAIN-SUFFIX,ambroty.xyz
+  - DOMAIN-SUFFIX,ambryalluded.com
   - DOMAIN-SUFFIX,ambulancetweakliberty.com
   - DOMAIN-SUFFIX,amc-us.mprevive.com
   - DOMAIN-SUFFIX,amc.nlmc.dev
@@ -42946,6 +42949,7 @@ payload:
   - DOMAIN-SUFFIX,apophishoggism.cfd
   - DOMAIN-SUFFIX,aporiaecabda.com
   - DOMAIN-SUFFIX,aporodiko.com
+  - DOMAIN-SUFFIX,aposiabordel.rest
   - DOMAIN-SUFFIX,aposicilia.com
   - DOMAIN-SUFFIX,aposst.alpineoutlets.com
   - DOMAIN-SUFFIX,apovjenshkojnatebuli.firebaseapp.com
@@ -45859,6 +45863,7 @@ payload:
   - DOMAIN-SUFFIX,asiafilm.org
   - DOMAIN-SUFFIX,asiafriendfinder.com
   - DOMAIN-SUFFIX,asiakas.valokuitunen.fi
+  - DOMAIN-SUFFIX,asialogger.com
   - DOMAIN-SUFFIX,asiamarketing.sedgwick.com
   - DOMAIN-SUFFIX,asian-tindung.com
   - DOMAIN-SUFFIX,asiangfsex.com
@@ -46265,6 +46270,7 @@ payload:
   - DOMAIN-SUFFIX,astelicbanes.com
   - DOMAIN-SUFFIX,astenterprises.com.pk
   - DOMAIN-SUFFIX,asterbiscusys.com
+  - DOMAIN-SUFFIX,asterdrizzle.org
   - DOMAIN-SUFFIX,asterisk.avadacom.com
   - DOMAIN-SUFFIX,asterix-af2a5.firebaseapp.com
   - DOMAIN-SUFFIX,asterix-af2a5.web.app
@@ -49345,6 +49351,7 @@ payload:
   - DOMAIN-SUFFIX,bargeerclival.com
   - DOMAIN-SUFFIX,bargeesaryan.cfd
   - DOMAIN-SUFFIX,bargingjabber.com
+  - DOMAIN-SUFFIX,barhaldefines.cyou
   - DOMAIN-SUFFIX,barilliance.net
   - DOMAIN-SUFFIX,barisports.pk
   - DOMAIN-SUFFIX,baritoneclient.net
@@ -50324,6 +50331,7 @@ payload:
   - DOMAIN-SUFFIX,beddingdownbaby.com
   - DOMAIN-SUFFIX,beddingfetched.com
   - DOMAIN-SUFFIX,beddn.gundrymd.com
+  - DOMAIN-SUFFIX,bedewerknorhmndjinni.cfd
   - DOMAIN-SUFFIX,bedikahpoleathrive.qpon
   - DOMAIN-SUFFIX,bedmz.mercimamanboutique.com
   - DOMAIN-SUFFIX,bedoyocrepey.cyou
@@ -52120,6 +52128,7 @@ payload:
   - DOMAIN-SUFFIX,bkkxtwfv2.stape.dev
   - DOMAIN-SUFFIX,bklihaatruags.website
   - DOMAIN-SUFFIX,bkll54lnyxth6pwo2.rest
+  - DOMAIN-SUFFIX,bklldynwynozp.space
   - DOMAIN-SUFFIX,bkllgmvwovnxo.online
   - DOMAIN-SUFFIX,bkm-mallorca.com
   - DOMAIN-SUFFIX,bkmmafrixfake.website
@@ -55495,6 +55504,7 @@ payload:
   - DOMAIN-SUFFIX,bungingvangeli.com
   - DOMAIN-SUFFIX,bunglersignoff.com
   - DOMAIN-SUFFIX,bungosmantis.com
+  - DOMAIN-SUFFIX,bungostasty.com
   - DOMAIN-SUFFIX,bunintruder.com
   - DOMAIN-SUFFIX,buniqlflpcppw.site
   - DOMAIN-SUFFIX,bunkedfusels.com
@@ -95278,6 +95288,7 @@ payload:
   - DOMAIN-SUFFIX,edit-online.com-now.com
   - DOMAIN-SUFFIX,edit.spaceeditbd.com
   - DOMAIN-SUFFIX,edith-seb.xiaohongshu.com
+  - DOMAIN-SUFFIX,editingdispar.cyou
   - DOMAIN-SUFFIX,edition25.com
   - DOMAIN-SUFFIX,editorovertimeradiation.com
   - DOMAIN-SUFFIX,edjbpudsjptpi.website
@@ -386958,6 +386969,7 @@ payload:
   - DOMAIN-SUFFIX,faq2.myavlive.com
   - DOMAIN-SUFFIX,faqtjp.redley.com.br
   - DOMAIN-SUFFIX,faqtrezowalltt.typedream.app
+  - DOMAIN-SUFFIX,faqtyzdovaotw.space
   - DOMAIN-SUFFIX,far-great.com
   - DOMAIN-SUFFIX,far.dishalifestylebd.com
   - DOMAIN-SUFFIX,far.offday.com.bd
@@ -394518,6 +394530,7 @@ payload:
   - DOMAIN-SUFFIX,gatejunction.com
   - DOMAIN-SUFFIX,gatemanquixote.cfd
   - DOMAIN-SUFFIX,gatemenrheboks.cyou
+  - DOMAIN-SUFFIX,gatetemene.rest
   - DOMAIN-SUFFIX,gatetodisplaycontent.com
   - DOMAIN-SUFFIX,gatetotrustednetwork.com
   - DOMAIN-SUFFIX,gateway-csr21.net.mydays.de
@@ -420384,6 +420397,7 @@ payload:
   - DOMAIN-SUFFIX,gxcaxz.cresus.fr
   - DOMAIN-SUFFIX,gxcmcnzgoxjcu.online
   - DOMAIN-SUFFIX,gxco96vpjfm5thllbo.cfd
+  - DOMAIN-SUFFIX,gxeftljatpnzm.space
   - DOMAIN-SUFFIX,gxfftsdvmekwu.site
   - DOMAIN-SUFFIX,gxfrctjcgfstn.website
   - DOMAIN-SUFFIX,gxfymazebhlln.site
@@ -426962,6 +426976,7 @@ payload:
   - DOMAIN-SUFFIX,iionads.com
   - DOMAIN-SUFFIX,iiot.linx.jp
   - DOMAIN-SUFFIX,iiot.linx.tw
+  - DOMAIN-SUFFIX,iipvhcvoajpch.com
   - DOMAIN-SUFFIX,iiqcrulsiqo.firebaseapp.com
   - DOMAIN-SUFFIX,iiqcrulsiqo.web.app
   - DOMAIN-SUFFIX,iiqtru.aunworks.jp
@@ -437729,6 +437744,7 @@ payload:
   - DOMAIN-SUFFIX,jknfb.memoi.com
   - DOMAIN-SUFFIX,jknkhhrjglcsh.site
   - DOMAIN-SUFFIX,jkoap.apotekarski-vodic.com
+  - DOMAIN-SUFFIX,jkocuhxama.in
   - DOMAIN-SUFFIX,jkodbweyhuhis.online
   - DOMAIN-SUFFIX,jkoha.cycologyclothing.com
   - DOMAIN-SUFFIX,jkpbx8fq49iwiue56gbw4h3vtyel2.cfd
@@ -476662,6 +476678,7 @@ payload:
   - DOMAIN-SUFFIX,mjtuijeopjgfo.site
   - DOMAIN-SUFFIX,mjtzbkdmpbayx.online
   - DOMAIN-SUFFIX,mju.p4fux4l5cow2lnh.cyou
+  - DOMAIN-SUFFIX,mjucj37g2f298h22mg7n9tx9vc.rest
   - DOMAIN-SUFFIX,mjursnb.com
   - DOMAIN-SUFFIX,mjurz.springandmulberry.com
   - DOMAIN-SUFFIX,mjutjc.telstarsurf.de
@@ -485407,6 +485424,7 @@ payload:
   - DOMAIN-SUFFIX,nsxrfh.icu
   - DOMAIN-SUFFIX,nsxsm.trimrx.com
   - DOMAIN-SUFFIX,nszcga.shoefm.co.kr
+  - DOMAIN-SUFFIX,nszmsmmzibuwe.space
   - DOMAIN-SUFFIX,nszwt.mintrx.com
   - DOMAIN-SUFFIX,nt-stream-log.profilepassport.jp
   - DOMAIN-SUFFIX,nt.getgoowebs.com
@@ -499150,6 +499168,7 @@ payload:
   - DOMAIN-SUFFIX,pitmanmusic.com
   - DOMAIN-SUFFIX,pitofficialfollower.com
   - DOMAIN-SUFFIX,pitpitharbi.cfd
+  - DOMAIN-SUFFIX,pitrisfinnack.rest
   - DOMAIN-SUFFIX,pitsensation.com
   - DOMAIN-SUFFIX,pittaking.openapp.link
   - DOMAIN-SUFFIX,pittedshends.cfd
@@ -507916,6 +507935,7 @@ payload:
   - DOMAIN-SUFFIX,quadrant59.com
   - DOMAIN-SUFFIX,quadrinhoseroticos.net
   - DOMAIN-SUFFIX,quadros.casaamarilo.com.br
+  - DOMAIN-SUFFIX,quadrsnrrtyvp.space
   - DOMAIN-SUFFIX,quaeventlienminh.weebly.com
   - DOMAIN-SUFFIX,quaffedpigpens.com
   - DOMAIN-SUFFIX,quaffspap.cfd
@@ -521533,6 +521553,7 @@ payload:
   - DOMAIN-SUFFIX,semperinshave.rest
   - DOMAIN-SUFFIX,semplesapolune.com
   - DOMAIN-SUFFIX,semqraso.net
+  - DOMAIN-SUFFIX,semuadisini.xyz
   - DOMAIN-SUFFIX,semygruja.com
   - DOMAIN-SUFFIX,semywtuvmzujq.space
   - DOMAIN-SUFFIX,send.coolchop.live
@@ -538391,6 +538412,7 @@ payload:
   - DOMAIN-SUFFIX,smuc.cnnfootballclub.com
   - DOMAIN-SUFFIX,smucis.smu.edu.sg
   - DOMAIN-SUFFIX,smucityperspectives.smu.edu.sg
+  - DOMAIN-SUFFIX,smudgecarpal.com
   - DOMAIN-SUFFIX,smudgesalcayde.cfd
   - DOMAIN-SUFFIX,smuengage.smu.edu.sg
   - DOMAIN-SUFFIX,smugglerefreshing.com
@@ -545832,7 +545854,6 @@ payload:
   - DOMAIN-SUFFIX,ssp.moeli.net
   - DOMAIN-SUFFIX,ssp.ngf132.com
   - DOMAIN-SUFFIX,ssp.rutube.ru
-  - DOMAIN-SUFFIX,ssp.semuadisini.xyz
   - DOMAIN-SUFFIX,ssp.seznam.cz
   - DOMAIN-SUFFIX,ssp.wp.pl
   - DOMAIN-SUFFIX,ssp.zf313.com
@@ -563161,6 +563182,7 @@ payload:
   - DOMAIN-SUFFIX,syjdybprospmg.site
   - DOMAIN-SUFFIX,syjpkj.drwell.co.kr
   - DOMAIN-SUFFIX,syjpyfglqztin.space
+  - DOMAIN-SUFFIX,sykesscore.click
   - DOMAIN-SUFFIX,sykqfitqdiwbo.online
   - DOMAIN-SUFFIX,syllablesight.com
   - DOMAIN-SUFFIX,sylqgv.urhair.co.uk
@@ -563298,6 +563320,7 @@ payload:
   - DOMAIN-SUFFIX,syqorsgg.curedpharmacy.com
   - DOMAIN-SUFFIX,syrdgbyaktgsw.space
   - DOMAIN-SUFFIX,syriacgrumose.com
+  - DOMAIN-SUFFIX,syrianeffront.rest
   - DOMAIN-SUFFIX,syrupimmediate.com
   - DOMAIN-SUFFIX,syrupsatellite.com
   - DOMAIN-SUFFIX,sys.fuolio.com
@@ -572745,6 +572768,7 @@ payload:
   - DOMAIN-SUFFIX,tnczawrllvifh.site
   - DOMAIN-SUFFIX,tnd.ecefibwja.xyz
   - DOMAIN-SUFFIX,tndhlsnrpzgph.online
+  - DOMAIN-SUFFIX,tndsmiblhdjny.site
   - DOMAIN-SUFFIX,tneduf.com
   - DOMAIN-SUFFIX,tnedyfpo.levasleep.com
   - DOMAIN-SUFFIX,tnegqr.bohme.com
@@ -585538,6 +585562,7 @@ payload:
   - DOMAIN-SUFFIX,unrobebemottoirfan.cfd
   - DOMAIN-SUFFIX,unropegaud.com
   - DOMAIN-SUFFIX,unrotedsatan.cfd
+  - DOMAIN-SUFFIX,unrovenochreae.com
   - DOMAIN-SUFFIX,unrulycornersunderage.com
   - DOMAIN-SUFFIX,unrulymedia.com
   - DOMAIN-SUFFIX,unrulypause.com
@@ -607011,6 +607036,7 @@ payload:
   - DOMAIN-SUFFIX,xdcxjbptkyzol.space
   - DOMAIN-SUFFIX,xddgffgdgdryt.weebly.com
   - DOMAIN-SUFFIX,xdeiaf.elleshop.jp
+  - DOMAIN-SUFFIX,xdeqcxwyepidj.space
   - DOMAIN-SUFFIX,xdfgxy.savethechildren.it
   - DOMAIN-SUFFIX,xdhdubnhaymal.site
   - DOMAIN-SUFFIX,xdhrvr.icu
@@ -614902,7 +614928,6 @@ payload:
   - DOMAIN,138.109nbcume.hb.tt.omtrdc.net
   # [域名树保守补全] 13923.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,13923.tt.omtrdc.net
-  - DOMAIN,14-0-204-188.static.pccw-hkt.com
   # [域名树保守补全] 143pluralsight.hb.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,143pluralsight.hb.tt.omtrdc.net
   - DOMAIN,1456.api.swrve.com
@@ -633917,7 +633942,6 @@ payload:
   - DOMAIN,clark.walmartisd.tt.omtrdc.net
   # [域名树保守补全] clark1112.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,clark1112.tt.omtrdc.net
-  - DOMAIN,class1004.dothome.co.kr
   # [域名树保守补全] classic-migration-sandbox-25517.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,classic-migration-sandbox-25517.tt.omtrdc.net
   # [域名树保守补全] classic-migration-sandbox-35447.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -652786,7 +652810,6 @@ payload:
   - DOMAIN,download2-migrate.tt.omtrdc.net
   # [域名树保守补全] download2-shopping.papt.blogmonboarding.build.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,download2-shopping.papt.blogmonboarding.build.tt.omtrdc.net
-  - DOMAIN,download2.huduntech.com
   # [域名树保守补全] download3.3.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,download3.3.tt.omtrdc.net
   # [域名树保守补全] download3.buran.avionics.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -673044,7 +673067,6 @@ payload:
   - DOMAIN,file.sydneyuni.tt.omtrdc.net
   # [域名树保守补全] file.thecontainerstore.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,file.thecontainerstore.tt.omtrdc.net
-  - DOMAIN,file.uhsea.com
   # [域名树保守补全] file.us.cochat.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,file.us.cochat.tt.omtrdc.net
   # [域名树保守补全] file.wenda.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -680337,7 +680359,6 @@ payload:
   - DOMAIN,garena2.petplan.tt.omtrdc.net
   # [域名树保守补全] garnish.lendingtreellc.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,garnish.lendingtreellc.tt.omtrdc.net
-  - DOMAIN,garogradba.mk
   # [域名树保守补全] garoonmanager.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,garoonmanager.tt.omtrdc.net
   # [域名树保守补全] garpdesign.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -682467,7 +682488,6 @@ payload:
   - DOMAIN,gestoriapisano.tt.omtrdc.net
   # [域名树保守补全] gestorlaboral.tt-stage3.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,gestorlaboral.tt-stage3.omtrdc.net
-  - DOMAIN,gestroom.it
   # [域名树保守补全] gesture.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,gesture.tt.omtrdc.net
   # [域名树保守补全] gesundheit.bestwesterninternati.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -702051,7 +702071,6 @@ payload:
   - DOMAIN,intelius.com.ssl.sc.tt.omtrdc.net
   # [域名树保守补全] intellex.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,intellex.tt.omtrdc.net
-  - DOMAIN,intelli-sys.co.zw
   - DOMAIN,intelligence-head.pinsightmedia.com
   # [域名树保守补全] intelligence.sc.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,intelligence.sc.tt.omtrdc.net
@@ -721757,7 +721776,6 @@ payload:
   # [域名树保守补全] moli.makeawish.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,moli.makeawish.tt.omtrdc.net
   - DOMAIN,mon-va.tiktokv.com
-  - DOMAIN,mon-xxx-02.cfd
   # [域名树保守补全] monclick.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,monclick.tt.omtrdc.net
   # [域名树保守补全] monelimited.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -736374,7 +736392,6 @@ payload:
   - DOMAIN,preprovided.tt.omtrdc.net
   # [域名树保守补全] prepsquan.citizensbank.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,prepsquan.citizensbank.tt.omtrdc.net
-  - DOMAIN,prepstarcenter.com
   # [域名树保守补全] presidentscup-mboxedge37-02.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,presidentscup-mboxedge37-02.tt.omtrdc.net
   # [域名树保守补全] pressedjuicery.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -745054,7 +745071,6 @@ payload:
   - DOMAIN,sf-testcitrix.tt.omtrdc.net
   - DOMAIN,sg.mmstat.com
   - DOMAIN,sgbid.prod.sift.co
-  - DOMAIN,sgivertise.xyz
   # [域名树保守补全] sgmail03qa.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,sgmail03qa.tt.omtrdc.net
   # [域名树保守补全] sgmedical.okla-dev.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
@@ -750635,7 +750651,6 @@ payload:
   - DOMAIN,static.guyparade.asustekcomputerinc.tt.omtrdc.net
   # [域名树保守补全] static.ics1.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,static.ics1.tt.omtrdc.net
-  - DOMAIN,static.ilclock.com
   - DOMAIN,static.intentarget.com
   # [域名树保守补全] static.inwood.adobeintankurmurarka.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,static.inwood.adobeintankurmurarka.tt.omtrdc.net
@@ -764463,7 +764478,6 @@ payload:
   - DOMAIN,uob12m.tt.tt.omtrdc.net
   # [域名树保守补全] uoc-01.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,uoc-01.tt.omtrdc.net
-  - DOMAIN,upaicdn.xinmei365.com
   # [域名树保守补全] upcnl.tt.omtrdc.net：冲突子树内收窄为精确域名；仅拦截上游明确列出的黑名单域名
   - DOMAIN,upcnl.tt.omtrdc.net
   - DOMAIN,update.kmpmedia.net
